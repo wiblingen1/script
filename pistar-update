@@ -276,7 +276,7 @@ main_function() {
 	/usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
 	echo -e "${TICK} Done!\n"
 
-	echo "Updating Pi-Star-Firewall..."
+	echo "Updating Firewall..."
 	# check if user already has firewall disabled, and if so, ensure it's kept that way.
 	if ! grep -q LOGNDROP /etc/iptables.rules ; then
         	/usr/local/sbin/pistar-system-manager -dfw > /dev/null 2>&1
