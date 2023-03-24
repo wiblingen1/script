@@ -166,7 +166,7 @@ git_update() {
                 	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q &> /dev/null
               	fi
                	else
-                	echo -e "${INFO} No updates for ${gitFolder} available"
+                	echo -e "${INFO} No updates for ${gitFolder} required."
 	fi
 }
 
