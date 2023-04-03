@@ -465,9 +465,9 @@ chown -R mmdvm:mmdvm /var/log/pi-star > /dev/null 2>&1
 chmod 775 /var/log/pi-star > /dev/null 2>&1
 
 # Check for gpsd
-systemctl disable mobilegps.timer > /dev/null 2<&1
-systemctl disable mobilegps.service > /dev/null 2<&1
 if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
+    systemctl disable mobilegps.timer > /dev/null 2<&1
+    systemctl disable mobilegps.service > /dev/null 2<&1
     rm -rf /lib/systemd/system/mobilegps*
 fi
 if ! [ -x "$(command -v gpsd)" ]; then
@@ -475,8 +475,6 @@ if ! [ -x "$(command -v gpsd)" ]; then
     # Install GPSd
     apt-get -qq update > /dev/null 2>&1
     apt-get -qq install -y libgps-dev gpsd > /dev/null 2>&1
-    systemctl restart gpsd > /dev/null 2>&1
-    systemctl daemon-reload > /dev/null 2>&1
     echo -e "Done\n"
 fi
 
