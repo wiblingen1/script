@@ -69,12 +69,13 @@ case "$1" in
 			done
 			nice -n -5 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON started as PID "`$PGREP $DAEMON`
-			# if user paused DMR networks in DMR Manager, reset them
-			netMatches=($(ls /etc/.dmr-net*))
-			for match in "${netMatches[@]}"
-			do
-			    rm -f  $netMatches
-			done
+                        if compgen -G "/etc/.dmr-net*" > /dev/null ; then
+                            netMatches=($(ls /etc/.dmr-net*))
+                            for match in "${netMatches[@]}"
+                            do
+                                rm -f  $netMatches
+                            done
+                        fi
 			exit 0;
 		fi
 		;;
@@ -97,23 +98,25 @@ case "$1" in
 			$SLEEP 3
 			nice -n -5 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON re-started as PID "`${PGREP} ${DAEMON}`
-                        # if user paused DMR networks in DMR Manager, reset them
-                        netMatches=($(ls /etc/.dmr-net*))
-                        for match in "${netMatches[@]}"
-                        do
-                            rm -f  $netMatches
-                        done
+                        if compgen -G "/etc/.dmr-net*" > /dev/null ; then
+                            netMatches=($(ls /etc/.dmr-net*))
+                            for match in "${netMatches[@]}"
+                            do
+                                rm -f  $netMatches
+                            done
+                        fi
 			exit 0;
 		else
 			echo -e "$DAEMON is not running"
 			nice -n -5 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON started as PID "`${PGREP} ${DAEMON}`
-                        # if user paused DMR networks in DMR Manager, reset them
-                        netMatches=($(ls /etc/.dmr-net*))
-                        for match in "${netMatches[@]}"
-                        do
-                            rm -f  $netMatches
-                        done
+                        if compgen -G "/etc/.dmr-net*" > /dev/null ; then
+                            netMatches=($(ls /etc/.dmr-net*))
+                            for match in "${netMatches[@]}"
+                            do
+                                rm -f  $netMatches
+                            done
+                        fi
 			exit 0;
 		fi
 		;;
