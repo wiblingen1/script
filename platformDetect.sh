@@ -84,7 +84,7 @@ if [[ ${modelName} == "ARM"* ]]; then
     if [[ ${hardwareField} == "ODROID"* ]]; then
         echo "Odroid XU3/XU4 System"
     elif [[ ${hardwareField} == *"sun8i"* ]]; then
-        echo "sun8i based Pi Clone"
+        echo "sun8i-based Pi Clone"
     elif [[ ${hardwareField} == *"s5p4418"* ]]; then
         echo "Samsung Artik"
     elif [[ ${raspberryModel} == "Raspberry"* ]]; then
@@ -95,7 +95,7 @@ if [[ ${modelName} == "ARM"* ]]; then
     fi
     
 elif [[ ${hardwareField} == *"sun8i"* ]]; then
-    echo "sun8i based Pi Clone"
+    echo "sun8i-based Pi Clone"
 else
     echo "Generic "`uname -p`" class computer"
 fi
