@@ -195,8 +195,9 @@ fi
 
 # bullseye; change weird interface names* back to what most are accustomed to;
 # <https://wiki.debian.org/NetworkInterfaceNames#THE_.22PREDICTABLE_NAMES.22_SCHEME>
+# sunxi systems don't have /boot/cmdline.txt so we can ignore that.
 OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
-if [ "${OS_VER}" -gt "10" ] && [[ ! $(grep "net.ifnames" /boot/cmdline.txt) ]] ; then
+if [ "${OS_VER}" -gt "10" ] && [ -f '/boot/cmdline.txt' ] && [[ ! $(grep "net.ifnames" /boot/cmdline.txt) ]] ; then
     sed -i 's/$/ net.ifnames=0 biosdevname=0/' /boot/cmdline.txt
 fi
 
