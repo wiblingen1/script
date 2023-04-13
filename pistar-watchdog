@@ -20,7 +20,7 @@ import linecache
 import datetime
 import ConfigParser
 
-time.sleep(90) #Assumiing the Pi has just started up, let the services settle...
+time.sleep(30) #Assumiing the Pi has just started up, let the services settle...
 
 # Get the disk usage
 def disk_stat(path):
@@ -271,4 +271,4 @@ while True: #Main loop
 #		time.sleep(10) #Give the service time to start before we move on
 #	checkprockeeper.wait()
 
-	time.sleep(300) #Time to wait between service checks
+	time.sleep(120) #Time to wait between service checks

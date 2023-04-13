@@ -84,7 +84,12 @@ if [[ ${modelName} == "ARM"* ]]; then
     if [[ ${hardwareField} == "ODROID"* ]]; then
         echo "Odroid XU3/XU4 System"
     elif [[ ${hardwareField} == *"sun8i"* ]]; then
-        echo "sun8i-based Pi Clone"
+	clone_board=$(tr -d '\0' </proc/device-tree/model)
+	if echo "$clone_board" | grep -q "Orange Pi Zero"; then
+	    echo "$clone_board, sun8i"
+	else
+	    echo "sun8i-based Pi Clone"
+	fi
     elif [[ ${hardwareField} == *"s5p4418"* ]]; then
         echo "Samsung Artik"
     elif [[ ${raspberryModel} == "Raspberry"* ]]; then
