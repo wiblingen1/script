@@ -25,9 +25,7 @@ CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 osName=$( lsb_release -cs )
 hostFileURL="https://hostfiles.w0chp.net"
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
-modelName=$(grep -m 1 'model name' /proc/cpuinfo | sed 's/.*: //')
-hardwareField=$(grep 'Model' /proc/cpuinfo | sed 's/.*: //')
-hwDeetz="${hardwareField} - ${modelName}"
+hwDeetz=$( /usr/local/sbin/platformDetect.sh )
 uaStr="WPSD-HostFileUpdater Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 # connectivity check

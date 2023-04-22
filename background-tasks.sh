@@ -31,9 +31,7 @@ CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 osName=$( lsb_release -cs )
 versionCmd=$( git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git rev-parse --short=10 HEAD )
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
-modelName=$(grep -m 1 'model name' /proc/cpuinfo | sed 's/.*: //')
-hardwareField=$(grep 'Model' /proc/cpuinfo | sed 's/.*: //')
-hwDeetz="${hardwareField} - ${modelName}"
+hwDeetz=$( /usr/local/sbin/platformDetect.sh )
 uaStr="WPSD-BG-Task Ver.# ${versionCmd} Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 status_code=$(curl -I -A "${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")

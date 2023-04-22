@@ -7,8 +7,6 @@
 # Pi Rev codes available at <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes>
 
 # Pull the CPU Model from /proc/cpuinfo
-modelName=$(grep -m 1 'model name' /proc/cpuinfo | sed 's/.*: //')
-hardwareField=$(grep 'Hardware' /proc/cpuinfo | sed 's/.*: //')
 arch=$(uname -m)
 
 if [ -f /proc/device-tree/model ]; then
@@ -85,7 +83,7 @@ if [[ ${modelName} == "ARM"* ]]; then
         echo "Odroid XU3/XU4 System"
     elif [[ ${hardwareField} == *"sun8i"* ]]; then
 	clone_board=$(tr -d '\0' </proc/device-tree/model)
-	if echo "$clone_board" | grep -q "Orange Pi Zero"; then
+	if [ ! -z "${clone_board}" ]; then
 	    echo "$clone_board, sun8i"
 	else
 	    echo "sun8i-based Pi Clone"
