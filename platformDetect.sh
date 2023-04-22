@@ -1,13 +1,13 @@
 #! /bin/bash
 #
-# Return the version of the Raspberry Pi we are running on
+# Return the version of the Raspberry Pi or other clone boards
 # Written by Andy Taylor (MW0MWZ)
 # Enhanced by W0CHP
 #
 # Pi Rev codes available at <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes>
 
 # Pull the CPU Model from /proc/cpuinfo
-modelName=$(grep -m 1 'model name' /proc/cpuinfo | sed 's/.*: //')
+modelName=$( lscpu | grep Architecture | sed 's/.*: //' | sed -e 's/^[ \t]*//' )
 hardwareField=$(grep 'Hardware' /proc/cpuinfo | sed 's/.*: //')
 arch=$(uname -m)
 
@@ -15,7 +15,7 @@ if [ -f /proc/device-tree/model ]; then
     raspberryModel=$(tr -d '\0' </proc/device-tree/model | sed 's/Rev/Rev./')
 fi
 
-if [[ ${modelName} == "ARM"* ]]; then
+if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
     # Pull the Board revision from /proc/cpuinfo
     boardRev=$(grep 'Revision' /proc/cpuinfo | awk '{print $3}' | sed 's/^100//')
     # Grab actual model name as well...as a fallback to $raspberryModel: /proc/device-tree/model
