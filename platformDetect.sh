@@ -7,6 +7,8 @@
 # Pi Rev codes available at <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes>
 
 # Pull the CPU Model from /proc/cpuinfo
+modelName=$(grep -m 1 'model name' /proc/cpuinfo | sed 's/.*: //')
+hardwareField=$(grep 'Hardware' /proc/cpuinfo | sed 's/.*: //')
 arch=$(uname -m)
 
 if [ -f /proc/device-tree/model ]; then
