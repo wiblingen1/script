@@ -554,7 +554,7 @@ main_function() {
 	/bin/sync
 	/bin/sync
 	systemctl start cron.service > /dev/null 2<&1
-	echo -e "${TICK} Update Process Finished!"
+	echo -e "${TICK} Update Process Finished!\n\n"
 }
 
 	if [ -t 1 ]; then
