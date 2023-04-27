@@ -554,9 +554,6 @@ main_function() {
 	/bin/sync
 	systemctl start cron.service > /dev/null 2<&1
 	echo -e "${TICK} Update Process Finished!"
-	if [ ! -t 1 ]; then # only output if not called from tty
-		echo -e "\n<b><a style='color:white;text-decoration:underline;'' href='/config/changelog.php'>See the extended ChangeLog of the last 20 changes...</a></b>\n"
-	fi
 }
 
 	if [ -t 1 ]; then
