@@ -61,7 +61,11 @@ function stop_services()
     systemctl stop gpsd.service > /dev/null 2>&1
     systemctl stop timeserver.service > /dev/null 2>&1
     systemctl stop nextiondriver.service > /dev/null 2>&1
-    echo -e "\b\b\b: DONE.\b"
+    if [ -t 1 ] ; then
+	echo -e "\b\b\b: DONE.\b"
+    else
+	echo -e "* DONE *"
+    fi
 }
 
 function start_services()
@@ -78,7 +82,6 @@ function start_services()
     systemctl start nxdngateway.service > /dev/null 2>&1
     systemctl start m17gateway.service > /dev/null 2>&1
     systemctl start nxdnparrot.service > /dev/null 2>&1
-    systemctl start ysfgateway.service > /dev/null 2>&1
     systemctl start ysfparrot.service > /dev/null 2>&1
     systemctl start ysf2dmr.service > /dev/null 2>&1
     systemctl start ysf2p25.service > /dev/null 2>&1
@@ -89,9 +92,10 @@ function start_services()
     systemctl start nxdn2dmr.service > /dev/null 2>&1
     systemctl start timeserver.service > /dev/null 2>&1
     systemctl start mmdvmhost.service > /dev/null 2>&1
-    systemctl start dgidgateway.service > /dev/null 2>&1 # this link to MMDVMHost if started before MMDVMhost
+    systemctl start dgidgateway.service > /dev/null 2>&1
     systemctl start dmrgateway.service > /dev/null 2>&1
     systemctl start dstarrepeater.service > /dev/null 2>&1
+    systemctl start ysfgateway.service > /dev/null 2>&1
     systemctl start pistar-watchdog.service > /dev/null 2>&1
     systemctl start pistar-watchdog.timer > /dev/null 2>&1
     systemctl start pistar-remote.service > /dev/null 2>&1
@@ -103,7 +107,13 @@ function start_services()
     # Restart cron service if fullstop was used before
     systemctl is-active --quiet cron.service || systemctl start cron.service
 
-    echo -e "\b\b\b: DONE.\b"
+    sleep 15
+
+    if [ -t 1 ] ; then
+	echo -e "\b\b\b: DONE.\b"
+    else
+	echo -e "* DONE *"
+    fi
 }
 
 case "$1" in
