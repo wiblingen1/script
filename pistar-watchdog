@@ -20,7 +20,7 @@ import linecache
 import datetime
 import ConfigParser
 
-time.sleep(30) #Assumiing the Pi has just started up, let the services settle...
+time.sleep(60) #Assumiing the Pi has just started up, let the services settle...
 
 # Get the disk usage
 def disk_stat(path):
