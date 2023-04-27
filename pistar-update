@@ -545,6 +545,7 @@ main_function() {
 
 	echo "Starting Services..."
 	pistar-services start > /dev/null 2>&1
+        sleep 30
 	echo -e "${TICK} Done!\n"
 
 	echo "Updates complete, syncing disk cache..."
