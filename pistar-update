@@ -130,7 +130,7 @@ git_update() {
 					echo -e "---------------------------"
                                 	git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
                                 	if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
-                                        	echo "Update to new version of update script was not successful, forcing update..."
+                                        	echo "Forcing update..."
 						if [ -f ${gitFolder}/pistar-upnp.service ]; then
 						rm -f ${gitFolder}/pistar-upnp.service
 					fi
