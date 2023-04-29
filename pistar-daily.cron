@@ -55,6 +55,46 @@ status_code=$(curl -I -m 3 -A "ConnCheck ${uaStr}" --write-out %{http_code} --si
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo "repo connection ok"
 
+    # Check for gpsd
+    if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
+        systemctl disable mobilegps.timer > /dev/null 2<&1
+        systemctl disable mobilegps.service > /dev/null 2<&1
+        rm -rf /lib/systemd/system/mobilegps*
+    fi
+    if ! [ -x "$(command -v gpsd)" ]; then
+        echo "GPSd (required) not installed. Installing now..."
+        # Install GPSd
+        apt-get -qq update > /dev/null 2>&1
+        apt-get -qq install -y libgps-dev gpsd > /dev/null 2>&1
+        apt-get -qq autoclean > /dev/null 2>&1
+        # disable by default; enabled in config page on request:
+        systemctl disable gpsd.service > /dev/null 2>&1
+        systemctl disable gpsd.socket > /dev/null 2>&1
+        systemctl mask gpsd.service > /dev/null 2>&1
+        systemctl mask gpsd.socket > /dev/null 2>&1
+        echo -e "Done\n"
+    fi
+    # ensure req'd gps libs are installed since we complile G4KLX's with them
+    if [ ! -f '/usr/lib/arm-linux-gnueabihf/libgps.so.28' ] ; then
+        apt-get -qq update > /dev/null 2>&1
+        apt-get -qq install -y libgps28 > /dev/null 2>&1
+        apt-get -qq autoclean > /dev/null 2>&1
+    fi
+    # now fix upstream gpsd binding bug:
+    if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
+        curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket
+        systemctl daemon-reload &> /dev/null # Reload systemd to account for service changes
+    fi
+    # ensure gpsd is only enabled by the user:
+    if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
+        systemctl stop gpsd.service > /dev/null 2>&1
+        systemctl stop gpsd.service > /dev/null 2>&1
+        systemctl disable gpsd.service > /dev/null 2>&1
+        systemctl disable gpsd.socket > /dev/null 2>&1
+        systemctl mask gpsd.service > /dev/null 2>&1
+        systemctl mask gpsd.socket > /dev/null 2>&1
+    fi
+
     # remove rmb conflicts
     if [[ $(grep -- '-RMB' /etc/pistar-release) ]] ; then
     	cp -a /var/www/dashboard/config/{config.php,ircddblocal.php,language.php} /root/ # save user config files.
@@ -462,20 +502,6 @@ fi
 # log file perms
 chown -R mmdvm:mmdvm /var/log/pi-star > /dev/null 2>&1
 chmod 775 /var/log/pi-star > /dev/null 2>&1
-
-# Check for gpsd
-if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
-    systemctl disable mobilegps.timer > /dev/null 2<&1
-    systemctl disable mobilegps.service > /dev/null 2<&1
-    rm -rf /lib/systemd/system/mobilegps*
-fi
-if ! [ -x "$(command -v gpsd)" ]; then
-    echo "GPSd (required) not installed on hotspot. Installing now..."
-    # Install GPSd
-    apt-get -qq update > /dev/null 2>&1
-    apt-get -qq install -y libgps-dev gpsd > /dev/null 2>&1
-    echo -e "Done\n"
-fi
 
 # check for vnstat
 if ! [ -x "$(command -v vnstat)" ]; then
