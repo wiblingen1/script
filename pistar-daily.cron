@@ -88,7 +88,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     # ensure gpsd is only enabled by the user:
     if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
         systemctl stop gpsd.service > /dev/null 2>&1
-        systemctl stop gpsd.service > /dev/null 2>&1
+        systemctl stop gpsd.socket > /dev/null 2>&1
         systemctl disable gpsd.service > /dev/null 2>&1
         systemctl disable gpsd.socket > /dev/null 2>&1
         systemctl mask gpsd.service > /dev/null 2>&1
