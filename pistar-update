@@ -141,8 +141,17 @@ git_update() {
                                 exit 1
                         fi
                 fi
-                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
-                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
+		# special case for /usr/local/bin bullseye & buster
+		if [[ ${gitFolder} == "/usr/local/bin" ]]; then
+		    # Update the Binaries
+		    if [ "${osName}" = "buster" ]; then
+		    	branch="buster"
+		    else
+		    	branch="master"
+		    fi
+                    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin "${branch}" &> /dev/null
+                    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/${branch}
+		fi
                 echo -e "ChangeLog (last 3 changes):"
 		echo -e "---------------------------"
                 git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
@@ -160,10 +169,6 @@ git_update() {
     	    			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
 			fi
 		fi
-                if [[ ${gitFolder} == "/usr/local/.W0CHP_bin" ]]; then
-                	echo "Updating W0CHP-PiStar-Dash Custom Binaries (DG-ID_M17 branch)..."
-                	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q &> /dev/null
-              	fi
                	else
                 	echo -e "${INFO} No updates for ${gitFolder} required."
 	fi

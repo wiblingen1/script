@@ -140,7 +140,12 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
 
     # Update the Binaries
-    GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/bin --git-dir=/usr/local/bin/.git pull origin master
+    if [ "${osName}" = "buster" ]; then
+	branch="buster"
+    else
+	branch="master"
+    fi
+    GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/bin --git-dir=/usr/local/bin/.git pull origin "${branch}"
 
     # update installer
     curl -Ls -A "${uaStrSF}" ${W0CHP_INSTALL_SCRIPT_REPO} -o /usr/sbin/WPSD-Installer
