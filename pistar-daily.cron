@@ -14,9 +14,6 @@ mount -o remount,rw / # for shits and giggles
 
 pkill pistar-hourly.cron > /dev/null 2>&1
 
-# Stop all the services...
-pistar-services fullstop > /dev/null 2>&1
-
 # ensure repos can be updated
 if ! grep -q 'safe' /root/.gitconfig > /dev/null 2<&1 ; then
     git config --global --add safe.directory /var/www/dashboard > /dev/null 2<&1
@@ -61,24 +58,21 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
         systemctl disable mobilegps.service > /dev/null 2<&1
         rm -rf /lib/systemd/system/mobilegps*
     fi
-    if ! [ -x "$(command -v gpsd)" ]; then
-        echo "GPSd (required) not installed. Installing now..."
-        # Install GPSd
+    if ! compgen -G "/usr/lib/arm-linux-gnueabihf/libgps.*" > /dev/null; then
+	echo "GPSd (required) not installed. Installing now..."
         apt-get -qq update > /dev/null 2>&1
-        apt-get -qq install -y libgps-dev gpsd > /dev/null 2>&1
-        apt-get -qq autoclean > /dev/null 2>&1
+	if [ "${osName}" = "bullseye" ]; then
+            apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
+	else
+            apt-get -qq install --reinstall -y gpsd libgps23 > /dev/null 2>&1
+	fi
         # disable by default; enabled in config page on request:
         systemctl disable gpsd.service > /dev/null 2>&1
         systemctl disable gpsd.socket > /dev/null 2>&1
         systemctl mask gpsd.service > /dev/null 2>&1
         systemctl mask gpsd.socket > /dev/null 2>&1
-        echo -e "Done\n"
-    fi
-    # ensure req'd gps libs are installed since we complile G4KLX's with them
-    if [ ! -f '/usr/lib/arm-linux-gnueabihf/libgps.so.28' ] ; then
-        apt-get -qq update > /dev/null 2>&1
-        apt-get -qq install -y libgps28 > /dev/null 2>&1
         apt-get -qq autoclean > /dev/null 2>&1
+        echo -e "Done\n"
     fi
     # now fix upstream gpsd binding bug:
     if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
@@ -115,6 +109,9 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     	/usr/local/sbin/pistar-services start > /dev/null 2<&1 
     	exit 0
     fi
+
+    # Stop all the services...
+    pistar-services fullstop > /dev/null 2>&1
 
     # Update sbin
     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master

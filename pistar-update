@@ -286,32 +286,27 @@ main_function() {
 
 	echo "Performing maintenance tasks..."
 
-	/usr/local/sbin/wpsd-backend-maint > /dev/null 2>&1
-
 	# Check for gpsd
 	if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
 	    systemctl disable mobilegps.timer > /dev/null 2<&1
 	    systemctl disable mobilegps.service > /dev/null 2<&1
 	    rm -rf /lib/systemd/system/mobilegps*
 	fi
-	if ! [ -x "$(command -v gpsd)" ]; then
+	if ! compgen -G "/usr/lib/arm-linux-gnueabihf/libgps.*" > /dev/null; then
 	    echo "GPSd (required) not installed. Installing now..."
-	    # Install GPSd
 	    apt-get -qq update > /dev/null 2>&1
-	    apt-get -qq install -y libgps-dev gpsd > /dev/null 2>&1
-	    apt-get -qq autoclean > /dev/null 2>&1
+	    if [ "${osName}" = "bullseye" ]; then
+		apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
+	    else
+		apt-get -qq install --reinstall -y gpsd libgps23 > /dev/null 2>&1
+	    fi
 	    # disable by default; enabled in config page on request:
 	    systemctl disable gpsd.service > /dev/null 2>&1
 	    systemctl disable gpsd.socket > /dev/null 2>&1
 	    systemctl mask gpsd.service > /dev/null 2>&1
 	    systemctl mask gpsd.socket > /dev/null 2>&1
-	    echo -e "Done\n"
-	fi
-	# ensure req'd gps libs are installed since we complile G4KLX's with them
-	if [ ! -f '/usr/lib/arm-linux-gnueabihf/libgps.so.28' ] ; then
-	    apt-get -qq update > /dev/null 2>&1
-	    apt-get -qq install -y libgps28 > /dev/null 2>&1
 	    apt-get -qq autoclean > /dev/null 2>&1
+	    echo -e "Done\n"
 	fi
 	# now fix upstream gpsd binding bug:
 	if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
@@ -327,6 +322,8 @@ main_function() {
 	    systemctl mask gpsd.service > /dev/null 2>&1
 	    systemctl mask gpsd.socket > /dev/null 2>&1
 	fi
+
+	/usr/local/sbin/wpsd-backend-maint > /dev/null 2>&1
 
 	# check for vnstat
 	if ! [ -x "$(command -v vnstat)" ]; then
