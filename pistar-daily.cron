@@ -141,7 +141,9 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 
     # Update the Binaries
     if [ "${osName}" = "buster" ]; then
-	branch="buster"
+	#branch="buster" # sunsetting
+	branch="master"
+	GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/bin --git-dir=/usr/local/bin/.git checkout -q "${branch}"
     else
 	branch="master"
     fi
