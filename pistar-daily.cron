@@ -58,14 +58,10 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
         systemctl disable mobilegps.service > /dev/null 2<&1
         rm -rf /lib/systemd/system/mobilegps*
     fi
-    if ! compgen -G "/usr/lib/arm-linux-gnueabihf/libgps.*" > /dev/null; then
-	echo "GPSd (required) not installed. Installing now..."
+    if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
+        echo "GPSd (required) not installed. Installing now..."
         apt-get -qq update > /dev/null 2>&1
-	if [ "${osName}" = "bullseye" ]; then
-            apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
-	else
-            apt-get -qq install --reinstall -y gpsd libgps23 > /dev/null 2>&1
-	fi
+        apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
         # disable by default; enabled in config page on request:
         systemctl disable gpsd.service > /dev/null 2>&1
         systemctl disable gpsd.socket > /dev/null 2>&1
