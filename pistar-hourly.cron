@@ -33,7 +33,7 @@ uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | 
 # used to radomize the cron mins below
 cronMins=$(shuf -i 0-59 -n 1)
 
-hwDeetz=$( /usr/local/sbin/platformDetect.sh )
+hwDeetz=$( grep Platform /etc/pistar-release | awk '{ print substr($0, index($0,$3)) }' )
 uaStr="ConnCheck (Hourly-Cron [${cronMins}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 # connectivity check
