@@ -107,7 +107,9 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     fi
 
     # Stop all the services...
-    pistar-services fullstop > /dev/null 2>&1
+    systemctl stop pistar-watchdog.timer > /dev/null 2>&1
+    systemctl stop pistar-watchdog.service > /dev/null 2>&1
+    pistar-services stop > /dev/null 2>&1
 
     # Update sbin
     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
