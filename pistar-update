@@ -119,12 +119,12 @@ git_update() {
 		echo -e "---------------------------"
                 git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
         	else
-			# If this script is updated, re-run the update with the new version.
+			# New updater version - Self-update and re-exec:
 			if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
                         	git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard 
                         	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch
                         	if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep pistar-update 2>/dev/null)" = "pistar-update" ]; then
-                                	echo -e "\nFound a new version of the Updater..."
+                                	echo -e "\n[!] New version of the Updater available. Performing self-update..."
                                 	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
                                 	echo -e "ChangeLog (last 3 changes):"
 					echo -e "---------------------------"
@@ -136,7 +136,7 @@ git_update() {
 					fi
                                         env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
                                 fi
-                                echo -e "\n[*] Restarting update process with the new version..."
+                                echo -e "\n[*] Relaunching Updater with the new version..."
                                 exec "$0" "$@"
                                 exit 1
                         fi
