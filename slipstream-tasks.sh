@@ -64,5 +64,14 @@ gitURIupdate "/usr/local/bin"
 gitURIupdate "/usr/local/sbin"
 #
 
+# Config backup file name change, so lets address that
+#
+# 5/2023 W0CHP
+#
+if grep -q 'Pi-Star_Config_\*\.zip' /etc/rc.local ; then
+    sed -i 's/Pi-Star_Config_\*\.zip/WPSD_Config_\*\.zip/g' /etc/rc.local
+fi
+
 # more taks...
+
 
