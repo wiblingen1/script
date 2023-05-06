@@ -59,22 +59,6 @@ if [ "${osName}" = "bullseye" ]; then
     git config --global pull.ff only
 fi
 
-# bullseye; change weird interface names* back to what most are accustomed to;
-# <https://wiki.debian.org/NetworkInterfaceNames#THE_.22PREDICTABLE_NAMES.22_SCHEME>
-# sunxi systems don't have /boot/cmdline.txt so we can ignore that.
-OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
-if [ "${OS_VER}" -gt "10" ] && [ -f '/boot/cmdline.txt' ] && [[ ! $(grep "net.ifnames" /boot/cmdline.txt) ]] ; then
-    sed -i 's/$/ net.ifnames=0 biosdevname=0/' /boot/cmdline.txt
-fi
-
-# ensure pistar-remote config has key-value pairs for new funcs (12/2/22)
-if ! grep -q 'hostfiles=8999995' /etc/pistar-remote ; then 
-    sed -i "/^# TG commands.*/a hostfiles=8999995" /etc/pistar-remote
-fi
-if ! grep -q 'reconnect=8999994' /etc/pistar-remote ; then 
-    sed -i "/^# TG commands.*/a reconnect=8999994" /etc/pistar-remote
-fi
-
 git_checkUpdateRequired() {
 	# Set the function variables
 	gitFolder=${1}
@@ -520,14 +504,6 @@ main_function() {
 
 	if ! grep -q AUTO_UPDATE_CHECK /var/www/dashboard/config/config.php ; then # insert req'd constant if not found. WIll be stashed on next update :-)
 		sed -i "/^date_default_timezone_set.*/i define('AUTO_UPDATE_CHECK', 'true');" /var/www/dashboard/config/config.php
-	fi
-
-	# add hw cache to rc.local
-	if ! grep -q 'hwcache' /etc/rc.local ; then
-    	    sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 
-	    /usr/local/sbin/pistar-hwcache
-	else
-	    /usr/local/sbin/pistar-hwcache
 	fi
 
 	# MOTD
