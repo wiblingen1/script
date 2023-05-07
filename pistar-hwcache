@@ -126,6 +126,14 @@ if grep -w 'DMRGWnet2' /etc/pistar-release > /dev/null; then
     sed -i "/DMRGWnet2/d" /etc/pistar-release
 fi
 
+# add / update WPSD version hash to /etc/pistar-release
+WPSDver=$(cat /etc/.W0CHP-PiStar-Dash.remote_version | sed 's/\..*//')
+if ! grep -w 'WPSD_Ver' /etc/pistar-release > /dev/null; then
+    sed -i "/Callsign =/a WPSD_Ver = ${WPSDver}" /etc/pistar-release
+else
+    sed -i "/WPSD_Ver/c WPSD_Ver = ${WPSDver}" /etc/pistar-release
+fi
+
 # cleanup last line..
 sed -i '${/^$/d}' /etc/pistar-release
 
