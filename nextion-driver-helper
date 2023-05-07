@@ -17,6 +17,15 @@ fi
 
 # user has Nextion defined in mmdvmhost, so let's natively support it:
 if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2`" = "Nextion" ]; then
+    # Check if the GroupsFileSrc and DMRidFileSrc exist in the INI file
+    if ! grep -q "^GroupsFileSrc=" /etc/mmdvmhost; then
+  	# Insert GroupsFileSrc in the NextionDriver section
+  	sed -i '/^\[NextionDriver\]$/a GroupsFileSrc=https://hostfiles.w0chp.net/groupsNextion.txt' /etc/mmdvmhost
+    fi
+    # Check if GroupsFile is set to groups.txt and change it to groupsNextion.txt
+    if grep -q "^GroupsFile=groups.txt" /etc/mmdvmhost; then
+	sed -i 's/^GroupsFile=groups.txt$/GroupsFile=groupsNextion.txt/' /etc/mmdvmhost
+    fi
     systemctl stop nextiondriver.service > /dev/null 2<&1
     /usr/bin/killall NextionDriver > /dev/null 2<&1
     systemctl daemon-reload > /dev/null 2<&1

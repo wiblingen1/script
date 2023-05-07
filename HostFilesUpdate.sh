@@ -65,6 +65,7 @@ BMTGNAMES=/usr/local/etc/BM_TGs.json
 RADIOIDDB_TMP=/tmp/user.csv
 RADIOIDDB=/usr/local/etc/user.csv
 GROUPSTXT=/usr/local/etc/groups.txt
+GROUPSNEXTION=/usr/local/etc/groupsNextion.txt
 STRIPPED=/usr/local/etc/stripped.csv
 COUNTRIES=/usr/local/etc/country.csv
 
@@ -96,36 +97,68 @@ if [ ${FILEBACKUP} -ne 0 ]; then
 	cp  ${TGLISTNXDN} ${TGLISTNXDN}.$(date +%Y%m%d)
 	cp  ${TGLISTYSF} ${TGLISTYSF}.$(date +%Y%m%d)
 	cp  ${BMTGNAMES} ${BMTGNAMES}.$(date +%Y%m%d)
+	if [ -f ${GROUPSNEXTION} ] ; then
+	    cp  ${GROUPSNEXTION} ${GROUPSNEXTION}.$(date +%Y%m%d)
+	fi
 	cp  ${GROUPSTXT} ${GROUPSTXT}.$(date +%Y%m%d)
 	cp  ${STRIPPED} ${STRIPPED}.$(date +%Y%m%d)
 fi
 
 # Prune backups
-FILES="${APRSHOSTS}
-${DCSHOSTS}
-${DExtraHOSTS}
-${DMRIDFILE}
-${DMRHOSTS}
-${DPlusHOSTS}
-${P25HOSTS}
-${M17HOSTS}
-${YSFHOSTS}
-${FCSHOSTS}
-${XLXHOSTS}
-${NXDNIDFILE}
-${NXDNHOSTS}
-${TGLISTBM}
-${TGLISTTGIF}
-${TGLISTFREESTARIPSC2}
-${TGLISTSYSTEMX}
-${TGLISTFREEDMR}
-${TGLISTDMRPLUS}
-${TGLISTP25}
-${TGLISTNXDN}
-${TGLISTYSF}
-${BMTGNAMES}
-${GROUPSTXT}
-${STRIPPED}"
+if [ -f ${GROUPSNEXTION} ] ; then
+    FILES="${APRSHOSTS}
+    ${DCSHOSTS}
+    ${DExtraHOSTS}
+    ${DMRIDFILE}
+    ${DMRHOSTS}
+    ${DPlusHOSTS}
+    ${P25HOSTS}
+    ${M17HOSTS}
+    ${YSFHOSTS}
+    ${FCSHOSTS}
+    ${XLXHOSTS}
+    ${NXDNIDFILE}
+    ${NXDNHOSTS}
+    ${TGLISTBM}
+    ${TGLISTTGIF}
+    ${TGLISTFREESTARIPSC2}
+    ${TGLISTSYSTEMX}
+    ${TGLISTFREEDMR}
+    ${TGLISTDMRPLUS}
+    ${TGLISTP25}
+    ${TGLISTNXDN}
+    ${TGLISTYSF}
+    ${BMTGNAMES}
+    ${GROUPSTXT}
+    ${GROUPSNEXTION}
+    ${STRIPPED}"
+else
+    FILES="${APRSHOSTS}
+    ${DCSHOSTS}
+    ${DExtraHOSTS}
+    ${DMRIDFILE}
+    ${DMRHOSTS}
+    ${DPlusHOSTS}
+    ${P25HOSTS}
+    ${M17HOSTS}
+    ${YSFHOSTS}
+    ${FCSHOSTS}
+    ${XLXHOSTS}
+    ${NXDNIDFILE}
+    ${NXDNHOSTS}
+    ${TGLISTBM}
+    ${TGLISTTGIF}
+    ${TGLISTFREESTARIPSC2}
+    ${TGLISTSYSTEMX}
+    ${TGLISTFREEDMR}
+    ${TGLISTDMRPLUS}
+    ${TGLISTP25}
+    ${TGLISTNXDN}
+    ${TGLISTYSF}
+    ${BMTGNAMES}
+    ${GROUPSTXT}
+    ${STRIPPED}"
+fi
 
 for file in ${FILES}
 do
@@ -186,7 +219,7 @@ curl --fail -L -o ${TGLISTYSF} -s ${hostFileURL}/TGList_YSF.txt --user-agent "${
 curl --fail -L -o ${COUNTRIES} -s ${hostFileURL}/country.csv --user-agent "${uaStr}"
 curl --fail -L -o ${BMTGNAMES} -s ${hostFileURL}/BM_TGs.json --user-agent "${uaStr}"
 
-# BM TG List for live caller and nextion screens:
+# BM TG List for live caller and (legacy) nextion screens:
 cp ${BMTGNAMES} ${GROUPSTXT}
 
 # If there is a DMR override file, add its contents to DMR_Hosts.txt

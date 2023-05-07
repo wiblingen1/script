@@ -105,6 +105,21 @@ if ! grep -q 'reconnect=8999994' /etc/pistar-remote ; then
 fi
 #
 
-# more taks...
-
+# Insert missing key/values in mmdvnhost config for my custom native NextionDriver
+# 
+# 5/2023 W0CHP
+#
+# only insert the key/values IF MMDVMHost has display type of "Nextion" defined.
+if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2`" = "Nextion" ]; then
+    # Check if the GroupsFileSrc and DMRidFileSrc exist in the INI file
+    if ! grep -q "^GroupsFileSrc=" /etc/mmdvmhost; then
+        # Insert GroupsFileSrc in the NextionDriver section
+        sed -i '/^\[NextionDriver\]$/a GroupsFileSrc=https://hostfiles.w0chp.net/groupsNextion.txt' /etc/mmdvmhost
+    fi
+    # Check if GroupsFile is set to groups.txt and change it to groupsNextion.txt
+    if grep -q "^GroupsFile=groups.txt" /etc/mmdvmhost; then
+        sed -i 's/^GroupsFile=groups.txt$/GroupsFile=groupsNextion.txt/' /etc/mmdvmhost
+    fi
+fi
+#
 
