@@ -9,7 +9,7 @@
 #                                                       #
 #         based on work of Andy Taylor (MW0MWZ)         #
 #                                                       #
-#                     Version 1.1                       #
+#                  Version 1.2 W0CHP                    #
 #                                                       #
 #########################################################
 
@@ -17,7 +17,7 @@
 DAEMON=NextionDriver
 DAEMON_PATH=/usr/local/bin/
 CONFIG=/etc/mmdvmhost
-DAEMON_OPTS="-c $CONFIG -i"
+DAEMON_OPTS="-c $CONFIG -i -v"
 PGREP=/usr/bin/pgrep
 KILL=/bin/kill
 SLEEP=/bin/sleep
