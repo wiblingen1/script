@@ -532,9 +532,9 @@ if [[ $kernel_release == *"sunxi"* ]]; then # armbian/sunxi!
     :
   else # armbian with 5.x kernel
     echo "Upgrading kernel..."
-    sudo apt-get update
-    sudo apt-get -y install linux-image-edge-sunxi
-    sudo apt-get --purge remove -y linux-image-current-sunxi
+    apt-get update
+    apt-get -y install linux-image-edge-sunxi
+    apt-get --purge remove -y linux-image-current-sunxi
     echo "Kernel upgraded...rebooting in 30 seconds!" | wall
     sleep 30
     shutdown -r now
