@@ -525,4 +525,26 @@ sed -i "/cron.daily/c ${cronMins} ${cronHours}	* * *	root	cd / && run-parts --re
 #systemctl daemon-reload &> /dev/null # Reload systemd to account for service changes
 pistar-services start > /dev/null 2>&1
 
+# let's get armbian kernels up-to-date
+kernel_release=$(uname -r)
+if [[ $kernel_release == *"sunxi"* ]]; then # armbian/sunxi!
+  if [[ $kernel_release == 6.* ]]; then # already updated tp 6.x
+    :
+  else # armbian with 5.x kernel
+    echo "Upgrading kernel..."
+    sudo apt-get -y install linux-image-edge-sunxi
+    sudo apt-get --purge remove -y linux-image-current-sunxi
+    echo "Kernel upgraded...rebooting in 30 seconds!" | wall
+    sleep 30
+    shutdown -r now
+  fi
+fi # not arbmbian/sunxi
+
+echo "Cleaning old apt archives/caches..."
+apt-get -qq clean  > /dev/null 2<&1;
+apt-get -qq autoclean  > /dev/null 2<&1;
+
+echo ""
+echo "cron job done"
+
 exit 0
