@@ -10,6 +10,10 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+if [ ! -t 1 ]; then
+  exec &> /tmp/daily-cron.log
+fi
+
 mount -o remount,rw / # for shits and giggles
 
 pkill pistar-hourly.cron > /dev/null 2>&1
@@ -50,8 +54,9 @@ uaStrSF="WPSD-SuppFiles (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${ve
 # connectivity check
 status_code=$(curl -I -m 3 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-    echo "repo connection ok"
+    echo -e "\nUpdate server  connection ok!"
 
+    echo -e "\nPerforming maint..."
     # Check for gpsd
     if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
         systemctl disable mobilegps.timer > /dev/null 2<&1
@@ -106,14 +111,17 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     	exit 0
     fi
 
+    echo -e "\nStopping services..."
     # Stop all the services...
     systemctl stop pistar-watchdog.timer > /dev/null 2>&1
     systemctl stop pistar-watchdog.service > /dev/null 2>&1
     pistar-services stop > /dev/null 2>&1
 
+    echo -e "\nUpdating sbins..."
     # Update sbin
     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
 
+    echo -e "\nUpdating dash code..."
     # Update the Dashboard
     # W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, check that branch.
     gitFolder="/var/www/dashboard"
@@ -125,18 +133,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
     git stash clear # housekeeping
 
-    # Host Files Update
-    if ! [ -f /root/M17Hosts.txt ]; then
-    	echo -e "# Format: Reflector Name IP Port\n# Example:\n# M17-000    81.231.241.25    17000\n\n" > /root/M17Hosts.txt
-    fi
-    /usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
-
-    # Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
-    gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
-    gitBranch="$( git --git-dir=${gitFolder}/.git branch | grep '*' | awk {'print $2'} )"
-    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
-    echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
-
+    echo -e "\nUpdating binaries..."
     # Update the Binaries
     if [ "${osName}" = "buster" ]; then
 	#branch="buster" # sunsetting
@@ -151,6 +148,14 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     curl -Ls -A "${uaStrSF}" ${W0CHP_INSTALL_SCRIPT_REPO} -o /usr/sbin/WPSD-Installer
     chmod +x /usr/sbin/WPSD-Installer
 
+    echo -e "\nUpdating Hostfiles..."
+    # Host Files Update
+    if ! [ -f /root/M17Hosts.txt ]; then
+    	echo -e "# Format: Reflector Name IP Port\n# Example:\n# M17-000    81.231.241.25    17000\n\n" > /root/M17Hosts.txt
+    fi
+    /usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
+
+    echo -e "\nMigration and post-upd.maint. tasks..."
     # if css does not exist, install default one
     if [ ! -f "/etc/pistar-css.ini" ] ; then
 	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/pistar-css-W0CHP.ini -o /etc/pistar-css.ini
@@ -229,8 +234,15 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 	    fi
     	fi
     fi
+
+    # Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
+    gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
+    gitBranch="$( git --git-dir=${gitFolder}/.git branch | grep '*' | awk {'print $2'} )"
+    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
+    echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
+
 else
-    echo "repo connetion failure"
+    echo "Update server connction failure! Will try again during next scheduled job tommorrow."
 fi
 
 # maint. tasks
@@ -523,6 +535,7 @@ sed -i "/cron.daily/c ${cronMins} ${cronHours}	* * *	root	cd / && run-parts --re
 
 # Start all the services...
 #systemctl daemon-reload &> /dev/null # Reload systemd to account for service changes
+echo -e "\nStarting services..."
 pistar-services start > /dev/null 2>&1
 
 # let's get armbian kernels up-to-date
@@ -531,7 +544,7 @@ if [[ $kernel_release == *"sunxi"* ]]; then # armbian/sunxi!
   if [[ $kernel_release == 6.* ]]; then # already updated tp 6.x
     :
   else # armbian with 5.x kernel
-    echo "Upgrading kernel..."
+    echo -e "\nUpgrading kernel..."
     apt-get update
     apt-get -y install linux-image-edge-sunxi && apt-get --purge remove -y linux-image-current-sunxi
     echo "Kernel upgraded...rebooting in 30 seconds!" | wall
@@ -540,11 +553,10 @@ if [[ $kernel_release == *"sunxi"* ]]; then # armbian/sunxi!
   fi
 fi # not arbmbian/sunxi
 
-echo "Cleaning old apt archives/caches..."
+echo -e "\nCleaning old apt archives/caches..."
 apt-get -qq clean  > /dev/null 2<&1;
 apt-get -qq autoclean  > /dev/null 2<&1;
 
-echo ""
-echo "cron job done"
+echo -e "\nDaily Cron job done!"
 
 exit 0
