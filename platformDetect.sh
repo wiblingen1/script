@@ -78,7 +78,7 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
         *b03140) raspberryVer="CM4 Rev 1.0 2GB";;
         *c03140) raspberryVer="CM4 Rev 1.0 4GB";;
         *d03140) raspberryVer="CM4 Rev 1.0 8GB";;
-        *) raspberryVer="Unknown ARM based System";;
+        *) raspberryVer="Unknown ARM-based System";;
     esac
 
     if [[ ${hardwareField} == "ODROID"* ]]; then
