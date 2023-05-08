@@ -50,11 +50,24 @@ cronHours=$(shuf -i 1-4 -n1)
 tz=$( date +%Z )
 uaStr="WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}] [${osName}]"
 uaStrSF="WPSD-SuppFiles (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
- 
+
+# check if user already has firewall disabled, and if so, ensure it's kept that way.
+if grep -q LOGNDROP /etc/iptables.rules; then
+    fwState="enabled"
+else
+    fwState="disabled"
+fi
+
+echo -e "\nStopping services..."
+systemctl stop pistar-watchdog.timer > /dev/null 2>&1
+systemctl stop pistar-watchdog.service > /dev/null 2>&1
+pistar-services stop > /dev/null 2>&1
+
 # connectivity check
+echo -e "\nChecking connectivity up update server..."
 status_code=$(curl -I -m 3 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-    echo -e "\nUpdate server  connection ok!"
+    echo -e "Update server connection ok!"
 
     echo -e "\nPerforming maint..."
     # Check for gpsd
@@ -111,15 +124,17 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     	exit 0
     fi
 
-    echo -e "\nStopping services..."
-    # Stop all the services...
-    systemctl stop pistar-watchdog.timer > /dev/null 2>&1
-    systemctl stop pistar-watchdog.service > /dev/null 2>&1
-    pistar-services stop > /dev/null 2>&1
-
     echo -e "\nUpdating sbins..."
     # Update sbin
+    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git reset --hard origin/master
     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
+    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${versionCmd} (${W0CHP_DASH_BRANCH}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git reset --hard origin/master
+    echo -e "\nResetting firewall back to user prefs..."
+    if [ "$fwState" == "enabled" ]; then
+	/usr/local/sbin/pistar-system-manager -efw
+    else
+	/usr/local/sbin/pistar-system-manager -dfw
+    fi
 
     echo -e "\nUpdating dash code..."
     # Update the Dashboard
@@ -155,7 +170,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     fi
     /usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
 
-    echo -e "\nMigration and post-upd.maint. tasks..."
+    echo -e "\nMigration and post-upd. maint. tasks..."
     # if css does not exist, install default one
     if [ ! -f "/etc/pistar-css.ini" ] ; then
 	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/pistar-css-W0CHP.ini -o /etc/pistar-css.ini
@@ -242,7 +257,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
 
 else
-    echo "Update server connction failure! Will try again during next scheduled job tommorrow."
+    echo "Update server connection failure! Will try again during next scheduled job tommorrow."
 fi
 
 # maint. tasks
@@ -520,13 +535,6 @@ fi
 # age mmdvmhost log backups:
 /usr/local/sbin/pistar-mmdvm-log-backup-age > /dev/null
 
-# check if user already has firewall disabled, and if so, ensure it's kept that way.
-if ! grep -q LOGNDROP /etc/iptables.rules ; then
-    /usr/local/sbin/pistar-system-manager -dfw > /dev/null 2>&1
-else
-    /usr/local/sbin/pistar-system-manager -efw > /dev/null 2>&1
-fi
-
 # run any slipstream tasks
 bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
 
@@ -557,6 +565,6 @@ echo -e "\nCleaning old apt archives/caches..."
 apt-get -qq clean  > /dev/null 2<&1;
 apt-get -qq autoclean  > /dev/null 2<&1;
 
-echo -e "\nDaily Cron job done!"
+echo -e "\nDaily Cron job done!\n"
 
 exit 0
