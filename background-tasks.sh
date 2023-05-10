@@ -19,8 +19,8 @@ if [ ! -f '/var/run/wpsd-bg-tasks' ] ; then # marker file doesn't exist. Create 
     exit 0
 fi
 
-# check age of task marker file. if it's < 2 hours young, bail.
-if [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/wpsd-bg-tasks") ))" -lt "7200" ]; then
+# check age of task marker file. if it's < 1 hour young, bail.
+if [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/wpsd-bg-tasks") ))" -lt "3600" ]; then
     exit 0
 fi
 
