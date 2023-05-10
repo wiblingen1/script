@@ -68,20 +68,17 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
         *a03111) raspberryVer="1GB - Mfd. by Sony in the UK";;
         *b03111) raspberryVer="2GB - Mfd. by Sony in the UK";;
         *b03114) raspberryVer="2GB - Mfd. by Sony in the UK";;
-        *b03115) raspberryVer="2GB - Mfd. by Sony in the UK";;
         *c03111) raspberryVer="4GB - Mfd. by Sony in the UK";;
         *c03114) raspberryVer="4GB - Mfd. by Sony in the UK";;
-        *c03115) raspberryVer="4GB - Mfd. by Sony in the UK";;
         *b03112) raspberryVer="2GB - Mfd. by Sony in the UK";;
         *c03112) raspberryVer="4GB - Mfd. by Sony in the UK";;
         *d03114) raspberryVer="8GB - Mfd. by Sony in the UK";;
-        *d03115) raspberryVer="8GB - Mfd. by Sony in the UK";;
         *c03130) raspberryVer="4GB - Mfd. by Sony in the UK";;
         *a03140) raspberryVer="CM4 Rev 1.0 1GB";;
         *b03140) raspberryVer="CM4 Rev 1.0 2GB";;
         *c03140) raspberryVer="CM4 Rev 1.0 4GB";;
         *d03140) raspberryVer="CM4 Rev 1.0 8GB";;
-        *) raspberryVer="Unknown ARM-based System";;
+        *) raspberryVer="Unknown ARM based System";;
     esac
 
     if [[ ${hardwareField} == "ODROID"* ]]; then
