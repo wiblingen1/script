@@ -18,7 +18,7 @@ if [ "$(id -u)" != "0" ];then
 fi
 
 # Get the W0CHP-PiStar-Dash Version
-gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git branch | grep '*' | cut -f2 -d ' ')
+gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 # main vars
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )

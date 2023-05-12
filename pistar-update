@@ -20,7 +20,7 @@ if ! flock -n 200 ; then
   exit 1
 fi
 
-gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git branch | grep '*' | cut -f2 -d ' ')
+gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 SUPPORTING_FILES_REPO="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
 W0CHP_INSTALL_SCRIPT_REPO="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer"
@@ -64,7 +64,7 @@ git_checkUpdateRequired() {
 	gitFolder=${1}
 	gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
 	# W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, check that branch.
-	gitBranch="$( git --git-dir=${gitFolder}/.git branch | grep '*' | awk {'print $2'} )"
+	gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
 
 	# Git check / update function
 	gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'})
@@ -82,7 +82,7 @@ git_update() {
 	# Set the function variables
 	gitFolder=${1}
 	# get proper W0CHP dash branch user is running...
-	dash_branch="$( git --git-dir=${gitFolder}/.git branch | grep '*' | awk {'print $2'} )"
+	dash_branch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
 
 	# Handle the special case for /usr/local/sbin
 	if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
@@ -533,7 +533,7 @@ main_function() {
 	# Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
 	gitFolder="/var/www/dashboard"
 	gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
-	gitBranch="$( git --git-dir=${gitFolder}/.git branch | grep '*' | awk {'print $2'} )"
+	gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
 	gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
 	echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
 
