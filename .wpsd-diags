@@ -1,0 +1,52 @@
+<?php
+// Read the Pi-Star release file
+$release_file = '/etc/pistar-release';
+$release = parse_ini_file($release_file);
+
+// Extract the relevant key/value pairs
+$uuid = $release['UUID'];
+$kernel = $release['kernel'];
+$hardware = $release['Hardware'];
+$platform = $release['Platform'];
+$iface = $release['iface'];
+$modem_mode = $release['ModemMode'];
+$modem_type = $release['ModemType'];
+$controller_type = $release['ControllerType'];
+$callsign = $release['Callsign'];
+$wpsd_ver = $release['WPSD_Ver'];
+
+// Send the data as POST variables to the server-side script
+$data = array(
+    'UUID' => $uuid,
+    'kernel' => $kernel,
+    'Hardware' => $hardware,
+    'Platform' => $platform,
+    'iface' => $iface,
+    'ModemMode' => $modem_mode,
+    'ModemType' => $modem_type,
+    'ControllerType' => $controller_type,
+    'Callsign' => $callsign,
+    'WPSD_Ver' => $wpsd_ver
+);
+
+$options = array(
+    'http' => array(
+        'header'  => "Content-type: application/x-www-form-urlencoded\r\n" .
+                     "User-Agent: WPSD Diags - $uuid $callsign\r\n",
+        'method'  => 'POST',
+        'content' => http_build_query($data),
+    ),
+);
+
+$context  = stream_context_create($options);
+$result = file_get_contents('https://cdn.w0chp.net/diags/', false,
+$context);
+
+// Handle the server response
+if ($result === false) {
+    echo "Error sending data to server";
+} else {
+    echo $result;
+}
+?>
+
