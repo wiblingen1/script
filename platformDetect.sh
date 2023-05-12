@@ -73,6 +73,7 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
         *b03112) raspberryVer="2GB - Sony UK";;
         *c03112) raspberryVer="4GB - Sony UK";;
         *d03114) raspberryVer="8GB - Sony UK";;
+        *d03115) raspberryVer="8GB - Sony UK";;
         *c03130) raspberryVer="4GB - Sony UK";;
         *a03140) raspberryVer="CM4 Rev 1.0 1GB";;
         *b03140) raspberryVer="CM4 Rev 1.0 2GB";;
