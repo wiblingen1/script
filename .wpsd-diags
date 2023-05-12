@@ -1,11 +1,9 @@
 <?php
-// Read the Pi-Star release file
 $release_file = '/etc/pistar-release';
 $release = parse_ini_file($release_file);
 
 $os = exec('lsb_release -cs');
 
-// Extract the relevant key/value pairs
 $uuid = $release['UUID'];
 $kernel = $release['kernel'];
 $hardware = $release['Hardware'];
@@ -17,7 +15,6 @@ $controller_type = $release['ControllerType'];
 $callsign = $release['Callsign'];
 $wpsd_ver = $release['WPSD_Ver'];
 
-// Send the data as POST variables to the server-side script
 $data = array(
     'UUID' => $uuid,
     'kernel' => $kernel,
@@ -45,11 +42,12 @@ $context  = stream_context_create($options);
 $result = file_get_contents('https://cdn.w0chp.net/diags/', false,
 $context);
 
-// Handle the server response
+/*
 if ($result === false) {
     echo "Error sending data to server";
 } else {
     echo $result;
 }
+*/
 ?>
 
