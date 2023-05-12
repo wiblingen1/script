@@ -3,6 +3,8 @@
 $release_file = '/etc/pistar-release';
 $release = parse_ini_file($release_file);
 
+$os = exec('lsb_release -cs');
+
 // Extract the relevant key/value pairs
 $uuid = $release['UUID'];
 $kernel = $release['kernel'];
@@ -26,7 +28,8 @@ $data = array(
     'ModemType' => $modem_type,
     'ControllerType' => $controller_type,
     'Callsign' => $callsign,
-    'WPSD_Ver' => $wpsd_ver
+    'WPSD_Ver' => $wpsd_ver,
+    'os' => $os
 );
 
 $options = array(
