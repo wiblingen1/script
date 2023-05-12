@@ -31,7 +31,7 @@ BackendURI="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/ma
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 osName=$( lsb_release -cs )
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
-hwDeetz="$( grep Platform /etc/pistar-release | awk '{ print substr($0, index($0,$3)) }' )  ( $(uname -r) )"
+hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="WPSD-BG-Task Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 status_code=$(curl -I -A "${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")
