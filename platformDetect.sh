@@ -57,6 +57,7 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
         *a02082) raspberryVer="1GB - Sony UK";;
         *a020a0) raspberryVer="1GB - Sony UK";;
         *a020d3) raspberryVer="1GB - Sony UK";;
+        *a02042) raspberryVer="1GB - Sony UK";;
         *a21041) raspberryVer="1GB - Embest China";;
         *a22042) raspberryVer="1GB - Embest China";;
         *a22082) raspberryVer="1GB - Embest China";;
