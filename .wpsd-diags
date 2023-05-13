@@ -3,7 +3,6 @@ $host = 'cdn.w0chp.net';
 $port = 443;
 
 $fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 30);
-
 if (!$fp) {
     die();
 }
@@ -47,15 +46,42 @@ $options = array(
     ),
 );
 
-$context  = stream_context_create($options);
-$result = file_get_contents("https://$host/diags/", false, $context);
+$retry_limit = 10;
+$retry_count = 0;
 
-/*
-if ($result === false) {
-    echo "Error sending data to server";
+do {
+    $context  = stream_context_create($options);
+    $result = @file_get_contents("https://$host/diags/", false, $context);
+
+    if ($result !== false) {
+        $http_status = explode(' ', $http_response_header[0])[1];
+        if ($http_status == '200') {
+            // Success, exit the loop.
+            break;
+        } elseif ($http_status == '500') {
+            // HTTP 500, retry up to $retry_limit times.
+            $retry_count++;
+            if ($retry_count >= $retry_limit) {
+                // Max retries exceeded, exit the loop.
+                break;
+            }
+            sleep(10);
+        }
+    } else {
+        // Something went wrong, retry up to $retry_limit times.
+        $retry_count++;
+        if ($retry_count >= $retry_limit) {
+            // Max retries exceeded, exit the loop.
+            break;
+        }
+        sleep(10);
+    }
+} while (true);
+
+if ($retry_count == $retry_limit) {
+    die();
 } else {
-    echo $result;
+    // Success
+    exit;
 }
-*/
 ?>
-
