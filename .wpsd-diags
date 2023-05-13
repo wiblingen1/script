@@ -43,7 +43,7 @@ $retry_count = 0;
 $options = array(
     'http' => array(
         'header'  => "Content-type: application/x-www-form-urlencoded\r\n" .
-                     "User-Agent: WPSD Diags - $uuid $callsign $retry_count\r\n",
+                     "User-Agent: WPSD Diags - UUID:$uuid CALL:$callsign\r\n",
         'method'  => 'POST',
         'content' => http_build_query($data),
     ),
