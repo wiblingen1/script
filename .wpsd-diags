@@ -1,4 +1,13 @@
 <?php
+$host = 'cdn.w0chp.net';
+$port = 443;
+
+$fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 30);
+
+if (!$fp) {
+    die();
+}
+
 $release_file = '/etc/pistar-release';
 $release = parse_ini_file($release_file);
 
@@ -39,7 +48,7 @@ $options = array(
 );
 
 $context  = stream_context_create($options);
-$result = file_get_contents('https://cdn.w0chp.net/diags/', false, $context);
+$result = file_get_contents("https://$host/diags/", false, $context);
 
 /*
 if ($result === false) {
