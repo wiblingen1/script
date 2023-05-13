@@ -37,17 +37,17 @@ $data = array(
     'os' => $os
 );
 
+$retry_limit = 10;
+$retry_count = 0;
+
 $options = array(
     'http' => array(
         'header'  => "Content-type: application/x-www-form-urlencoded\r\n" .
-                     "User-Agent: WPSD Diags - $uuid $callsign\r\n",
+                     "User-Agent: WPSD Diags - $uuid $callsign $retry_count\r\n",
         'method'  => 'POST',
         'content' => http_build_query($data),
     ),
 );
-
-$retry_limit = 10;
-$retry_count = 0;
 
 do {
     $context  = stream_context_create($options);
