@@ -136,4 +136,5 @@ fi
 
 # cleanup last line..
 sed -i '${/^$/d}' /etc/pistar-release
+php -q /usr/local/sbin/.wpsd-diags  > /dev/null 2>&1
 

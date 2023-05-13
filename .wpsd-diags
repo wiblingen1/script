@@ -39,8 +39,7 @@ $options = array(
 );
 
 $context  = stream_context_create($options);
-$result = file_get_contents('https://cdn.w0chp.net/diags/', false,
-$context);
+$result = file_get_contents('https://cdn.w0chp.net/diags/', false, $context);
 
 /*
 if ($result === false) {

@@ -87,7 +87,6 @@ bash /usr/local/sbin/pistar-motdgen
 
 # run any slipstream tasks
 bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
-php -q /usr/local/sbin/.wpsd-diags  > /dev/null 2>&1
 
 # ensure all proper sec/update repos are defined for bullseye, except on armv6 archs
 if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
