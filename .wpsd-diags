@@ -22,6 +22,7 @@ $modem_type = $release['ModemType'];
 $controller_type = $release['ControllerType'];
 $callsign = $release['Callsign'];
 $wpsd_ver = $release['WPSD_Ver'];
+$display = exec('sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2');
 
 $data = array(
     'UUID' => $uuid,
@@ -32,6 +33,7 @@ $data = array(
     'ModemMode' => $modem_mode,
     'ModemType' => $modem_type,
     'ControllerType' => $controller_type,
+    'Display' => $display,
     'Callsign' => $callsign,
     'WPSD_Ver' => $wpsd_ver,
     'os' => $os
