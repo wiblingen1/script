@@ -2,7 +2,7 @@
 $host = 'cdn.w0chp.net';
 $port = 443;
 
-$fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 30);
+$fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 3);
 if (!$fp) {
     die();
 }
