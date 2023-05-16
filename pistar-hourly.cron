@@ -82,9 +82,6 @@ sed -i "/cron.hourly/c ${cronMins}  *   * * *   root    cd / && run-parts --repo
 # Generate /etc/motd
 bash /usr/local/sbin/pistar-motdgen
 
-# Update pertinent info in /etc/pistar-release
-/usr/local/sbin/pistar-hwcache > /dev/null 2>&1
-
 # run any slipstream tasks
 bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
 

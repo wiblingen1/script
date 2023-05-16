@@ -82,7 +82,7 @@ if grep -q 'modemcache' /etc/rc.local ; then
     sed -i 's/modemcache/hwcache/g' /etc/rc.local
     sed -i 's/# cache modem info/# cache hw info/g' /etc/rc.local 
 fi
-# add hw cache to rc.local
+# add hw cache to rc.local and exec
 if ! grep -q 'hwcache' /etc/rc.local ; then
     sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 
     /usr/local/sbin/pistar-hwcache
