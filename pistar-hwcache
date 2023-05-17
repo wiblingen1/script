@@ -6,21 +6,55 @@ plat_det="/usr/local/sbin/platformDetect.sh"
 # Function to perform the mappings
 map_hardware() {
     case "$1" in
-        "Raspberry"*) echo "RaspberryPi" ;;
+        "Raspberry"*) echo "RPi" ;;
         "Odroid"*) echo "Odroid" ;;
-        "sun8i-based Pi Clone"*) echo "RPi-Clone" ;;
+        "sun8i-based Pi Clone"*) echo "PiClone" ;;
         "Samsung Artik"*) echo "Samsung-Artik" ;;
-        "Generic"*) echo "Generic-$(uname -p)" ;;
+        "Generic"*) echo "$(uname -p)" ;;
         "Orange Pi"*) echo "OrangePi" ;;
         "Nano Pi"*) echo "NanoPi" ;;
         *) echo "$1" ;;  # Return the original value if no mapping is found
     esac
 }
 
-if [ ! -f "$ini_file" ] || [ $(wc -l < "$ini_file") -lt 18 ]; then
+# Function to check if any of the specified keys are empty
+check_empty_keys() {
+    local empty_keys=0
+
+    if [ -f "$ini_file" ]; then
+        for key in ircddbgateway dstarrepeater MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
+            if ! grep -qE "^${key} = .+" "$ini_file"; then
+                empty_keys=1
+                break
+            fi
+        done
+    fi
+
+    echo "$empty_keys"
+}
+
+# Function to check if the specified keys exist in the INI file
+check_key_existence() {
+    local missing_keys=0
+
+    if [ -f "$ini_file" ]; then
+        for key in ircddbgateway dstarrepeater MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
+            if ! grep -qE "^${key} =" "$ini_file"; then
+                missing_keys=1
+                break
+            fi
+        done
+    else
+        missing_keys=1
+    fi
+
+    echo "$missing_keys"
+}
+
+if [ "$(check_key_existence)" -eq 1 ] || [ "$(check_empty_keys)" -eq 1 ]; then
     cat > "$ini_file" <<EOF
 [Pi-Star]
-Pi-Star_Build_Date = 25-Nov-2022
+Pi-Star_Build_Date = 17-May-2023
 Version = 4.1.6
 ircddbgateway = 
 dstarrepeater = 
