@@ -50,6 +50,9 @@ fi
 if grep -q "OrangePiZero" /etc/pistar-release; then
     sed -i 's/OrangePiZero/OrangePi/g' /etc/pistar-release 
 fi
+if grep -q "Hardware = RPi" /etc/pistar-release; then
+    sed -i 's/Hardware = RPi/Hardware = RaspberryPi/g' /etc/pistar-release 
+fi
 
 # bins are sometimes built in a batch...use MMDVMHost ver as Dstar bin git/date vers...
 getVer=$( MMDVMHost -v | cut -d' ' -f 3- )
