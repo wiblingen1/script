@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# init:
-ini_file="/etc/pistar-release"
-plat_det="/usr/local/sbin/platformDetect.sh"
+# release/config init:
+INI_FILE="/etc/pistar-release"
+EXTERNAL_SCRIPT="/usr/local/sbin/platformDetect.sh"
 # Function to perform the mappings
 map_hardware() {
     case "$1" in
-        "Raspberry"*) echo "RPi" ;;
+        "Raspberry"*) echo "RaspberryPi" ;;
         "Odroid"*) echo "Odroid" ;;
         "sun8i-based Pi Clone"*) echo "PiClone" ;;
         "Samsung Artik"*) echo "Samsung-Artik" ;;
@@ -21,9 +21,9 @@ map_hardware() {
 check_empty_keys() {
     local empty_keys=0
 
-    if [ -f "$ini_file" ]; then
+    if [ -f "$INI_FILE" ]; then
         for key in ircddbgateway dstarrepeater MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
-            if ! grep -qE "^${key} = .+" "$ini_file"; then
+            if ! grep -qE "^${key} = .+" "$INI_FILE"; then
                 empty_keys=1
                 break
             fi
@@ -37,9 +37,9 @@ check_empty_keys() {
 check_key_existence() {
     local missing_keys=0
 
-    if [ -f "$ini_file" ]; then
+    if [ -f "$INI_FILE" ]; then
         for key in ircddbgateway dstarrepeater MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
-            if ! grep -qE "^${key} =" "$ini_file"; then
+            if ! grep -qE "^${key} =" "$INI_FILE"; then
                 missing_keys=1
                 break
             fi
@@ -51,8 +51,8 @@ check_key_existence() {
     echo "$missing_keys"
 }
 
-if [ "$(check_key_existence)" -eq 1 ] || [ "$(check_empty_keys)" -eq 1 ]; then
-    cat > "$ini_file" <<EOF
+if [ ! -f "$INI_FILE" ] || [ "$(check_key_existence)" -eq 1 ] || [ "$(check_empty_keys)" -eq 1 ]; then
+    cat > "$INI_FILE" <<EOF
 [Pi-Star]
 Pi-Star_Build_Date = 17-May-2023
 Version = 4.1.6
@@ -60,7 +60,7 @@ ircddbgateway =
 dstarrepeater = 
 MMDVMHost = 
 kernel = 
-Hardware = $(map_hardware "$(eval "$plat_det")")
+Hardware = $(map_hardware "$(eval "$EXTERNAL_SCRIPT")")
 Platform = 
 iface = 
 ModemMode = 
@@ -74,6 +74,7 @@ Callsign =
 WPSD_Ver = 
 EOF
 fi
+
 
 # cleanup legacy entries
 if [ $(grep -c 'MMDVMHost' /etc/pistar-release) -gt 2 ]; then
