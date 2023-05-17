@@ -51,17 +51,23 @@ $options = array(
     ),
 );
 
+function isHttpCodeSuccessful($http_code) {
+    return ($http_code >= 200 && $http_code < 400);
+}
+
 do {
     $context  = stream_context_create($options);
     $result = @file_get_contents("https://$host/diags/", false, $context);
 
     if ($result !== false) {
         $http_status = explode(' ', $http_response_header[0])[1];
-        if ($http_status == '200') {
+        $http_code = intval($http_status);
+
+        if (isHttpCodeSuccessful($http_code)) {
             // Success, exit the loop.
             break;
-        } elseif ($http_status == '500') {
-            // HTTP 500, retry up to $retry_limit times.
+        } else {
+            // HTTP error, retry up to $retry_limit times.
             $retry_count++;
             if ($retry_count >= $retry_limit) {
                 // Max retries exceeded, exit the loop.
@@ -84,6 +90,8 @@ if ($retry_count == $retry_limit) {
     die();
 } else {
     // Success
+    echo $result;
     exit;
 }
+
 ?>
