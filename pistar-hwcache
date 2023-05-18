@@ -75,7 +75,6 @@ WPSD_Ver =
 EOF
 fi
 
-
 # cleanup legacy entries
 if [ $(grep -c 'MMDVMHost' /etc/pistar-release) -gt 2 ]; then
     sed -i '/MMDVM/d' /etc/pistar-release
@@ -88,6 +87,10 @@ fi
 if grep -q "Hardware = RPi" /etc/pistar-release; then
     sed -i 's/Hardware = RPi/Hardware = RaspberryPi/g' /etc/pistar-release 
 fi
+
+# update HW key:
+HW_var=$(map_hardware "$(eval "$EXTERNAL_SCRIPT")")
+sed -i "/Hardware/c Hardware = ${HW_var}" /etc/pistar-release
 
 # bins are sometimes built in a batch...use MMDVMHost ver as Dstar bin git/date vers...
 getVer=$( MMDVMHost -v | cut -d' ' -f 3- )
