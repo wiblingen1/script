@@ -49,6 +49,33 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
     gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
     echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
+
+    # 5/9/2023: Seems as some users with very old installations aren't pulling the sbin repo properly.
+    #           This logic will bootstrap it, and only if the local repo is older than remote...
+    if grep -q LOGNDROP /etc/iptables.rules; then
+        fwState="enabled"
+    else
+        fwState="disabled"
+    fi
+    GIT_REPO=/usr/local/sbin
+    ## Get the timestamp of the last commit on the local repository
+    LAST_COMMIT_LOCAL=$(git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} log -1 --format="%at" HEAD)
+    ## Get the SHA-1 hash of the last commit on the remote repository
+    LAST_COMMIT_REMOTE_SHA=$(env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} ls-remote --exit-code --heads origin master | cut -f1)
+    ## Get the timestamp of the last commit on the remote repository
+    LAST_COMMIT_REMOTE=$(git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} log -1 --format="%at" ${LAST_COMMIT_REMOTE_SHA})
+    ## Check if the last commit time of the local repository is older than the last commit time of the remote repository
+    if [[ $LAST_COMMIT_LOCAL -lt $LAST_COMMIT_REMOTE ]]; then
+        ## If the local repository is older than the remote repository, reset and pull the repository
+        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} fetch 
+        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} reset --hard origin/master
+        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} pull origin master
+        if [ "$fwState" == "enabled" ]; then
+            /usr/local/sbin/pistar-system-manager -efw > /dev/null 2<&1
+        else
+            /usr/local/sbin/pistar-system-manager -dfw > /dev/null 2<&1
+        fi
+    fi
 else
     echo "repo connection failure"
 fi
