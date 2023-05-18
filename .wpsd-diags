@@ -22,7 +22,7 @@ $modem_type = $release['ModemType'];
 $controller_type = $release['ControllerType'];
 $callsign = $release['Callsign'];
 $wpsd_ver = $release['WPSD_Ver'];
-$display = exec('sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2');
+$display = exec("awk -F'=' '/\[General\]/{flag=1} flag && /Display/{print $2; flag=0}' /etc/mmdvmhost");
 
 $data = array(
     'UUID' => $uuid,
