@@ -5,14 +5,14 @@ INI_FILE="/etc/pistar-release"
 EXTERNAL_SCRIPT="/usr/local/sbin/platformDetect.sh"
 # Function to perform the mappings
 map_hardware() {
-    case "$1" in
-        "Raspberry"*) echo "RaspberryPi" ;;
-        "Odroid"*) echo "Odroid" ;;
-        "sun8i-based Pi Clone"*) echo "PiClone" ;;
-        "Samsung Artik"*) echo "Samsung-Artik" ;;
-        "Generic"*) echo "$(uname -p)" ;;
-        "Orange Pi"*) echo "OrangePi" ;;
-        "Nano Pi"*) echo "NanoPi" ;;
+    case $1 in
+        Raspberry*) echo "RaspberryPi" ;;
+        Odroid*) echo "Odroid" ;;
+        sun8i-based Pi Clone*) echo "PiClone" ;;
+        Samsung Artik*) echo "Samsung-Artik" ;;
+        Generic*) echo "$(uname -p)" ;;
+        Orange Pi*) echo "OrangePi" ;;
+        Nano Pi*) echo "NanoPi" ;;
         *) echo "$1" ;;  # Return the original value if no mapping is found
     esac
 }
