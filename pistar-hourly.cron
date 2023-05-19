@@ -58,16 +58,15 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
         fwState="disabled"
     fi
     GIT_REPO=/usr/local/sbin
-    ## Get the timestamp of the last commit on the local repository
-    LAST_COMMIT_LOCAL=$(git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} log -1 --format="%at" HEAD)
-    ## Get the SHA-1 hash of the last commit on the remote repository
-    LAST_COMMIT_REMOTE_SHA=$(env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} ls-remote --exit-code --heads origin master | cut -f1)
-    ## Get the timestamp of the last commit on the remote repository
-    LAST_COMMIT_REMOTE=$(git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} log -1 --format="%at" ${LAST_COMMIT_REMOTE_SHA})
-    ## Check if the last commit time of the local repository is older than the last commit time of the remote repository
-    if [[ $LAST_COMMIT_LOCAL -lt $LAST_COMMIT_REMOTE ]]; then
+    # Update the local repository
+    env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git -C ${GIT_REPO} fetch
+    # Get the timestamp of the last commit on the local repository
+    LAST_COMMIT_LOCAL=$(git -C ${GIT_REPO} log -1 --format="%H" HEAD)
+    # Get the timestamp of the last commit on the remote repository
+    LAST_COMMIT_REMOTE=$(env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git -C ${GIT_REPO} ls-remote --exit-code --heads origin master --refs | awk '{ print $1 }')
+    # Check if the last commit time of the local repository is older than the last commit time of the remote repository
+    if [[ "$LAST_COMMIT_LOCAL" != "$LAST_COMMIT_REMOTE" ]]; then
         ## If the local repository is older than the remote repository, reset and pull the repository
-        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} fetch 
         env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} reset --hard origin/master
         env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} pull origin master
         if [ "$fwState" == "enabled" ]; then

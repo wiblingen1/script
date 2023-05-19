@@ -8,11 +8,11 @@ map_hardware() {
     case $1 in
         Raspberry*) echo "RaspberryPi" ;;
         Odroid*) echo "Odroid" ;;
-        sun8i-based Pi Clone*) echo "PiClone" ;;
-        Samsung Artik*) echo "Samsung-Artik" ;;
+        sun8i-based\ Pi\ Clone**) echo "PiClone" ;;
+        Samsung\ Artik*) echo "Samsung-Artik" ;;
         Generic*) echo "$(uname -p)" ;;
-        Orange Pi*) echo "OrangePi" ;;
-        Nano Pi*) echo "NanoPi" ;;
+        Orange\ Pi*) echo "OrangePi" ;;
+        Nano\ Pi*) echo "NanoPi" ;;
         *) echo "$1" ;;  # Return the original value if no mapping is found
     esac
 }
