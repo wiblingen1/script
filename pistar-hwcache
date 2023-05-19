@@ -5,16 +5,22 @@ INI_FILE="/etc/pistar-release"
 EXTERNAL_SCRIPT="/usr/local/sbin/platformDetect.sh"
 # Function to perform the mappings
 map_hardware() {
-    case $1 in
-        Raspberry*) echo "RaspberryPi" ;;
-        Odroid*) echo "Odroid" ;;
-        sun8i-based\ Pi\ Clone**) echo "PiClone" ;;
-        Samsung\ Artik*) echo "Samsung-Artik" ;;
-        Generic*) echo "$(uname -p)" ;;
-        Orange\ Pi*) echo "OrangePi" ;;
-        NanoPi*) echo "NanoPi" ;;
-        *) echo "$1" ;;  # Return the original value if no mapping is found
-    esac
+    output=$(eval "$EXTERNAL_SCRIPT")  # Run the external script and capture the output
+    if echo "$output" | grep -q "NanoPi"; then
+        echo "NanoPi"
+    elif echo "$output" | grep -q "Raspberry"; then
+        echo "RaspberryPi"
+    elif echo "$output" | grep -q "Odroid"; then
+        echo "Odroid"
+    elif echo "$output" | grep -q "sun8i-based Pi Clone"; then
+        echo "RPiClone"
+    elif echo "$output" | grep -q "Samsung Artik"; then
+        echo "Samsung-Artik"
+    elif echo "$output" | grep -q "Orange Pi"; then
+        echo "OrangePi"
+    else
+        echo "$output"  # Return the original value if no mapping is found
+    fi
 }
 
 # Function to check if any of the specified keys are empty
@@ -90,7 +96,7 @@ fi
 
 # update HW key:
 HW_var=$(map_hardware "$(eval "$EXTERNAL_SCRIPT")")
-sed -i "/Hardware/c Hardware = ${HW_var}" /etc/pistar-release
+sed -i "/Hardware/c Hardware = ${HW_var}" "$INI_FILE"
 
 # bins are sometimes built in a batch...use MMDVMHost ver as Dstar bin git/date vers...
 getVer=$( MMDVMHost -v | cut -d' ' -f 3- )
