@@ -36,6 +36,7 @@ cronMins=$(shuf -i 0-59 -n 1)
 
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="ConnCheck (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+uaStrBS="sbin Bootstrap (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 # connectivity check
 status_code=$(curl -I -m 3 -A "${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
@@ -59,16 +60,16 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     fi
     GIT_REPO=/usr/local/sbin
     # Update the local repository
-    env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git -C ${GIT_REPO} fetch
+    env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStrBS}" git -C ${GIT_REPO} fetch
     # Get the timestamp of the last commit on the local repository
     LAST_COMMIT_LOCAL=$(git -C ${GIT_REPO} log -1 --format="%H" HEAD)
     # Get the timestamp of the last commit on the remote repository
-    LAST_COMMIT_REMOTE=$(env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git -C ${GIT_REPO} ls-remote --exit-code --heads origin master --refs | awk '{ print $1 }')
+    LAST_COMMIT_REMOTE=$(env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStrBS}" git -C ${GIT_REPO} ls-remote --exit-code --heads origin master --refs | awk '{ print $1 }')
     # Check if the last commit time of the local repository is older than the last commit time of the remote repository
     if [[ "$LAST_COMMIT_LOCAL" != "$LAST_COMMIT_REMOTE" ]]; then
         ## If the local repository is older than the remote repository, reset and pull the repository
-        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} reset --hard origin/master
-        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} pull origin master
+        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStrBS}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} reset --hard origin/master
+        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStrBS}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} pull origin master
         if [ "$fwState" == "enabled" ]; then
             /usr/local/sbin/pistar-system-manager -efw > /dev/null 2<&1
         else
