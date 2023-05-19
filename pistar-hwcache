@@ -12,7 +12,7 @@ map_hardware() {
         Samsung\ Artik*) echo "Samsung-Artik" ;;
         Generic*) echo "$(uname -p)" ;;
         Orange\ Pi*) echo "OrangePi" ;;
-        Nano\ Pi*) echo "NanoPi" ;;
+        NanoPi*) echo "NanoPi" ;;
         *) echo "$1" ;;  # Return the original value if no mapping is found
     esac
 }
