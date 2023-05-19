@@ -43,8 +43,34 @@ status_code=$(curl -I -m 3 -A "${uaStr}" --write-out %{http_code} --silent --out
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo "repo connection OK"
     # Update sbin
-    #env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-hourly-sbin-Updater (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
-    # Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
+    # 5/9/2023: Seems as some users with very old installations aren't pulling the sbin repo properly.
+    #           This logic will bootstrap it, and only if the local repo is older than remote...
+    if grep -q LOGNDROP /etc/iptables.rules; then
+        fwState="enabled"
+    else
+        fwState="disabled"
+    fi
+    GIT_REPO=/usr/local/sbin
+    # Update the local repository
+    env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin-check${uaStr}" git -C ${GIT_REPO} fetch
+    # Get the timestamp of the last commit on the local repository
+    LAST_COMMIT_LOCAL=$(git -C ${GIT_REPO} log -1 --format="%H" HEAD)
+    # Get the timestamp of the last commit on the remote repository
+    LAST_COMMIT_REMOTE=$(env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git -C ${GIT_REPO} ls-remote --exit-code --heads origin master --refs | awk '{ print $1 }')
+    # Check if the last commit time of the local repository is older than the last commit time of the remote repository
+    if [[ "$LAST_COMMIT_LOCAL" != "$LAST_COMMIT_REMOTE" ]]; then
+    #    # If the local repository is older than the remote repository, reset and pull the repository
+        #env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} reset --hard origin/master > /dev/null 2<&1
+        #env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git --git-dir=${GIT_REPO}/.git --work-tree=${GIT_REPO} pull origin master > /dev/null 2<&1
+        rm -rf /usr/local/sbin
+        mkdir /usr/local/sbin
+        env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin-Reset ${uaStr}" git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin.git /usr/local/sbin > /dev/null 2<&1
+        if [ "$fwState" == "enabled" ]; then
+            /usr/local/sbin/pistar-system-manager -efw > /dev/null 2<&1
+        else
+            /usr/local/sbin/pistar-system-manager -dfw > /dev/null 2<&1
+        fi
+    fi
     gitFolder="/var/www/dashboard"
     gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
