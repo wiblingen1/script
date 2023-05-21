@@ -123,3 +123,14 @@ if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /et
 fi
 #
 
+# Change default Dstar startup ref from REF001 C to QN, re: KC1AWV 5/21/23
+#
+# 5/2023 W0CHP
+#
+config_file="/etc/ircddbgateway"
+gateway_callsign=$(grep -Po '(?<=gatewayCallsign=).*' "$config_file")
+reflector1=$(grep -Po '(?<=reflector1=).*' "$config_file")
+if [ "$gateway_callsign" = "M1ABC" ]; then
+    new_reflector1="XRF757 A"
+    sed -i "s/^reflector1=.*/reflector1=$new_reflector1/" "$config_file"
+fi
