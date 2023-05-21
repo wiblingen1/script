@@ -37,6 +37,19 @@ cronMins=$(shuf -i 0-59 -n 1)
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="ConnCheck (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
+# connectivity check
+status_code=$(curl -I -m 3 -A "${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
+    echo "repo connection OK"
+    gitFolder="/var/www/dashboard"
+    gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
+    gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
+    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
+    echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
+else
+    echo "repo connection failure"
+fi
+
 # Shrink NginX error log to stop it getting out of hand
 echo "$(tail -500 /var/log/nginx/error.log)" > /var/log/nginx/error.log
 
