@@ -24,7 +24,7 @@ if [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/wpsd-bg-tasks") ))" -lt "3600
     exit 0
 fi
 
-# task marker file exists, AND is > 8 hours; run the bootstrap/background tasks...
+# task marker file exists, AND is > 1 hours; run the bootstrap/background tasks...
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 BackendURI="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/bg-tasks/run-tasks.sh"
