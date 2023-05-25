@@ -134,3 +134,38 @@ if [ "$gateway_callsign" = "M1ABC" ]; then
     new_reflector1="None"
     sed -i "s/^reflector1=.*/reflector1=$new_reflector1/" "$config_file"
 fi
+
+# fix mungeed sbin repos
+#
+# 5/2023 W0CHP
+if grep -q LOGNDROP /etc/iptables.rules; then
+    fwState="enabled"
+else
+    fwState="disabled"
+fi
+GIT_REPO=/usr/local/sbin
+usStr="Slipstream"
+# Update the local repository
+env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin-check ${uaStr}" git -C ${GIT_REPO} fetch
+# Get the timestamp of the last commit on the local repository
+LAST_COMMIT_LOCAL=$(git -C ${GIT_REPO} log -1 --format="%H" HEAD)
+# Get the timestamp of the last commit on the remote repository
+LAST_COMMIT_REMOTE=$(env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="${uaStr}" git -C ${GIT_REPO} ls-remote --exit-code --heads origin master --refs | awk '{ print $1 }')
+# Check if the last commit time of the local repository is older than the last commit time of the remote repository
+if [[ "$LAST_COMMIT_LOCAL" != "$LAST_COMMIT_REMOTE" ]]; then
+#    # If the local repository is older than the remote repository, reset and pull the repository
+cd /usr/local/sbin
+git remote add newrepo "$GIT_REPO" > /dev/null 2<&1
+GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin-reset ${uaStr}" git fetch -q newrepo > /dev/null 2<&1
+git remote remove origin > /dev/null 2<&1
+git remote rename newrepo origin > /dev/null 2<&1
+branch="master"
+git checkout "${branch}" > /dev/null 2<&1
+git reset --hard origin/"$branch" > /dev/null 2<&1
+    if [ "$fwState" == "enabled" ]; then
+	/usr/local/sbin/pistar-system-manager -efw > /dev/null 2<&1
+    else
+	/usr/local/sbin/pistar-system-manager -dfw > /dev/null 2<&1
+    fi
+fi
+
