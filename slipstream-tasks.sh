@@ -144,7 +144,7 @@ else
     fwState="disabled"
 fi
 GIT_REPO=/usr/local/sbin
-uaStr="Slipstream Task: "
+uaStr="Slipstream Task"
 # Update the local repository
 env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin-check ${uaStr}" git -C ${GIT_REPO} fetch
 # Get the timestamp of the last commit on the local repository
