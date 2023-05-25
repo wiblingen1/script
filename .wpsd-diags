@@ -2,7 +2,7 @@
 $host = 'cdn.w0chp.net';
 $port = 443;
 
-$fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 3);
+$fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 2);
 if (!$fp) {
     die();
 }
@@ -88,6 +88,7 @@ do {
 
 if ($retry_count == $retry_limit) {
     die();
+    // max retries met
 } else {
     // Success
     echo $result;
