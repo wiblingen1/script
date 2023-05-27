@@ -135,29 +135,3 @@ if [ "$gateway_callsign" = "M1ABC" ]; then
     sed -i "s/^reflector1=.*/reflector1=$new_reflector1/" "$config_file"
 fi
 
-# 5/9/2023: Seems as some users with very old installations aren't pulling the sbin repo properly.
-#           This logic will bootstrap it, and only if the local repo is older than remote...
-uaStr="Slipstream Task"
-if grep -q LOGNDROP /etc/iptables.rules; then
-    fwState="enabled"
-else
-    fwState="disabled"
-fi
-GIT_REPO=/usr/local/sbin
-# Update the local repository
-env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin fetch ${uaStr}" git -C ${GIT_REPO} fetch
-# Get the timestamp of the last commit on the local repository
-LAST_COMMIT_LOCAL=$(git -C ${GIT_REPO} log -1 --format="%H" HEAD)
-# Get the timestamp of the last commit on the remote repository
-LAST_COMMIT_REMOTE=$(env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${uaStr}" git -C ${GIT_REPO} ls-remote --exit-code --heads origin master --refs | awk '{ print $1 }')
-# Check if the last commit time of the local repository is older than the last commit time of the remote repository
-if [[ "$LAST_COMMIT_LOCAL" != "$LAST_COMMIT_REMOTE" ]]; then
-#    # If the local repository is older than the remote repository, reset and pull the repository
-    rm -rf /usr/local/sbin
-    env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin reset ${uaStr}" git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin.git /usr/local/sbin
-    if [ "$fwState" == "enabled" ]; then
-        /usr/local/sbin/pistar-system-manager -efw
-    else
-        /usr/local/sbin/pistar-system-manager -dfw
-    fi
-fi
