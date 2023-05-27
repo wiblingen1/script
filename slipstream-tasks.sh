@@ -137,6 +137,7 @@ fi
 
 # 5/27/23: Bootstrapping for ZUMspot prep:
 repo_path="/usr/local/sbin"
+uaStr="Slipstream Task"
 cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
 if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${uaStr}" git fetch origin; then
     commits_behind=$(git rev-list --count HEAD..origin/master)
