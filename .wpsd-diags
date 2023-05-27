@@ -24,6 +24,11 @@ $callsign = $release['Callsign'];
 $wpsd_ver = $release['WPSD_Ver'];
 $display = exec("awk -F'=' '/\[General\]/{flag=1} flag && /Display/{print $2; flag=0}' /etc/mmdvmhost");
 
+$mmdvmhost_file = '/etc/mmdvmhost';
+$mmdvmhost_data = parse_ini_file($mmdvmhost_file);
+$longitude = $mmdvmhost_data['Longitude'];
+$latitude = $mmdvmhost_data['Latitude'];
+
 $data = array(
     'UUID' => $uuid,
     'kernel' => $kernel,
@@ -36,7 +41,9 @@ $data = array(
     'Display' => $display,
     'Callsign' => $callsign,
     'WPSD_Ver' => $wpsd_ver,
-    'os' => $os
+    'os' => $os,
+    'longitude' => $longitude,
+    'latitude' => $latitude,
 );
 
 $retry_limit = 10;
