@@ -64,14 +64,14 @@ echo ""
 #
 if [ "$1" ]
 then
-  VERSION=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/juribeparada/MMDVM_HS/releases/latest | awk -F "/v" '{print $2}')
   case ${1} in
   rpi)
     # Flashing RPi GPIO Modem
     rm -rf /tmp/zumfirmware 2> /dev/null
     mkdir /tmp/zumfirmware 2> /dev/null
     echo "Flashing your ${1} modem to the latest version"
-    wget https://github.com/juribeparada/MMDVM_HS/releases/download/v${VERSION}/install_fw_rpi.sh -O /tmp/zumfirmware/flash.sh
+    #wget https://github.com/juribeparada/MMDVM_HS/releases/download/v${VERSION}/install_fw_rpi.sh -O /tmp/zumfirmware/flash.sh
+    wget https://repo.w0chp.net/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/raw/branch/master/scripts/install_fw_rpi.sh -O /tmp/zumfirmware/flash.sh
     chmod +x /tmp/zumfirmware/flash.sh
     cd  /tmp/zumfirmware
     ./flash.sh

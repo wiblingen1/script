@@ -135,3 +135,22 @@ if [ "$gateway_callsign" = "M1ABC" ]; then
     sed -i "s/^reflector1=.*/reflector1=$new_reflector1/" "$config_file"
 fi
 
+# 5/27/23: Bootstrapping for ZUMspot prep:
+repo_path="/usr/local/sbin"
+cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
+if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${uaStr}" git fetch origin; then
+    commits_behind=$(git rev-list --count HEAD..origin/master)
+    if [[ $commits_behind -gt 0 ]]; then
+        if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin bootstrap ${uaStr}" git pull origin master; then
+            echo "Local sbin repository updated successfully."
+        else
+            echo "Failed to update the local sbin repository."
+            exit 1
+        fi
+    else
+        echo "Local sbin repository is up to date."
+    fi
+else
+    echo "Failed to fetch from the remote repository."
+    exit 1
+fi
