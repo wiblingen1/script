@@ -22,7 +22,7 @@ gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 # main vars
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
-osName=$( lsb_release -cs )
+osName=$( /usr/bin/lsb_release -cs )
 hostFileURL="https://hostfiles.w0chp.net"
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"

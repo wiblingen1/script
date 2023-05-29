@@ -10,7 +10,7 @@ if (!$fp) {
 $release_file = '/etc/pistar-release';
 $release = parse_ini_file($release_file);
 
-$os = exec('lsb_release -cs');
+$os = exec('/usr/bin/lsb_release -cs');
 
 $uuid = $release['UUID'];
 $kernel = $release['kernel'];

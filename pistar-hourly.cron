@@ -28,7 +28,7 @@ dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git 
 gitBranch="$( git --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD )"
 CONN_CHECK_URI="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Dash.git"
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
-osName=$( lsb_release -cs )
+osName=$( /usr/bin/lsb_release -cs )
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
 
 # used to radomize the cron mins below
