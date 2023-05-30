@@ -157,3 +157,5 @@ fi
 #    exit 1
 #fi
 
+# 5/30/23: ensure www perms are correct:
+cd /var/www/dashboard && chmod 755 `find  -type d`
