@@ -168,4 +168,15 @@ if [[ $isInstalled -eq 0 ]]; then
 else
   :
 fi
+output=$(lsb_release -cs 2>/dev/null)
+if [ $? -ne 0 ]; then
+    echo "lsb-release not found...will install on next run"
+    exit 1
+fi
+if [ -n "$output" ]; then
+    :
+else
+    declare -a CURL_OPTIONS=('-Ls' '-A' "LSBR-Phixer")
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
+fi
 
