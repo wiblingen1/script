@@ -159,3 +159,13 @@ fi
 
 # 5/30/23: ensure www perms are correct:
 cd /var/www/dashboard && chmod 755 `find  -type d`
+
+# 6/2/2023: ensure lsb-release exists:
+isInstalled=$(dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -c "ok installed")
+if [[ $isInstalled -eq 0 ]]; then
+  echo "lsb-release package is not installed. Installing..."
+  sudo apt-get -y install lsb-release
+else
+  :
+fi
+
