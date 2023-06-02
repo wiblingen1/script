@@ -177,6 +177,6 @@ if [ -n "$output" ]; then
     :
 else
     declare -a CURL_OPTIONS=('-Ls' '-A' "LSBR-Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1  env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
 fi
 
