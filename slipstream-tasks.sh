@@ -164,23 +164,15 @@ cd /var/www/dashboard && chmod 755 `find  -type d`
 isInstalled=$(dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -c "ok installed")
 if [[ $isInstalled -eq 0 ]]; then
   echo "lsb-release package is not installed. Installing..."
-  sudo apt-get -y install lsb-release
+  sudo apt-get -y install lsb-release base-files
 else
   :
 fi
-output=$(lsb_release -cs 2>/dev/null)
-if [ $? -ne 0 ]; then
-    echo "lsb-release not found...will install on the next run"
-    exit 1
-fi
-if [ "$output" != "buster" ] && [ "$output" != "bullseye" ]; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "LSBR-Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1  env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
-fi
 
-# 6/4/23 Ensure we can update:
+# 6/4/23 Ensure we can update successfully:
 find /usr/local/sbin -type f -exec chattr -i {} +
+find /usr/local/sbin -type d -exec chattr -i {} +
 find /usr/local/bin -type f -exec chattr -i {} +
+find /usr/local/bin -type d -exec chattr -i {} +
 find /var/www/dashboard -type f -exec chattr -i {} +
 find /var/www/dashboard -type d -exec chattr -i {} +
-
