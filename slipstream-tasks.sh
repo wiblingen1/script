@@ -176,3 +176,25 @@ find /usr/local/bin -type f -exec chattr -i {} +
 find /usr/local/bin -type d -exec chattr -i {} +
 find /var/www/dashboard -type f -exec chattr -i {} +
 find /var/www/dashboard -type d -exec chattr -i {} +
+
+# ensure D-S remote control file exists and is correct - 6/6/2023
+DSremoteFile="/root/.Remote Control"
+passwordLine="password="
+if [ -e "$DSremoteFile" ]; then
+    if ! grep -q "^$passwordLine" "$DSremoteFile" || [ ! -s "$DSremoteFile" ]; then
+        echo "$passwordLine""raspberry" > "$DSremoteFile"
+        echo "address=127.0.0.1" >> "$DSremoteFile"
+        echo "port=10022" >> "$DSremoteFile"
+        echo "windowX=0" >> "$DSremoteFile"
+        echo "windowY=0" >> "$DSremoteFile"
+    else
+	:
+    fi
+else
+    echo "$passwordLine""raspberry" > "$DSremoteFile"
+    echo "address=127.0.0.1" >> "$DSremoteFile"
+    echo "port=10022" >> "$DSremoteFile"
+    echo "windowX=0" >> "$DSremoteFile"
+    echo "windowY=0" >> "$DSremoteFile"
+fi
+
