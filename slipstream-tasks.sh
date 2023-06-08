@@ -198,3 +198,16 @@ else
     echo "windowY=0" >> "$DSremoteFile"
 fi
 
+# ensure our native Nextion driver is installed - 6/8/2023
+check_nextion_driver() {
+  if NextionDriver -V | grep -q "W0CHP"; then
+    return 0  # true
+  else
+    return 1  # false
+  fi
+}
+if ! check_nextion_driver; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1  env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+fi
+
