@@ -84,6 +84,9 @@ $iface = $release['iface'];
 $modem_mode = $release['ModemMode'];
 if (file_exists("/etc/dstar-radio.mmdvmhost")) {
     $modem_type = getDVModemFirmware();
+    if ($modem_type === '') {
+        $modem_type = $release['ModemType'];
+    }
 } else {
     $modem_type = $release['ModemType'];
 }
