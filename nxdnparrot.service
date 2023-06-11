@@ -31,13 +31,13 @@ test -r $CONFIG || exit 0
 ! test -r /etc/dstar-radio.dstarrepeater || exit 0
 
 for _ in once; do
-	if [ -f '/etc/mmdvmhost' ] && [ `sed -n '/^\[NXDN Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable" | awk -F '=' '{print $2}'` == 1 ]; then
+	if [ -f '/etc/mmdvmhost' ] && [ `sed -n '/^\[NXDN Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable" | awk -F '=' '{print $2}'` = "1" ]; then
 		break;
 	fi
-	if [ -f '/etc/ysf2nxdn' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/ysf2nxdn | grep "^Enable" | awk -F '=' '{print $2}'` == 1 ]; then
+	if [ -f '/etc/ysf2nxdn' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/ysf2nxdn | grep "^Enable" | awk -F '=' '{print $2}'` = "1" ]; then
 		break;
 	fi
-	if [ -f '/etc/dmr2nxdn' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/dmr2nxdn | grep "^Enable" | awk -F '=' '{print $2}'` == 1 ]; then
+	if [ -f '/etc/dmr2nxdn' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/dmr2nxdn | grep "^Enable" | awk -F '=' '{print $2}'` = "1" ]; then
 		break;
 	fi
 	exit 0;

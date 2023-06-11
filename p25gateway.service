@@ -31,12 +31,12 @@ test -r $CONFIG || exit 0
 # if dstarrepeater is configured or running, dont start this daemon!
 ! test -r /etc/dstar-radio.dstarrepeater || exit 0
 
-if [ `sed -n '/^\[P25 Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable=" | cut -c 8` == 0 ]; then
-	if [ `sed -n '/^\[System Fusion\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable=" | cut -c 8` == 0 ]; then
+if [ `sed -n '/^\[P25 Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable=" | cut -c 8` = "0" ]; then
+	if [ `sed -n '/^\[System Fusion\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable=" | cut -c 8` = "0" ]; then
 		exit 0;
-	elif [ -f '/etc/ysf2p25' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/ysf2p25 | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ]; then
+	elif [ -f '/etc/ysf2p25' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/ysf2p25 | grep "^Enable" | awk -F '=' '{print $2}'` = "0" ]; then
 		exit 0;
-	elif [ -f '/etc/ysf2p25' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/ysf2p25 | grep "^Enable" | awk -F '=' '{print $2}'` == 1 ]; then
+	elif [ -f '/etc/ysf2p25' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/ysf2p25 | grep "^Enable" | awk -F '=' '{print $2}'` = "1" ]; then
 		test=pass
 	else
 		exit 0;

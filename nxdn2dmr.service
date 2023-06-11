@@ -30,11 +30,11 @@ test -r $CONFIG || exit 0
 # if dstarrepeater is configured or running, dont start this daemon!
 ! test -r /etc/dstar-radio.dstarrepeater || exit 0
 
-if [ `sed -n '/\[NXDN Network\]/{n;p;}' /etc/mmdvmhost | cut -c 8` == 0 ]; then
+if [ `sed -n '/\[NXDN Network\]/{n;p;}' /etc/mmdvmhost | cut -c 8` = "0" ]; then
 	exit 0;
 fi
 
-if [ `sed -n '/\[Enabled\]/{n;p;}' /etc/nxdn2dmr | cut -c 9` != 1 ]; then
+if [ `sed -n '/\[Enabled\]/{n;p;}' /etc/nxdn2dmr | cut -c 9` != "1" ]; then
 	exit 0;
 fi
 

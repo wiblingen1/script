@@ -34,15 +34,15 @@ if [[ $(egrep -h -i "12345|M1ABC" ${CONFIG} | wc -l) -gt 0 ]]; then
   exit 0;
 fi
 
-if [ `sed -n '/^\[System Fusion Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ]; then
-	if [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/dmr2ysf | grep "^Enable" | awk -F '=' '{print $2}'` == 1 ]; then
+if [ `sed -n '/^\[System Fusion Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable" | awk -F '=' '{print $2}'` = "0" ]; then
+	if [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/dmr2ysf | grep "^Enable" | awk -F '=' '{print $2}'` = "1" ]; then
 		test=pass
 	else
 		exit 0;
 	fi
 fi
 
-if [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/ysf2nxdn | grep "^Enable" | awk -F '=' '{print $2}'` != 1 ]; then
+if [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/ysf2nxdn | grep "^Enable" | awk -F '=' '{print $2}'` != "1" ]; then
 	exit 0;
 fi
 

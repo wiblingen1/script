@@ -35,7 +35,7 @@ if [[ $(egrep -h -i "1234567|M1ABC" ${CONFIG} | wc -l) -gt 0 ]]; then
 fi
 
 # Make sure DMR Networking is on
-if [ $(sed -n '/^\[DMR Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable" | awk -F '=' '{print $2}') == 0 ]; then
+if [ $(sed -n '/^\[DMR Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable" | awk -F '=' '{print $2}') = "0" ]; then
         exit 0;
 fi
 
