@@ -135,25 +135,43 @@ if [ "$gateway_callsign" = "M1ABC" ]; then
     sed -i "s/^reflector1=.*/reflector1=$new_reflector1/" "$config_file"
 fi
 
-# 5/27/23: Bootstrapping for ZUMspot prep:
-repo_path="/usr/local/sbin"
+# 5/27/23: Bootstrapping backend scripts
 uaStr="Slipstream Task"
+conn_check() {
+    local url="$1"
+    local status=$(curl -s -o /dev/null -w "%{http_code}" -A "ConnCheck - $uaStr" -I "$url")
+
+    if [[ $status -ge 200 && $status -lt 400 ]]; then
+  	echo "ConnCheck OK: $status"
+        return 0  # Status code between 200 and 399, continue
+    else
+        echo "HTTP status code is not in the expected range: $status"
+        exit 1
+    fi
+}
+repo_path="/usr/local/sbin"
 cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
-if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${uaStr}" git fetch origin; then
-    commits_behind=$(git rev-list --count HEAD..origin/master)
-    if [[ $commits_behind -gt 0 ]]; then
-        if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin bootstrap ${uaStr}" git pull origin master; then
-            echo "Local sbin repository updated successfully. Restarting script..."
-            exec bash "$0" "$@" # Re-execute the script with the same arguments
+url="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin"
+if conn_check "$url"; then
+    if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${uaStr}" git fetch origin; then
+        commits_behind=$(git rev-list --count HEAD..origin/master)
+        if [[ $commits_behind -gt 0 ]]; then
+            if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin bootstrap ${uaStr}" git pull origin master; then
+                echo "Local sbin repository updated successfully. Restarting script..."
+                exec bash "$0" "$@" # Re-execute the script with the same arguments
+            else
+                echo "Failed to update the local sbin repository."
+                exit 1
+            fi
         else
-            echo "Failed to update the local sbin repository."
-            exit 1
+            echo "Local sbin repository is up to date."
         fi
     else
-        echo "Local sbin repository is up to date."
+        echo "Failed to fetch from the remote repository."
+        exit 1
     fi
 else
-    echo "Failed to fetch from the remote repository."
+    echo "Failed to check the HTTP status of the repository URL: $url"
     exit 1
 fi
 
