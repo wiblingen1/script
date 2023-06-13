@@ -145,7 +145,7 @@ conn_check() {
   	echo "ConnCheck OK: $status"
         return 0  # Status code between 200 and 399, continue
     else
-        echo "HTTP status code is not in the expected range: $status"
+        echo "ConnCheck status code is not in the expected range: $status"
         exit 1
     fi
 }
