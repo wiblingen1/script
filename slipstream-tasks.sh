@@ -225,7 +225,15 @@ check_nextion_driver() {
   fi
 }
 if ! check_nextion_driver; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1  env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+    # TGIFspots contain really weird hacks/scripts, etc.[1] for their Nextion
+    # screens, and it all collides with WPSD and our native Nextion driver
+    # support.  So lets ignore TGIFspots altogether.
+    # [1] <https://github.com/EA7KDO/Scripts>
+    if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
+        :
+    else # yay no tgifspot hacks! 
+	declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
+	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1  env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+    fi
 fi
 
