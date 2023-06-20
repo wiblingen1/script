@@ -219,7 +219,7 @@ main_function() {
 		fi
 		echo -e "${TICK} Done!\n"
 
-		echo "Checking nginx web server configuration"
+		echo "Checking nginx web server configuration..."
 		if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
 			sed -i '\/PIDFile=\/run\/nginx.pid/a ExecStartPre=\/bin\/mkdir -p \/var\/log\/nginx' /lib/systemd/system/nginx.service
 			systemctl daemon-reload
