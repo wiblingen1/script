@@ -90,8 +90,8 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     fi
     # now fix upstream gpsd binding bug:
     if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
-        curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket
-        systemctl daemon-reload &> /dev/null # Reload systemd to account for service changes
+        curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket > /dev/null 2>&1
+        systemctl daemon-reload &> /dev/null 
     fi
     # ensure gpsd is only enabled by the user:
     if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then

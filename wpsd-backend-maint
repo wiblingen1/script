@@ -77,8 +77,3 @@ if grep 'Unattended-Upgrade::OnlyOnACPower "true";' //etc/apt/apt.conf.d/50unatt
     sed -i 's/\/\/ Unattended-Upgrade::OnlyOnACPower "true";/Unattended-Upgrade::OnlyOnACPower "false";/g' /etc/apt/apt.conf.d/50unattended-upgrades
 fi
 
-# ensure ircddbGW remote config file is setup
-if [ ! -f "/root/.Remote\ Control" ] ; then
-    echo -e "address=127.0.0.1\nport=10022\npassword=raspberry\nwindowX=0\nwindowY=0" > /root/.Remote\ Control
-fi
-
