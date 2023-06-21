@@ -77,13 +77,11 @@ if [ `sed -n '/^\[System Fusion Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enabl
 	if [ -f '/etc/dgidgateway' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/dgidgateway | grep "^Enabled" | awk -F '=' '{print $2}'` = "0" ]; then
 		exit 1;
 	elif [ -f '/etc/dgidgateway' ] && [ `sed -n '/^\[Enabled\]/,/^\[/p' /etc/dgidgateway | grep "^Enabled" | awk -F '=' '{print $2}'` = "1" ]; then
-		test=pass
+		:
 	else
 		exit 1;
 	fi
-fi
-
-if [ `grep -c -E 'System Fusion Network' /etc/mmdvmhost` = "0" ]; then
+else
 	exit 1;
 fi
 
