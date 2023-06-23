@@ -217,6 +217,12 @@ else
 fi
 
 # ensure our native Nextion driver is installed - 6/8/2023
+if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
+    if [ "${osName}" = "buster" ] && [ $( awk -F'=' '/\[General\]/{flag=1} flag && /Display/{print $2; flag=0}' /etc/mmdvmhost) = "Nextion" ] ; then
+        declare -a CURL_OPTIONS=('-Ls' '-A' "TS Phixer")
+        curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
+    fi
+fi
 check_nextion_driver() {
   if NextionDriver -V | grep -q "W0CHP"; then
     return 0  # true
@@ -230,10 +236,6 @@ if ! check_nextion_driver; then
     # support.  So lets ignore TGIFspots altogether.
     # [1] <https://github.com/EA7KDO/Scripts>
     if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
-	if [ "${osName}" = "buster" ] && [ $( awk -F'=' '/\[General\]/{flag=1} flag && /Display/{print $2; flag=0}' /etc/mmdvmhost) = "Nextion" ] ; then
-	    declare -a CURL_OPTIONS=('-Ls' '-A' "TS Phixer")
-            curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
-	fi
 	:
     else # yay no tgifspot hacks! 
 	declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
