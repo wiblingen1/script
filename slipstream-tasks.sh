@@ -241,3 +241,46 @@ if [ -z "$CALL" ]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "Call Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -id > /dev/null 2<&1
 fi
+
+# ensure all proper sec/update repos are defined for bullseye, except on armv6 archs
+if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
+    if ! grep -q 'bullseye-security' /etc/apt/sources.list ; then
+        if ! apt-key list | grep -q "Debian Security Archive Automatic Signing Key (11/bullseye)" > /dev/null 2<&1; then
+            apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 54404762BBB6E853 > /dev/null 2<&1
+        fi
+        echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
+    fi
+    if ! grep -q 'bullseye-updates' /etc/apt/sources.list  ; then
+        if ! apt-key list | grep -q "Debian Archive Automatic Signing Key (11/bullseye)" > /dev/null 2<&1 ; then
+            apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0E98404D386FA1D9 > /dev/null 2<&1
+        fi
+        echo "deb http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list
+    fi
+fi
+# Bulleye backports, etc. cause php-fpm segfaults on armv6 (Pi 01st gen) archs...
+# So we'll stick with the "normal" repos for these archs (retro busster image bugfix)
+if [ $( uname -m ) == "armv6l" ] ; then
+    if grep -q 'bullseye-security' /etc/apt/sources.list ; then
+        sed -i '/bullseye-security/d' /etc/apt/sources.list
+        sed -i '/bullseye-updates/d' /etc/apt/sources.list
+        apt-get remove --purge -y php7.4*
+        apt-get clean ; apt autoclean
+        apt-get update
+        apt-get install -y php7.4-fpm php7.4-readline php7.4-mbstring php7.4-cli php7.4-zip php7.4-opcache
+        systemctl restart php7.4-fpm
+    fi
+fi
+# handle missing/expired keys for buster
+if [ "${osName}" = "buster" ] ; then
+    if apt-key adv --list-public-keys --with-fingerprint --with-colons | grep -q 0E98404D386FA1D9 > /dev/null 2<&1 ; then
+	:
+    else
+	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 0E98404D386FA1D9 > /dev/null 2<&1
+    fi
+    if apt-key adv --list-public-keys --with-fingerprint --with-colons | grep -q 6ED0E7B82643E131 > /dev/null 2<&1 ; then
+	:
+    else
+	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 6ED0E7B82643E131 > /dev/null 2<&1
+    fi
+fi
+

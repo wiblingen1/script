@@ -17,6 +17,7 @@ fi
 mount -o remount,rw / # for shits and giggles
 
 pkill pistar-hourly.cron > /dev/null 2>&1
+pkill slipstream-tasks.sh > /dev/null 2>&1
 
 # ensure repos can be updated
 if ! grep -q 'safe' /root/.gitconfig > /dev/null 2<&1 ; then
@@ -313,35 +314,6 @@ fi
 if [ ! -f "/etc/systemd/system/m17gateway.service" ] ; then
     /usr/local/sbin/m17gateway.service install > /dev/null 2<&1
     systemctl daemon-reload > /dev/null 2<&1
-fi
-
-# ensure all proper sec/update repos are defined for bullseye, except on armv6 archs
-if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
-    if ! grep -q 'bullseye-security' /etc/apt/sources.list ; then
-	if ! apt-key list | grep -q "Debian Security Archive Automatic Signing Key (11/bullseye)" > /dev/null 2<&1; then
-	    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 54404762BBB6E853 > /dev/null 2<&1
-	fi
-	echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
-    fi
-    if ! grep -q 'bullseye-updates' /etc/apt/sources.list  ; then
-	if ! apt-key list | grep -q "Debian Archive Automatic Signing Key (11/bullseye)" > /dev/null 2<&1 ; then
-	    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0E98404D386FA1D9 > /dev/null 2<&1
-	fi
-	echo "deb http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list
-    fi
-fi
-# Bulleye backports, etc. cause php-fpm segfaults on armv6 (Pi 01st gen) archs...
-# So we'll stick with the "normal" repos for these archs (retro busster image bugfix)
-if [ $( uname -m ) == "armv6l" ] ; then
-    if grep -q 'bullseye-security' /etc/apt/sources.list ; then
-	sed -i '/bullseye-security/d' /etc/apt/sources.list
-	sed -i '/bullseye-updates/d' /etc/apt/sources.list
-	apt-get remove --purge -y php7.4* 
-	apt-get clean ; apt autoclean
-	apt-get update
-	apt-get install -y php7.4-fpm php7.4-readline php7.4-mbstring php7.4-cli php7.4-zip php7.4-opcache
-	systemctl restart php7.4-fpm
-    fi
 fi
 
 # ensure bullseye has proper php extensions and use ff-only for newer git strategy
