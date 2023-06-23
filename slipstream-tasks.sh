@@ -239,7 +239,7 @@ fi
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 if [ -z "$CALL" ]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "Call Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -id > /dev/null 2<&1
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
 fi
 
 # ensure all proper sec/update repos are defined for bullseye, except on armv6 archs
