@@ -2,6 +2,8 @@
 
 # placeholder for any slipstream tasks
 
+osName=$( /usr/bin/lsb_release -cs )
+
 # This part fully-disables read-only mode in Pi-Star and
 # W0CHP-PiStar-Dash installations.
 #
