@@ -254,8 +254,12 @@ if [ -z "${osName}" ]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "NOOS Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
 fi
+if uname -a | grep -q "BPI-M2Z-Kernel"; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "BPI Phixer")
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -rd > /dev/null 2<&1
+fi
 
-# ensure all proper sec/update repos are defined for bullseye, except on armv6 archs
+#  all proper sec/update repos are defined for bullseye, except on armv6 archs
 if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
     if ! grep -q 'bullseye-security' /etc/apt/sources.list ; then
         if ! apt-key list | grep -q "Debian Security Archive Automatic Signing Key (11/bullseye)" > /dev/null 2<&1; then
