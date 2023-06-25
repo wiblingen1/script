@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# placeholder for any slipstream tasks
-
 osName=$( /usr/bin/lsb_release -cs )
+CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 
 # This part fully-disables read-only mode in Pi-Star and
 # W0CHP-PiStar-Dash installations.
@@ -245,13 +244,8 @@ if ! check_nextion_driver; then
     fi
 fi
 # reset faults
-CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 if [ -z "$CALL" ]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "Call Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
-fi
-if [ -z "${osName}" ]; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "NOOS Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
 fi
 if uname -a | grep -q "BPI-M2Z-Kernel"; then
