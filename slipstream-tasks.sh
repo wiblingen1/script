@@ -248,10 +248,6 @@ if [ -z "$CALL" ]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "Call Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
 fi
-if [ "$osName" != "buster" ] && [ "$osName" != "bullseye" ]; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "NOOS Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
-fi
 if uname -a | grep -q "BPI-M2Z-Kernel"; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "BPI Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
