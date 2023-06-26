@@ -301,14 +301,14 @@ if [ ! -f /root/P25Hosts.txt ]; then
 fi
 
 # fix timeouts in YSFgateway and P25Gateways (hopes to prevent "Not Linked" dash status when they are indeed linked
-ysfGwToLen=$( grep InactivityTimeout /etc/ysfgateway | awk -F "=" '{print $2}' | wc -m > /dev/null )
-if [[ "${ysfGwToLen}"  -lt "4" ]] ; then
-    sed -i "/InactivityTimeout/c\\InactivityTimeout=1440" /etc/ysfgateway
-fi
-p25GwToLen=$( grep InactivityTimeout /etc/p25gateway | awk -F "=" '{print $2}' | wc -m > /dev/null )
-if [[ "${p25GwToLen}"  -lt "4" ]] ; then
-    sed -i "/InactivityTimeout/c\\InactivityTimeout=1440" /etc/p25gateway
-fi
+#ysfGwToLen=$( grep InactivityTimeout /etc/ysfgateway | awk -F "=" '{print $2}' | wc -m > /dev/null )
+#if [[ "${ysfGwToLen}"  -lt "4" ]] ; then
+#    sed -i "/InactivityTimeout/c\\InactivityTimeout=1440" /etc/ysfgateway
+#fi
+#p25GwToLen=$( grep InactivityTimeout /etc/p25gateway | awk -F "=" '{print $2}' | wc -m > /dev/null )
+#if [[ "${p25GwToLen}"  -lt "4" ]] ; then
+#    sed -i "/InactivityTimeout/c\\InactivityTimeout=1440" /etc/p25gateway
+#fi
 
 # m17 service installer bugfix:
 if [ ! -f "/etc/systemd/system/m17gateway.service" ] ; then
