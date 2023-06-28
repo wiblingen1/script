@@ -46,6 +46,20 @@ if grep -qo 'remount,ro' /etc/systemd/system/apt-daily.service ; then
 fi
 #
 
+# Fix legacy radio type misspelling
+#
+# 6/2023 - W0CHP
+if [ -f "/etc/dstar-radio.mmdvmhost" ]; then
+    if grep -q "genesysdualhat" "/etc/dstar-radio.mmdvmhost"; then
+        sed -i 's/genesysdualhat/genesisdualhat/g' "/etc/dstar-radio.mmdvmhost"
+    else
+	:
+    fi
+else
+    :
+fi
+#
+
 # Git URI changed when transferring repos from me to the org.
 #
 # 2/2023 - W0CHP
@@ -135,6 +149,7 @@ if [ "$gateway_callsign" = "M1ABC" ]; then
     new_reflector1="None"
     sed -i "s/^reflector1=.*/reflector1=$new_reflector1/" "$config_file"
 fi
+#
 
 # 5/27/23: Bootstrapping backend scripts
 uaStr="Slipstream Task"
@@ -175,9 +190,11 @@ else
     echo "Failed to check the HTTP status of the repository URL: $url"
     exit 1
 fi
+#
 
 # 5/30/23: ensure www perms are correct:
 cd /var/www/dashboard && chmod 755 `find  -type d`
+#
 
 # 6/2/2023: ensure lsb-release exists:
 isInstalled=$(dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -c "ok installed")
@@ -187,6 +204,7 @@ if [[ $isInstalled -eq 0 ]]; then
 else
   :
 fi
+#
 
 # 6/4/23 Ensure we can update successfully:
 find /usr/local/sbin -type f -exec chattr -i {} +
@@ -195,6 +213,7 @@ find /usr/local/bin -type f -exec chattr -i {} +
 find /usr/local/bin -type d -exec chattr -i {} +
 find /var/www/dashboard -type f -exec chattr -i {} +
 find /var/www/dashboard -type d -exec chattr -i {} +
+#
 
 # ensure D-S remote control file exists and is correct - 6/6/2023
 DSremoteFile="/root/.Remote Control"
@@ -216,6 +235,7 @@ else
     echo "windowX=0" >> "$DSremoteFile"
     echo "windowY=0" >> "$DSremoteFile"
 fi
+#
 
 # ensure our native Nextion driver is installed - 6/8/2023
 check_nextion_driver() {
@@ -237,6 +257,7 @@ if ! check_nextion_driver; then
 	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
     fi
 fi
+#
 
 # legacy buster-based with the TGIF spot nextion abominations are a no-go
 if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
@@ -245,12 +266,14 @@ if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/
         curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
     fi
 fi
+#
 
 # legacy stretch sytems/unoff. BPI systems are a no-go
 if uname -a | grep -q "BPI-M2Z-Kernel"; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "BPI Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
 fi
+#
 
 #  all proper sec/update repos are defined for bullseye, except on armv6 archs
 if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
@@ -280,6 +303,8 @@ if [ $( uname -m ) == "armv6l" ] ; then
         systemctl restart php7.4-fpm
     fi
 fi
+#
+
 # handle missing/expired keys for buster
 if [ "${osName}" = "buster" ] ; then
     if apt-key adv --list-public-keys --with-fingerprint --with-colons | grep -q 0E98404D386FA1D9 > /dev/null 2<&1 ; then
@@ -293,4 +318,5 @@ if [ "${osName}" = "buster" ] ; then
 	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 6ED0E7B82643E131 > /dev/null 2<&1
     fi
 fi
+#
 
