@@ -157,7 +157,7 @@ if conn_check "$url"; then
     if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${uaStr}" git fetch origin; then
         commits_behind=$(git rev-list --count HEAD..origin/master)
         if [[ $commits_behind -gt 0 ]]; then
-            if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin bootstrap ${uaStr}" git pull origin master; then
+            if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${uaStr}" git pull origin master; then
                 echo "Local sbin repository updated successfully. Restarting script..."
                 exec bash "$0" "$@" # Re-execute the script with the same arguments
             else
