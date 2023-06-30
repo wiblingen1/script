@@ -114,6 +114,11 @@ if (file_exists('/etc/cron.daily/getstripped') || is_dir('/usr/local/etc/Nextion
 } else {
     $TGIFspot = "0";
 }
+$iniFile = '/etc/dstar-radio.mmdvmhost';
+$section = 'ZUM';
+$config = parse_ini_file($iniFile, true);
+$sectionExists = isset($config[$section]);
+$ZUMimage = (bool) $sectionExists;
 
 $data = array(
     'UUID' => $uuid,
@@ -139,7 +144,8 @@ $data = array(
     'pocsag' => $pocsagEnable,
     'fm' => $fmEnable,
     'ax25' => $ax25Enable,
-    'tgifspot' => $TGIFspot
+    'tgifspot' => $TGIFspot,
+    'zumimage' => $ZUMimage
 );
 
 $retry_limit = 10;
