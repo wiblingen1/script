@@ -60,6 +60,14 @@ else
 fi
 #
 
+# migrate AX.25 entries
+#
+# 6/2023 W0CHP
+if grep -q "AX 25" /etc/mmdvmhost; then
+  sed -i 's/AX 25/AX.25/g' /etc/mmdvmhost
+fi
+#
+
 # Git URI changed when transferring repos from me to the org.
 #
 # 2/2023 - W0CHP
