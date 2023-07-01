@@ -170,6 +170,11 @@ if ! grep -w 'Callsign' /etc/pistar-release > /dev/null; then
 else
     sed -i "/Callsign =/c Callsign = ${CALL}" /etc/pistar-release
 fi
+callsign_count=$(grep -c "Callsign =" /etc/pistar-release)
+if [ "$callsign_count" -gt 1 ]; then
+  sed -i '/^Callsign =/d' /etc/pistar-release
+  echo "Callsign = ${CALL}" >> /etc/pistar-release
+fi
 
 # Cache Modem Mode
 if grep -q 'Duplex=1' /etc/mmdvmhost ; then
