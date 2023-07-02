@@ -69,6 +69,14 @@ if grep -q "AX 25" /etc/mmdvmhost; then
 fi
 #
 
+# fix YSF2DMR config file w/bad call preventing startup
+#
+# 7/2023
+if grep -q "M1ABC" /etc/ysf2dmr && [ "$CALL" != "M1ABC" ]; then
+  sed -i "s/M1ABC/${CALL}/g" /etc/ysf2dmr
+fi
+#
+
 # Git URI changed when transferring repos from me to the org.
 #
 # 2/2023 - W0CHP
