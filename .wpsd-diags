@@ -1,5 +1,12 @@
 <?php
 
+// only exec once config'd:
+$file1 = '/etc/dstar-radio.mmdvmhost';
+$file2 = '/etc/dstar-radio.dstarrepeater';
+if (!file_exists($file1) && !file_exists($file2)) {
+    die();
+}
+
 require_once("/var/www/dashboard/config/config.php");
 
 function getDVModemFirmware() {
