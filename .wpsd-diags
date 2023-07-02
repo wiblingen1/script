@@ -89,11 +89,13 @@ $hardware = $release['Hardware'];
 $platform = $release['Platform'];
 $iface = $release['iface'];
 $modem_mode = $release['ModemMode'];
-if (file_exists("/etc/dstar-radio.mmdvmhost")) {
+if (file_exists($file1)) {
     $modem_type = getDVModemFirmware();
-    if ($modem_type === '') {
+    if (empty($modem_type)) {
         $modem_type = $release['ModemType'];
     }
+} elseif (file_exists($file2)) {
+    $modem_type = "DSTARrepeater";
 } else {
     $modem_type = $release['ModemType'];
 }
@@ -121,7 +123,7 @@ if (file_exists('/etc/cron.daily/getstripped') || is_dir('/usr/local/etc/Nextion
 } else {
     $TGIFspot = "0";
 }
-$iniFile = '/etc/dstar-radio.mmdvmhost';
+$iniFile = $file1;
 $section = 'ZUM';
 $config = parse_ini_file($iniFile, true);
 $sectionExists = isset($config[$section]);
