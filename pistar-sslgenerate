@@ -30,11 +30,12 @@ fi
 if [ ! -f /etc/ssl/certs/pi-star.crt ]; then
 	getFQDN=$( hostname -A | cut -d " " -f1 )
 	# Create the new Private / Public keys
-	sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/pi-star.key -out /etc/ssl/certs/pi-star.crt \
-	  -subj "/C=US/ST=Minnesota/L=Winona/O=W0CHP-PiStar-Dash/OU=Dev Team/CN=pi-star/subjectAltName=DNS:pi-star,DNS:pi-star.local,DNS:pi-star*,DNS:pi-star*.local,DNS:${getFQDN}"
+	sudo openssl req -x509 -nodes -days 3650 -newkey rsa:4096 -keyout /etc/ssl/private/pi-star.key -out /etc/ssl/certs/pi-star.crt \
+	  -subj "/C=US/ST=Minnesota/L=Winona/O=W0CHP-PiStar-Dash/OU=WPSD Dev Team/CN=W0CHP-PiStar-Dash" \
+	  -addext "subjectAltName=DNS:pi-star,DNS:pi-star.local,DNS:pi-star*,DNS:pi-star*.local,DNS:${getFQDN},DNS:$(hostname).local,DNS:$(hostname)"
 
 	# Configure NginX
-cat << 'EOF' > /etc/nginx/sites-available/pi-star
+cat << 'EOF' > /etc/nginx/sites-enabled/pi-star
 server {
 	listen 80 default_server;
 	listen 443 ssl http2;
