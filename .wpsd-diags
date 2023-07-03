@@ -95,8 +95,8 @@ if (file_exists($file1)) {
         $modem_type = $release['ModemType'];
     }
 } elseif (file_exists($file2)) {
-    $dsCconfig = parse_ini_file($file2);
-    $dsModemType = isset($dsConfig['modemType']) ? $config['modemType'] : '';
+    $dsConfig = parse_ini_file($file2);
+    $dsModemType = isset($dsConfig['modemType']) ? $dsConfig['modemType'] : '';
     $modem_type = "DStarRtpr: " . $dsModemType;
 } else {
     $modem_type = $release['ModemType'];
