@@ -3,6 +3,7 @@
 osName=$( /usr/bin/lsb_release -cs )
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 UUID=$( grep "UUID" /etc/pistar-release | awk '{print $3}' )
+OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
 
 # This part fully-disables read-only mode in Pi-Star and
 # W0CHP-PiStar-Dash installations.
@@ -114,17 +115,9 @@ if grep -q 'modemcache' /etc/rc.local ; then
     sed -i 's/modemcache/hwcache/g' /etc/rc.local
     sed -i 's/# cache modem info/# cache hw info/g' /etc/rc.local 
 fi
-# add hw cache to rc.local and exec
-if ! grep -q 'hwcache' /etc/rc.local ; then
-    sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 
-    /usr/local/sbin/pistar-hwcache
-else
-    /usr/local/sbin/pistar-hwcache
-fi
 # bullseye; change weird interface names* back to what most are accustomed to;
 # <https://wiki.debian.org/NetworkInterfaceNames#THE_.22PREDICTABLE_NAMES.22_SCHEME>
 # sunxi systems don't have /boot/cmdline.txt so we can ignore that.
-OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
 if [ "${OS_VER}" -gt "10" ] && [ -f '/boot/cmdline.txt' ] && [[ ! $(grep "net.ifnames" /boot/cmdline.txt) ]] ; then
     sed -i 's/$/ net.ifnames=1 biosdevname=0/' /boot/cmdline.txt
 fi
@@ -346,4 +339,11 @@ if [ "${osName}" = "buster" ] ; then
     fi
 fi
 #
-
+# add hw cache to rc.local and exec
+if ! grep -q 'hwcache' /etc/rc.local ; then
+    sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 
+    /usr/local/sbin/pistar-hwcache
+else
+    /usr/local/sbin/pistar-hwcache
+fi
+#
