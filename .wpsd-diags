@@ -79,7 +79,7 @@ if (!$fp) {
 }
 
 $release_file = '/etc/pistar-release';
-$release = parse_ini_file($release_file);
+$release = @parse_ini_file($release_file);
 
 $os = exec('/usr/bin/lsb_release -cs');
 
@@ -95,9 +95,9 @@ if (file_exists($file1)) {
         $modem_type = $release['ModemType'];
     }
 } elseif (file_exists($file2)) {
-    $dsConfig = parse_ini_file($file2);
+    $dsConfig = @parse_ini_file($file2);
     $dsModemType = isset($dsConfig['modemType']) ? $dsConfig['modemType'] : '';
-    $modem_type = "DStarRtpr: " . $dsModemType;
+    $modem_type = "DStarRtpr - " . $dsModemType;
 } else {
     $modem_type = $release['ModemType'];
 }
@@ -127,7 +127,7 @@ if (file_exists('/etc/cron.daily/getstripped') || is_dir('/usr/local/etc/Nextion
 }
 $iniFile = $file1;
 $section = 'ZUM';
-$config = parse_ini_file($iniFile, true);
+$config = @parse_ini_file($iniFile, true);
 $sectionExists = isset($config[$section]);
 $ZUMimage = (bool) $sectionExists;
 
