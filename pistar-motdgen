@@ -39,25 +39,19 @@ DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
 gitId=$( cat /etc/.W0CHP-PiStar-Dash.remote_version )
 
 echo -e "
-${COL_REG_CYAN}
- ▄         ▄   ▄▄▄▄▄▄▄▄▄   ▄▄▄▄▄▄▄▄▄▄▄  ▄         ▄  ▄▄▄▄▄▄▄▄▄▄▄ 
-▐░▌       ▐░▌ ▐░░░░░░░░░▌ ▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌
-▐░▌       ▐░▌▐░█░█▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀ ▐░▌       ▐░▌▐░█▀▀▀▀▀▀▀█░▌
-▐░▌       ▐░▌▐░▌▐░▌    ▐░▌▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌
-▐░▌   ▄   ▐░▌▐░▌ ▐░▌   ▐░▌▐░▌          ▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄█░▌
-▐░▌  ▐░▌  ▐░▌▐░▌  ▐░▌  ▐░▌▐░▌          ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌
-▐░▌ ▐░▌░▌ ▐░▌▐░▌   ▐░▌ ▐░▌▐░▌          ▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀ 
-▐░▌▐░▌ ▐░▌▐░▌▐░▌    ▐░▌▐░▌▐░▌          ▐░▌       ▐░▌▐░▌          
-▐░▌░▌   ▐░▐░▌▐░█▄▄▄▄▄█░█░▌▐░█▄▄▄▄▄▄▄▄▄ ▐░▌       ▐░▌▐░▌          
-▐░░▌     ▐░░▌ ▐░░░░░░░░░▌ ▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░▌          
- ▀▀       ▀▀   ▀▀▀▀▀▀▀▀▀   ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀  ▀ ${COL_NC}
-${COL_REG_CYAN}
-                           PiStar-Dash${COL_NC}
+${COL_LIGHT_CYAN}' ##:::::'##:'########:::'######::'########:::
+  ##:'##: ##: ##.... ##:'##... ##: ##.... ##::
+  ##: ##: ##: ##:::: ##: ##:::..:: ##:::: ##::
+  ##: ##: ##: ########::. ######:: ##:::: ##::
+  ##: ##: ##: ##.....::::..... ##: ##:::: ##::
+  ##: ##: ##: ##::::::::'##::: ##: ##:::: ##::
+ . ###. ###:: ##::::::::. ######:: ########:::
+ :...::...:::..::::::::::......:::........::::${COL_NC}
+${COL_LIGHT_CYAN}
+W0CHP-PiStar-Dash${COL_NC} Ver.# ${COL_REG_YELLOW}${gitId}${COL_NC}
 
-${INFO} Your W0CHP-PiStar-Dash can be found at one of the following locations:
-    ${COL_LIGHT_GREEN}http://$(hostname)/  http://$(hostname).local/   http://$(hostname -I | awk '{print $1}')/${COL_NC}
+${INFO} Your dashboard can be accesed from:
+${COL_LIGHT_MAGENTA}http://$(hostname)/  http://$(hostname).local/   http://$(hostname -I | awk '{print $1}')/${COL_NC}
 
 ${INFO} Pi-star command-line tools all begin with \"pistar-\".
-
-${COL_LIGHT_CYAN}Welcome to W0CHP-PiStar-Dash:${COL_NC} Ver.# ${COL_REG_YELLOW}${gitId}${COL_NC}
 " > /etc/motd
