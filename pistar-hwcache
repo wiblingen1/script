@@ -5,7 +5,7 @@ INI_FILE="/etc/pistar-release"
 EXTERNAL_SCRIPT="/usr/local/sbin/platformDetect.sh"
 # Function to perform the mappings
 map_hardware() {
-    output=$(eval "$EXTERNAL_SCRIPT")  # Run the external script and capture the output
+    output=$(eval "$EXTERNAL_SCRIPT") 
     if echo "$output" | grep -q "NanoPi"; then
         echo "NanoPi"
     elif echo "$output" | grep -q "Raspberry"; then
@@ -108,47 +108,14 @@ fi
 KernelVer=`uname -r`
 sed -i "/kernel/c kernel = ${KernelVer}" /etc/pistar-release
 
-# cleanup legacy modem info
-if grep -w 'Firmware' /etc/pistar-release > /dev/null; then
-    sed -i '/Firmware/d' /etc/pistar-release
-fi
-if grep -w 'TCXO' /etc/pistar-release > /dev/null; then
-    sed -i '/TCXO/d' /etc/pistar-release
-fi
-
-PlatDetect=$(/usr/local/sbin/platformDetect.sh)
 if ! grep -w 'Platform' /etc/pistar-release > /dev/null; then
-    sed -i "/Hardware = /a Platform = ${PlatDetect}" /etc/pistar-release
+    sed -i "/Hardware = /a Platform = ${EXTERNAL_SCRIPT}" /etc/pistar-release
 else
-    sed -i "/Platform/c Platform = ${PlatDetect}" /etc/pistar-release
+    sed -i "/Platform/c Platform = ${EXTERNAL_SCRIPT}" /etc/pistar-release
 fi
 
-# migrate UUID
-if [ -f /etc/WPSD-release ]; then
-    uuidLen=$( grep UUID /etc/pistar-release | awk '{print $3}' | wc -m > /dev/null )
-    if [[ "${uuidLen}"  -gt "17" ]] ; then
-        rm -f /etc/WPSD-release
-        GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
-        echo "UUID = $GU" >> /etc/pistar-release
-    else
-        echo "UUID = $UUIDck" >> /etc/pistar-release
-        rm -f /etc/WPSD-release
-    fi
-else
-    if ! grep -q UUID /etc/pistar-release ; then
-        GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
-        echo "UUID = $GU" >> /etc/pistar-release
-    fi
-fi
-uuidLen=$( grep UUID /etc/pistar-release | awk '{print $3}' | wc -m > /dev/null )
-if [[ "${uuidLen}"  -gt "17" ]] ; then
-    GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
-    sed -i "/UUID =/c\\UUID = ${GU}" /etc/pistar-release
-fi
-if ! [ $( grep UUID /etc/pistar-release | awk '{print $3}' > /dev/null ) ] ; then
-    GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
-    sed -i "/UUID =/c\\UUID = ${GU}" /etc/pistar-release
-fi
+GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
+sed -i "/UUID =/c\\UUID = ${GU}" /etc/pistar-release
 
 # migrate callsign info to last line of /etc/pistar-release
 CALL=$( awk -F"'" '/\$callsign=/ {print $2}' /var/www/dashboard/config/ircddblocal.php )
@@ -205,11 +172,6 @@ if [ -f '/etc/dstar-radio.dstarrepeater' ]; then
     fi
 fi
 
-# Remove legacy Net2 Log
-if grep -w 'DMRGWnet2' /etc/pistar-release > /dev/null; then
-    sed -i "/DMRGWnet2/d" /etc/pistar-release
-fi
-
 # add / update WPSD version hash to /etc/pistar-release
 WPSDver=$(cat /etc/.W0CHP-PiStar-Dash.remote_version | sed 's/\..*//')
 if ! grep -w 'WPSD_Ver' /etc/pistar-release > /dev/null; then
@@ -223,7 +185,6 @@ if [ $(grep -c 'MMDVMHost' /etc/pistar-release) -gt 2 ]; then
     sed -i '/MMDVM/d' /etc/pistar-release
     sed -i "/Version = /a MMDVMHost = " /etc/pistar-release
 fi
-
 if grep -q "OrangePiZero" /etc/pistar-release; then
     sed -i 's/OrangePiZero/OrangePi/g' /etc/pistar-release 
 fi
