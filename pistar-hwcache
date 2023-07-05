@@ -2,10 +2,10 @@
 
 # release/config init:
 INI_FILE="/etc/pistar-release"
-EXTERNAL_SCRIPT="/usr/local/sbin/platformDetect.sh"
+PlatDet="/usr/local/sbin/platformDetect.sh"
 # Function to perform the mappings
 map_hardware() {
-    output=$(eval "$EXTERNAL_SCRIPT") 
+    output=$(eval "$PlatDet") 
     if echo "$output" | grep -q "NanoPi"; then
         echo "NanoPi"
     elif echo "$output" | grep -q "Raspberry"; then
@@ -66,7 +66,7 @@ ircddbgateway =
 dstarrepeater = 
 MMDVMHost = 
 kernel = 
-Hardware = $(map_hardware "$(eval "$EXTERNAL_SCRIPT")")
+Hardware = $(map_hardware "$(eval "$PlatDet")")
 Platform = 
 iface = 
 ModemMode = 
@@ -82,7 +82,7 @@ EOF
 fi
 
 # update HW key:
-HW_var=$(map_hardware "$(eval "$EXTERNAL_SCRIPT")")
+HW_var=$(map_hardware "$(eval "$PlatDet")")
 sed -i "/Hardware/c Hardware = ${HW_var}" "$INI_FILE"
 
 # bins are sometimes built in a batch...use MMDVMHost ver as Dstar bin git/date vers...
@@ -108,11 +108,10 @@ fi
 KernelVer=`uname -r`
 sed -i "/kernel/c kernel = ${KernelVer}" /etc/pistar-release
 
-PlatDetect=$(/usr/local/sbin/platformDetect.sh)
 if ! grep -w 'Platform' /etc/pistar-release > /dev/null; then
-    sed -i "/Hardware = /a Platform = ${PlatDetect}" /etc/pistar-release
+    sed -i "/Hardware = /a Platform = $(eval "$PlatDet")" /etc/pistar-release
 else
-    sed -i "/Platform/c Platform = ${PlatDetect}" /etc/pistar-release
+    sed -i "/Platform/c Platform = $(eval "$PlatDet")" /etc/pistar-release
 fi
 
 GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
