@@ -108,10 +108,11 @@ fi
 KernelVer=`uname -r`
 sed -i "/kernel/c kernel = ${KernelVer}" /etc/pistar-release
 
+PlatDetect=$(/usr/local/sbin/platformDetect.sh)
 if ! grep -w 'Platform' /etc/pistar-release > /dev/null; then
-    sed -i "/Hardware = /a Platform = ${EXTERNAL_SCRIPT}" /etc/pistar-release
+    sed -i "/Hardware = /a Platform = ${PlatDetect}" /etc/pistar-release
 else
-    sed -i "/Platform/c Platform = ${EXTERNAL_SCRIPT}" /etc/pistar-release
+    sed -i "/Platform/c Platform = ${PlatDetect}" /etc/pistar-release
 fi
 
 GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
