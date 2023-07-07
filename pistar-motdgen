@@ -49,7 +49,7 @@ ${COL_LIGHT_CYAN}
 W0CHP-PiStar-Dash${COL_NC} Ver.# ${COL_REG_YELLOW}${gitId}${COL_NC}
 
 ${INFO} Your dashboard can be accesed from:
-${COL_LIGHT_MAGENTA}http://$(hostname)/  http://$(hostname).local/   http://$(hostname -I | awk '{print $1}')/${COL_NC}
+${COL_LIGHT_MAGENTA}http://$(hostname)/  http://$(hostname).local/  http://$(hostname -I | awk '{print $1}')/${COL_NC}
 
 ${INFO} Pi-star command-line tools all begin with \"pistar-\".
 " > /etc/motd
