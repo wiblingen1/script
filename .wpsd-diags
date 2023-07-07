@@ -109,12 +109,12 @@ $mmdvmhost_data = parse_ini_file($mmdvmhost_file, true);
 
 $longitude = $mmdvmhost_data['Info']['Longitude'];
 $latitude = $mmdvmhost_data['Info']['Latitude'];
-if (preg_match('/^\d+\.\d+\.\d+$/', $longitude)) {
-    $longitude = preg_replace('/^(\d+\.\d+)\.(\d+)$/', '$1$2', $longitude);
+if (preg_match('/^-?\d+\.\d+\.\d+$/', $longitude)) {
+    $longitude = preg_replace('/^(-?\d+\.\d+)\.(\d+)$/', '$1$2', $longitude);
 }
 
-if (preg_match('/^\d+\.\d+\.\d+$/', $latitude)) {
-    $latitude = preg_replace('/^(\d+\.\d+)\.(\d+)$/', '$1$2', $latitude);
+if (preg_match('/^-?\d+\.\d+\.\d+$/', $latitude)) {
+    $latitude = preg_replace('/^(-?\d+\.\d+)\.(\d+)$/', '$1$2', $latitude);
 }
 $dStarEnable = $mmdvmhost_data['D-Star']['Enable'];
 $dmrEnable = $mmdvmhost_data['DMR']['Enable'];
