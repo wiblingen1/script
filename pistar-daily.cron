@@ -277,7 +277,7 @@ fi
 bash /usr/local/sbin/pistar-motdgen
 
 # Purge the logs older than 2 days
-rm -f $(find /var/log/pi-star/*.log -type f -mtime +1 -print)
+rm -f $(find /var/log/pi-star/ -type f -mtime +1 -print)
 rm -f $(find /var/log/ -type f -mtime +0 -print | grep .gz)
 
 # Shrink nginx error log to stop it getting out of hand
