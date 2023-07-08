@@ -283,10 +283,6 @@ if uname -a | grep -q "BPI-M2Z-Kernel"; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "BPI Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
 fi
-if [ "${UUID}" = "0000000a020754c" ] ; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "BI Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
-fi
 #
 
 # stuck update fix
