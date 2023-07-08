@@ -15,13 +15,13 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 #
-# Output some usefull information when no variables are passed
+# Output some useful information when no variables are passed
 #
 if [ -z "$1" ]
 then
   echo "This tool is used to flash your BD7KLE/BG3MDO Modem"
   echo "to use the command, you will need to pass the name of your modem,"
-  echo "please choose form the list below..."
+  echo "please choose from the list below..."
   echo ""
   echo "To flash a UHF2018 board connected to GPIO, run:     pistar-mdoflash uhf"
   echo "To flash a UHF302018 board connected to GPIO, run:   pistar-mdoflash uhf2"

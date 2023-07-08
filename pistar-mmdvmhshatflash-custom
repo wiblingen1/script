@@ -17,7 +17,7 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 #
-# Output some usefull information when no variables are passed
+# Output some useful information when no variables are passed
 #
 if [ -z "$1" ]
 then

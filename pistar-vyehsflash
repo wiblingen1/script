@@ -15,13 +15,13 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 #
-# Output some usefull information when no variables are passed
+# Output some useful information when no variables are passed
 #
 if [ -z "$1" ]
 then
   echo "This tool is used to flash your MMDVM_HS Nano Modem"
   echo "to use the command, you will need to pass the name of your modem,"
-  echo "please choose form the list below..."
+  echo "please choose from the list below..."
   echo ""
   #echo "To flash an Nano HS board connected to GPIO, run:     pistar-vyehsflash nano_hs"
   echo "To flash HS_DUAL_HAT (VR2VYE) connected to GPIO, run: pistar-vyehsflash hs_dual_hat"

@@ -21,13 +21,13 @@ fi
 #
 
 #
-# Output some usefull information when no variables are passed
+# Output some useful information when no variables are passed
 #
 if [ -z "$1" ]
 then
   echo "This tool is used to downgrade the firmware of your MMDVM_HS Hat Modem"
   echo "to use the command, you will need to pass the name of your modem,"
-  echo "please choose form the list below..."
+  echo "please choose from the list below..."
   echo ""
   echo "To downgrade HS_HAT (14.7456MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatdowngrade hs_hat"
   echo "To downgrade HS_HAT (12.288MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatdowngrade hs_hat-12mhz"

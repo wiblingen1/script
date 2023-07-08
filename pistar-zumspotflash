@@ -4,7 +4,7 @@
 #                                                                             #
 #                      Pi-Star Firmware Update Tool                           #
 #                                                                             #
-#    Version 1.1, Code, Design and Development by Andy Taylor (MW0MWZ).       #
+#    Version 1.2, Code, Design and Development by Andy Taylor (MW0MWZ).       #
 #                                                                             #
 #                 Make it simple to update the Firmware                       #
 #                                                                             #
@@ -15,13 +15,13 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 #
-# Output some usefull information when no variables are passed
+# Output some useful information when no variables are passed
 #
 if [ -z "$1" ]
 then
   echo "This tool is used to flash your ZUMSpot Modem"
   echo "to use the command, you will need to pass the name of your modem,"
-  echo "please choose form the list below..."
+  echo "please choose from the list below..."
   echo ""
   echo "To flash a ZUMSpot connected to GPIO, run:         pistar-zumspotflash rpi"
   echo "To flash a ZUMSpot duplex connected to GPIO, run:  pistar-zumspotflash rpi_duplex"
@@ -48,7 +48,7 @@ then
   # Get the physically connected modem from the logs
   numLogs=$(ls -1rt /var/log/pi-star/MMDVM-*.log | wc -l)
   if [[ ${numLogs} -gt 0 ]]; then
-    modemLog=$(tac $(ls -1rt /var/log/pi-star/MMDVM-*.log | tail -n1 ) | grep "protocol" -m 1 | sed -n 's/description: /&\n/;s/.*\n//p')
+    modemLog=$(tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1)
     echo "Connected Hardware: ${modemLog}"
   fi
   exit 0
@@ -56,7 +56,7 @@ fi
 #
 # OK we know what the modem is, let get the firmware string from the log...
 #
-tac $(ls -1rt /var/log/pi-star/MMDVM-*.log | tail -n1 ) | grep "protocol" -m 1 | sed -n 's/description: /&\n/;s/.*\n//p'
+tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1
 read -n 1 -s -r -p "Press any key to write the ${1} firmware to this modem or Ctrl-C to quit..."
 echo ""
 #

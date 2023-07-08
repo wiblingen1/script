@@ -15,13 +15,13 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 #
-# Output some usefull information when no variables are passed
+# Output some useful information when no variables are passed
 #
 if [ -z "$1" ]
 then
   echo "This tool is used to flash your ZUMSpot Modem"
   echo "to use the command, you will need to pass the name of your modem,"
-  echo "please choose form the list below..."
+  echo "please choose from the list below..."
   echo ""
   echo "To flash a NANO_DV connected to GPIO by BG4TGO, run:    pistar-nanodvflash pi"
   echo "To flash a NANO_DV connected to USB by BG4TGO, run:     pistar-nanodvflash usb"
