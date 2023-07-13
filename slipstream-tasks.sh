@@ -148,6 +148,20 @@ if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /et
 fi
 #
 
+# Add nextion halt functions
+#
+# 7/2023 W0CHP
+#
+if [ ! -f '/lib/systemd/system/stop-nextion.service' ]; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "Nextion Halt Service Installer (slipstream)")
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/nextion-driver-term -o /usr/local/sbin/nextion-driver-term
+    chmod a+x /usr/local/sbin/nextion-driver-term
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/stop-nextion.service -o /lib/systemd/system/stop-nextion.service
+    systemctl daemon-reload
+    systemctl enable stop-nextion.service
+fi
+#
+
 # Change default Dstar startup ref from "REF001 C" to "None", re: KC1AWV 5/21/23
 #
 # 5/2023 W0CHP
