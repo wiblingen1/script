@@ -30,7 +30,6 @@ def disk_stat(path):
 
 while True: #Main loop
 	# Get the current status
-	dstarrepeater = "/etc/dstar-radio.dstarrepeater"
 	mmdvmhost = "/etc/dstar-radio.mmdvmhost"
 
 	# Check the disk usage
@@ -44,66 +43,12 @@ while True: #Main loop
 		# Shorten the Pi-Star logs
 		utcnow = datetime.datetime.utcnow()
 		datenow = utcnow.strftime('%Y-%m-%d')
-		if os.path.isfile(dstarrepeater):
-			dstarLogOld = '/var/log/pi-star/DStarRepeater-' + datenow + '.log'
-			dstarLogNew = '/var/log/pi-star/dstarrepeaterd-' + datenow + '.log'
-			if os.path.isfile(dstarLogOld):
-				os.system('echo "$(tail -500 /var/log/pi-star/DStarRepeater-$(date +%F).log)" > /var/log/pi-star/DStarRepeater-$(date +%F).log')
-			if os.path.isfile(dstarLogNew):
-				os.system('echo "$(tail -500 /var/log/pi-star/dstarrepeaterd-$(date +%F).log)" > /var/log/pi-star/dstarrepeaterd-$(date +%F).log')
-			os.system('/bin/systemctl restart dstarrepeater.service')
-			time.sleep(60) # Give the service 60 secs before we re-test
 		if os.path.isfile(mmdvmhost):
 			mmdvmLog = '/var/log/pi-star/MMDVM-' + datenow + '.log'
 			if os.path.isfile(mmdvmLog):
 				os.system('echo "$(tail -500 /var/log/pi-star/MMDVM-$(date +%F).log)" > /var/log/pi-star/MMDVM-$(date +%F).log')
 			os.system('/bin/systemctl restart mmdvmhost.service')
 			time.sleep(60) # Give the service 60 secs before we re-test
-
-	# Check the D-Star Specific Services
-	if os.path.isfile(dstarrepeater):
-		checkprocdstar = subprocess.Popen('pgrep' + ' dstarrepeaterd', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-		if not checkprocdstar.stdout.readlines():
-			os.system('/bin/systemctl stop dstarrepeater.service')
-			time.sleep(2) #Give the service time to stop before we move on
-			os.system('/bin/systemctl start dstarrepeater.service')
-			time.sleep(10) #Give the service time to start before we move on
-		checkprocdstar.wait()
-
-		# At this point it's a safe bet that the service is running, now look for signs of DVAP failure.
-		utcnow = datetime.datetime.utcnow()
-		datenow = utcnow.strftime('%Y-%m-%d')
-		dateminus300sec = datetime.datetime.utcnow() - datetime.timedelta(minutes=5)
-		logstampnow = utcnow.strftime('%Y-%m-%d %H:%M:%S')
-		logstampnowminus300sec = dateminus300sec.strftime('%Y-%m-%d %H:%M:%S')
-		# Best figure out the log name now
-		currentLogOld = '/var/log/pi-star/DStarRepeater-' + datenow + '.log'
-		currentLogNew = '/var/log/pi-star/dstarrepeaterd-' + datenow + '.log'
-		if os.path.isfile(currentLogOld):
-			currentLog = currentLogOld
-		if os.path.isfile(currentLogNew):
-			currentLog = currentLogNew
-
-		# Open the DStarRepeater Log
-		logfile = open(currentLog, 'r')
-		loglist = logfile.readlines()
-		logfile.close()
-
-		# Parse the log lines
-		for line in loglist:
-			# We only care about logs in the last 60 secs
-			if line[3:22] >= logstampnowminus300sec and line[3:22] <= logstampnow:
-				# Now we look for DVAP failure lines
-				if (str('Bad DVAP header') in line) or (str('Cannot open the D-Star modem') in line):
-					os.system('/bin/systemctl stop dstarrepeater.service')
-		                        time.sleep(30) # Give the DVAP time to recover
-                		        os.system('/bin/systemctl start dstarrepeater.service')
-                        		time.sleep(270) # Give the service time to start before we move on
-				# Look for "No space to write data|the header|end data" and restart the service
-				if (str('No space to write') in line):
-					os.system('echo "$(tail -n 50 ' + currentLog + ')" > ' + currentLog)
-					os.system('/bin/systemctl restart dstarrepeater.service')
-		                        time.sleep(60) # Give the service 60 secs before we re-test
 
 	# Check the MMDVMHost Specific Services
 	if os.path.isfile(mmdvmhost):

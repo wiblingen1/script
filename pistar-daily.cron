@@ -368,15 +368,6 @@ if [[ $(grep Version /etc/pistar-release | awk '{print $3}' | cut -c 1) -eq 4 ]]
                 echo "mobileGPSAddress=127.0.0.1" >> /etc/ircddbgateway
                 echo "mobileGPSPort=7834" >> /etc/ircddbgateway
         fi
-
-        if [[ $(cat /etc/dstarrepeater | grep -o "mmdvmRXInvert" | wc -l) -eq 0 ]]; then
-                echo "mmdvmRXInvert=0" >> /etc/dstarrepeater
-                echo "mmdvmTXInvert=0" >> /etc/dstarrepeater
-                echo "mmdvmPTTInvert=0" >> /etc/dstarrepeater
-                echo "mmdvmTXDelay=50" >> /etc/dstarrepeater
-                echo "mmdvmRXLevel=100" >> /etc/dstarrepeater
-                echo "mmdvmTXLevel=100" >> /etc/dstarrepeater
-        fi
 fi
 
 # Download M17 Audio files if missing
@@ -413,15 +404,6 @@ if [[ $(grep Version /etc/pistar-release | awk '{print $3}' | cut -c 1) -eq 4 ]]
                 echo "gpsdSEnabled=0" >> /etc/ircddbgateway
                 echo "gpsdAddress=127.0.0.1" >> /etc/ircddbgateway
                 echo "gpsdPort=2947" >> /etc/ircddbgateway
-        fi
-
-        if [[ $(cat /etc/dstarrepeater | grep -o "mmdvmRXInvert" | wc -l) -eq 0 ]]; then
-                echo "mmdvmRXInvert=0" >> /etc/dstarrepeater
-                echo "mmdvmTXInvert=0" >> /etc/dstarrepeater
-                echo "mmdvmPTTInvert=0" >> /etc/dstarrepeater
-                echo "mmdvmTXDelay=50" >> /etc/dstarrepeater
-                echo "mmdvmRXLevel=100" >> /etc/dstarrepeater
-                echo "mmdvmTXLevel=100" >> /etc/dstarrepeater
         fi
 fi
 

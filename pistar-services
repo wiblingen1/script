@@ -10,7 +10,7 @@ fi
 
 # Display services active status
 function status_services() {
-    services=("pistar-watchdog.service" "pistar-upnp.service" "nextiondriver.service" "mmdvmhost.service" "dstarrepeater.service" "ircddbgateway.service" "dapnetgateway.service" "dmrgateway.service"  "p25gateway.service" "p25parrot.service" "nxdngateway.service" "m17gateway.service" "nxdnparrot.service" "dgidgateway.service" "ysfgateway.service" "ysfparrot.service" "ysf2dmr.service" "ysf2p25.service" "ysf2nxdn.service" "dmr2ysf.service" "dmr2m17.service" "dmr2nxdn.service" "nxdn2dmr.service" "aprsgateway.service" "gpsd.service" "timeserver.service" "cron.service" "pistar-remote.timer" "pistar-remote.service")
+    services=("pistar-watchdog.service" "pistar-upnp.service" "nextiondriver.service" "mmdvmhost.service" "ircddbgateway.service" "dapnetgateway.service" "dmrgateway.service"  "p25gateway.service" "p25parrot.service" "nxdngateway.service" "m17gateway.service" "nxdnparrot.service" "dgidgateway.service" "ysfgateway.service" "ysfparrot.service" "ysf2dmr.service" "ysf2p25.service" "ysf2nxdn.service" "dmr2ysf.service" "dmr2m17.service" "dmr2nxdn.service" "nxdn2dmr.service" "aprsgateway.service" "gpsd.service" "timeserver.service" "cron.service" "pistar-remote.timer" "pistar-remote.service")
     
     for s in "${services[@]}"; do
 	status=$(systemctl is-active "$s" | tr [a-z] [A-Z])
@@ -22,7 +22,7 @@ function status_services() {
 # $1 == FULLSTOP
 function stop_services()
 {
-    echo -ne "Stopping Pi-Star services..."
+    echo -ne "Stopping WPSD services..."
 
     if [ "$1" == "FULLSTOP" ]; then
 	    # Prevent cron to restart services
@@ -37,7 +37,6 @@ function stop_services()
     systemctl stop pistar-remote.timer > /dev/null 2>&1
     systemctl stop pistar-remote.service > /dev/null 2>&1
     systemctl stop mmdvmhost.service > /dev/null 2>&1
-    systemctl stop dstarrepeater.service > /dev/null 2>&1
     sleep 2
     systemctl stop ircddbgateway.service > /dev/null 2>&1
     systemctl stop dapnetgateway.service > /dev/null 2>&1
@@ -70,7 +69,7 @@ function stop_services()
 
 function start_services()
 {
-    echo -ne "Starting Pi-Star services..."
+    echo -ne "Starting WPSD services..."
     
     #systemctl daemon-reload > /dev/null 2>/dev/null # Restart Systemd to account for any service changes 
     systemctl start nextiondriver.service > /dev/null 2>&1
@@ -94,7 +93,6 @@ function start_services()
     systemctl start mmdvmhost.service > /dev/null 2>&1
     systemctl start dgidgateway.service > /dev/null 2>&1
     systemctl start dmrgateway.service > /dev/null 2>&1
-    systemctl start dstarrepeater.service > /dev/null 2>&1
     systemctl start ysfgateway.service > /dev/null 2>&1
     systemctl start pistar-watchdog.service > /dev/null 2>&1
     systemctl start pistar-watchdog.timer > /dev/null 2>&1

@@ -501,7 +501,6 @@ echo ""
 # Copy over the base configs
 #
 #cp /usr/local/src/pi-star/ircddbgateway $CLONE/etc/ircddbgateway
-#cp /usr/local/src/pi-star/dstarrepeater $CLONE/etc/dstarrepeater
 #cp /usr/local/src/pi-star/mmdvmhost $CLONE/etc/mmdvmhost
 #cp /usr/local/src/pi-star/starnetserver $CLONE/etc/starnetserver
 #cp /usr/local/src/pi-star/pistar-keeper $CLONE/etc/pistar-keeper

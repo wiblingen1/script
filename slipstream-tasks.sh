@@ -349,6 +349,16 @@ if [ "${osName}" = "buster" ] ; then
     fi
 fi
 #
+
+# remove dstarrepeater unit file/service - 7/2023 W0CHP
+#
+if [ -f '/lib/systemd/system/dstarrepeater.service' ] ; then
+    systemctl stop dstarrepeater.service
+    systemctl disable dstarrepeater.service
+    rm -f /lib/systemd/system/dstarrepeater.service
+fi
+#
+
 # add hw cache to rc.local and exec
 if ! grep -q 'hwcache' /etc/rc.local ; then
     sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 

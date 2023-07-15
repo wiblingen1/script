@@ -31,7 +31,6 @@ unzip -j /boot/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
 
 # Stop the services
 systemctl stop cron.service 2>&1
-systemctl stop dstarrepeater.service 2>&1
 systemctl stop mmdvmhost.service 2>&1
 systemctl stop ircddbgateway.service 2>&1
 systemctl stop timeserver.service 2>&1

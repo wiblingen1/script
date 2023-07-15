@@ -105,16 +105,9 @@ while True:
 			#print "locking"
 			# Stop the Services
 			os.system(r'systemctl stop timeserver.service')
-			os.system(r'systemctl stop dstarrepeater.service')
 			os.system(r'systemctl stop mmdvmhost.service')
 			os.system(r'systemctl stop ircddbgateway.service')
 			time.sleep(5)
-
-			# D-Star Repeater Config
-			os.system(r'sed -i "/callsign=/c\callsign=' + lockedModeCallPad + band +'" /etc/dstarrepeater')
-			os.system(r'sed -i "/gateway=/c\gateway=' + lockedModeCallPad + 'G" /etc/dstarrepeater')
-			os.system(r'sed -i "/beaconText=/c\beaconText=' + lockedModeCallPad + band +'" /etc/dstarrepeater')
-			os.system(r'sed -i "/restriction=/c\restriction=1" /etc/dstarrepeater')
 
 			# MMDVMHost Config
 			os.system(r'sed -i "/SelfOnly=/c\SelfOnly=1" /etc/mmdvmhost')
@@ -135,7 +128,6 @@ while True:
 
 			# Start Services
 			os.system(r'systemctl start timeserver.service')
-			os.system(r'systemctl start dstarrepeater.service')
 			os.system(r'systemctl start mmdvmhost.service')
 			os.system(r'systemctl start ircddbgateway.service')
 
@@ -152,16 +144,9 @@ while True:
 			#print "unlocking"
 			# Stop the Services
 			os.system(r'systemctl stop timeserver.service')
-			os.system(r'systemctl stop dstarrepeater.service')
 			os.system(r'systemctl stop mmdvmhost.service')
 			os.system(r'systemctl stop ircddbgateway.service')
 			time.sleep(5)
-
-			# D-Star Repeater Config
-			os.system(r'sed -i "/callsign=/c\callsign=' + unlockedModeCallPad + band +'" /etc/dstarrepeater')
-			os.system(r'sed -i "/gateway=/c\gateway=' + unlockedModeCallPad + 'G" /etc/dstarrepeater')
-			os.system(r'sed -i "/beaconText=/c\beaconText=' + unlockedModeCallPad + band +'" /etc/dstarrepeater')
-			os.system(r'sed -i "/restriction=/c\restriction=0" /etc/dstarrepeater')
 
 			# MMDVMHost Config
 			os.system(r'sed -i "/SelfOnly=/c\SelfOnly=0" /etc/mmdvmhost')
@@ -182,7 +167,6 @@ while True:
 
 			# Start Services
 			os.system(r'systemctl start timeserver.service')
-			os.system(r'systemctl start dstarrepeater.service')
 			os.system(r'systemctl start mmdvmhost.service')
 			os.system(r'systemctl start ircddbgateway.service')
 

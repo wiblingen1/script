@@ -42,10 +42,6 @@ if [[ $(/usr/bin/pgrep MMDVMHost) ]]; then
         systemctl stop mmdvmhost > /dev/null 2>&1
         svcRestart=mmdvmhost
 fi
-if [[ $(/usr/bin/pgrep dstarrepeaterd) ]]; then
-        systemctl stop dstarrepeaterd > /dev/null 2>&1
-        svcRestart=dstarrepeaterd
-fi
 resetGPIOModem
 
 # Random Filename

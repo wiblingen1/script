@@ -28,7 +28,7 @@ check_empty_keys() {
     local empty_keys=0
 
     if [ -f "$INI_FILE" ]; then
-        for key in ircddbgateway dstarrepeater MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
+        for key in ircddbgateway MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
             if ! grep -qE "^${key} = .+" "$INI_FILE"; then
                 empty_keys=1
                 break
@@ -44,7 +44,7 @@ check_key_existence() {
     local missing_keys=0
 
     if [ -f "$INI_FILE" ]; then
-        for key in ircddbgateway dstarrepeater MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
+        for key in ircddbgateway MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
             if ! grep -qE "^${key} =" "$INI_FILE"; then
                 missing_keys=1
                 break
@@ -63,7 +63,6 @@ if [ ! -f "$INI_FILE" ] || [ "$(check_key_existence)" -eq 1 ] || [ "$(check_empt
 Pi-Star_Build_Date = 17-May-2023
 Version = 4.1.6
 ircddbgateway = 
-dstarrepeater = 
 MMDVMHost = 
 kernel = 
 Hardware = $(map_hardware "$(eval "$PlatDet")")
@@ -88,7 +87,6 @@ sed -i "/Hardware/c Hardware = ${HW_var}" "$INI_FILE"
 # bins are sometimes built in a batch...use MMDVMHost ver as Dstar bin git/date vers...
 getVer=$( MMDVMHost -v | cut -d' ' -f 3- )
 sed -i "/^ircddbgateway.*/c ircddbgateway = ${getVer}" /etc/pistar-release
-sed -i "/^dstarrepeater.*/c dstarrepeater = ${getVer}" /etc/pistar-release
 sed -i "/MMDVMHost/c MMDVMHost = ${getVer}" /etc/pistar-release
 
 countProcs=$(grep -c ^processor /proc/cpuinfo)
