@@ -354,8 +354,8 @@ fi
 #
 if [ -f '/lib/systemd/system/dstarrepeater.service' ] ; then
     systemctl stop dstarrepeater.timer
-    systemctl stop dstarrepeater.service
     systemctl disable dstarrepeater.timer
+    systemctl stop dstarrepeater.service
     systemctl disable dstarrepeater.service
     rm -f /lib/systemd/system/dstarrepeater.timer
     rm -f /lib/systemd/system/dstarrepeater.service
