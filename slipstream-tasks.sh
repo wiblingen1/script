@@ -353,9 +353,13 @@ fi
 # remove dstarrepeater unit file/service - 7/2023 W0CHP
 #
 if [ -f '/lib/systemd/system/dstarrepeater.service' ] ; then
+    systemctl stop dstarrepeater.timer
     systemctl stop dstarrepeater.service
+    systemctl disable dstarrepeater.timer
     systemctl disable dstarrepeater.service
+    rm -f /lib/systemd/system/dstarrepeater.timer
     rm -f /lib/systemd/system/dstarrepeater.service
+    systemctl daemon-reload
 fi
 #
 
