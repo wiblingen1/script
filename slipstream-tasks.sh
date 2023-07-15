@@ -361,6 +361,9 @@ if [ -f '/lib/systemd/system/dstarrepeater.service' ] ; then
     rm -f /lib/systemd/system/dstarrepeater.service
     systemctl daemon-reload
 fi
+if grep -qo 'dstarrepeater =' /etc/pistar-release ; then
+    sed -i '/dstarrepeater =/d' /etc/pistar-release
+fi
 #
 
 # add hw cache to rc.local and exec
