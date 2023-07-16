@@ -366,6 +366,11 @@ if grep -qo 'dstarrepeater =' /etc/pistar-release ; then
 fi
 #
 
+# Increase /run ram disk a bit for better updating. 7/2023 W0CHP - thanks KF4HZU!
+#
+sed -i 's|^tmpfs[[:blank:]]*/run[[:blank:]]*tmpfs[[:blank:]]*nodev,noatime,nosuid,mode=1777,size=32m[[:blank:]]*0[[:blank:]]*0$|tmpfs                   /run                    tmpfs   nodev,noatime,nosuid,mode=1777,size=64m         0       0|' /etc/fstab
+#
+
 # add hw cache to rc.local and exec
 if ! grep -q 'hwcache' /etc/rc.local ; then
     sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 
