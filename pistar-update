@@ -91,7 +91,7 @@ git_update() {
 	fi
 
 	if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
-		echo -e "${INFO} Updates found for ${gitFolder}..."
+		echo -e "${INFO} Updates found for ${gitFolder} - Installing..."
         	# W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
         	if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
                 cd ${gitFolder}
