@@ -118,8 +118,13 @@ fi
 # bullseye; change weird interface names* back to what most are accustomed to;
 # <https://wiki.debian.org/NetworkInterfaceNames#THE_.22PREDICTABLE_NAMES.22_SCHEME>
 # sunxi systems don't have /boot/cmdline.txt so we can ignore that.
+# Raspbian::
 if [ "${OS_VER}" -gt "10" ] && [ -f '/boot/cmdline.txt' ] && [[ ! $(grep "net.ifnames" /boot/cmdline.txt) ]] ; then
     sed -i 's/$/ net.ifnames=1 biosdevname=0/' /boot/cmdline.txt
+fi
+# Armbian:
+if [ "${OS_VER}" -gt "10" ] && [ -f '/boot/armbianEnv.txt' ] && [[ ! $(grep "net.ifnames" /boot/armbianEnv.txt) ]] ; then
+    sed -i '$ a\extraargs=net.ifnames=0' /boot/armbianEnv.txt
 fi
 # ensure pistar-remote config has key-value pairs for new funcs (12/2/22)
 if ! grep -q 'hostfiles=8999995' /etc/pistar-remote ; then
