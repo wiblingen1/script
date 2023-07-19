@@ -156,7 +156,7 @@ git_update() {
 			fi
 		fi
                	else
-                	echo -e "${INFO} No updates for ${gitFolder} required."
+                	echo -e "${INFO} No updates required for ${gitFolder}."
 	fi
 }
 
@@ -517,9 +517,9 @@ main_function() {
 	# run any slipstream tasks
 	bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
 
-	echo -e "${TICK} Maintenance tasks complete!\n"
+	echo -e "${TICK} Done!"
 
-	echo "Starting Services..."
+	echo -e "\nStarting Services..."
 	pistar-services start > /dev/null 2>&1
 	echo -e "${TICK} Done!\n"
 
