@@ -29,7 +29,7 @@ hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="WPSD-HostFileUpdater Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 # connectivity check
-status_code=$(curl -I -m 3 -A " ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null ${hostFileURL})
+status_code=$(curl -I -m 6 -A " ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null ${hostFileURL})
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo "W0CHP Hostfile Update Server connection OK...updating hostfiles."
 else

@@ -66,7 +66,7 @@ pistar-services stop > /dev/null 2>&1
 
 # connectivity check
 echo -e "\nChecking connectivity to update server..."
-status_code=$(curl -I -m 3 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+status_code=$(curl -I -m 6 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo -e "Update server connection ok!"
 
