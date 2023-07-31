@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
 osName=$( /usr/bin/lsb_release -cs )
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 UUID=$( grep "UUID" /etc/pistar-release | awk '{print $3}' )
@@ -187,10 +192,10 @@ conn_check() {
     local status=$(curl -s -o /dev/null -w "%{http_code}" -A "ConnCheck - $uaStr" -I "$url")
 
     if [[ $status -ge 200 && $status -lt 400 ]]; then
-  	echo "ConnCheck OK: $status"
+  	echo "$url ConnCheck OK: $status"
         return 0  # Status code between 200 and 399, continue
     else
-        echo "ConnCheck status code is not in the expected range: $status"
+        echo "$url ConnCheck status code is not in the expected range: $status"
         exit 1
     fi
 }
@@ -210,6 +215,54 @@ if conn_check "$url"; then
             fi
         else
             echo "Local sbin repository is up to date."
+        fi
+    else
+        echo "Failed to fetch from the remote repository."
+        exit 1
+    fi
+else
+    echo "Failed to check the HTTP status of the repository URL: $url"
+    exit 1
+fi
+repo_path="/usr/local/bin"
+cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
+url="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-bin"
+if conn_check "$url"; then
+    if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="bin check ${uaStr}" git fetch origin; then
+        commits_behind=$(git rev-list --count HEAD..origin/master)
+        if [[ $commits_behind -gt 0 ]]; then
+            if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="bin update bootstrap ${uaStr}" git pull origin master; then
+                echo "Local bin repository updated successfully."
+            else
+                echo "Failed to update the local bin repository."
+                exit 1
+            fi
+        else
+            echo "Local bin repository is up to date."
+        fi
+    else
+        echo "Failed to fetch from the remote repository."
+        exit 1
+    fi
+else
+    echo "Failed to check the HTTP status of the repository URL: $url"
+    exit 1
+fi
+repo_path="/var/www/dashboard"
+cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
+url="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Dash"
+if conn_check "$url"; then
+    if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="dash check ${uaStr}" git fetch origin; then
+        commits_behind=$(git rev-list --count HEAD..origin/master)
+        if [[ $commits_behind -gt 0 ]]; then
+            if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="dash update bootstrap ${uaStr}" git pull origin master; then
+                echo "Local dash repository updated successfully."
+            else
+                echo "Failed to update the local dash repository."
+                exit 1
+            fi
+        else
+            echo "Local dash repository is up to date."
         fi
     else
         echo "Failed to fetch from the remote repository."
