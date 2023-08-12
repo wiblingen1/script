@@ -52,6 +52,18 @@ if grep -qo 'remount,ro' /etc/systemd/system/apt-daily.service ; then
     sed -i '/remount,ro/d' /etc/systemd/system/apt-daily.service
     systemctl daemon-reload 
 fi
+if grep -qo 'fs_mode=' /etc/bash.bashrc ; then
+    sed -i '/fs_mode=/d' /etc/bash.bashrc
+fi
+if grep -qo '# Aliases to control re-mounting' /etc/bash.bashrc ; then
+    sed -i '/# Aliases to control re-mounting/d' /etc/bash.bashrc
+fi
+if grep -qo 'alias rpi-ro=' /etc/bash.bashrc ; then
+    sed -i '/alias rpi-ro=/d' /etc/bash.bashrc
+fi
+if grep -qo 'alias rpi-rw=' /etc/bash.bashrc ; then
+    sed -i '/alias rpi-rw=/d' /etc/bash.bashrc
+fi
 #
 
 # Fix legacy radio type misspelling
