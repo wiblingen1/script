@@ -10,7 +10,7 @@ fi
 
 # Display services active status
 function status_services() {
-    services=("pistar-watchdog.service" "pistar-upnp.service" "nextiondriver.service" "mmdvmhost.service" "ircddbgateway.service" "dapnetgateway.service" "dmrgateway.service"  "p25gateway.service" "p25parrot.service" "nxdngateway.service" "m17gateway.service" "nxdnparrot.service" "dgidgateway.service" "ysfgateway.service" "ysfparrot.service" "ysf2dmr.service" "ysf2p25.service" "ysf2nxdn.service" "dmr2ysf.service" "dmr2m17.service" "dmr2nxdn.service" "nxdn2dmr.service" "aprsgateway.service" "gpsd.service" "timeserver.service" "cron.service" "pistar-remote.timer" "pistar-remote.service")
+    services=("pistar-watchdog.service" "pistar-upnp.service" "nextiondriver.service" "mmdvmhost.service" "ircddbgateway.service" "dapnetgateway.service" "dmrgateway.service"  "p25gateway.service" "p25parrot.service" "nxdngateway.service" "m17gateway.service" "nxdnparrot.service" "dgidgateway.service" "ysfgateway.service" "ysfparrot.service" "ysf2dmr.service" "ysf2p25.service" "ysf2nxdn.service" "dmr2ysf.service" "dmr2m17.service" "dmr2nxdn.service" "nxdn2dmr.service" "aprsgateway.service" "gpsd.service" "gpsd.socket" "timeserver.service" "cron.service" "pistar-remote.timer" "pistar-remote.service")
     
     for s in "${services[@]}"; do
 	status=$(systemctl is-active "$s" | tr [a-z] [A-Z])
@@ -58,6 +58,7 @@ function stop_services()
     systemctl stop nxdn2dmr.service > /dev/null 2>&1
     systemctl stop aprsgateway.service > /dev/null 2>&1
     systemctl stop gpsd.service > /dev/null 2>&1
+    systemctl stop gpsd.socket > /dev/null 2>&1
     systemctl stop timeserver.service > /dev/null 2>&1
     systemctl stop nextiondriver.service > /dev/null 2>&1
     if [ -t 1 ] ; then
@@ -73,6 +74,7 @@ function start_services()
     
     #systemctl daemon-reload > /dev/null 2>/dev/null # Restart Systemd to account for any service changes 
     systemctl start nextiondriver.service > /dev/null 2>&1
+    systemctl start gpsd.socket > /dev/null 2>&1
     systemctl start gpsd.service > /dev/null 2>&1
     systemctl start aprsgateway.service > /dev/null 2>&1
     systemctl start dapnetgateway.service > /dev/null 2>&1
