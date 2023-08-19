@@ -281,6 +281,7 @@ curl --fail -L -o ${RADIOIDDB_TMP}.bz2 -s ${hostFileURL}/user.csv.bz2 --user-age
 bunzip2 -f ${RADIOIDDB_TMP}.bz2
 # sort
 cat /tmp/user.csv | sort -un -k1n -o ${RADIOIDDB}
+rm -f $RADIOIDDB_TMP
 # remove header
 sed -ie '1d' ${RADIOIDDB}
 # make link for legacy nextion configs
