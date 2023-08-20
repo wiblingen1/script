@@ -328,6 +328,13 @@ if grep -q "Hardware = RPi" /etc/pistar-release; then
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
 fi
 
+# stuck version fix
+wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
+if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer")
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+fi
+
 #  all proper sec/update repos are defined for bullseye, except on armv6 archs
 if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
     if ! grep -q 'bullseye-security' /etc/apt/sources.list ; then
