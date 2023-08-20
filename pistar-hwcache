@@ -171,7 +171,8 @@ if [ -f '/etc/dstar-radio.dstarrepeater' ]; then
 fi
 
 # add / update WPSD version hash to /etc/pistar-release
-WPSDver=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 HEAD)
+gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
+WPSDver=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 if ! grep -w 'WPSD_Ver' /etc/pistar-release > /dev/null; then
     sed -i "/Callsign =/a WPSD_Ver = ${WPSDver}" /etc/pistar-release
 else

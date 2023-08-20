@@ -25,7 +25,6 @@ fi
 
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
-gitBranch="$( git --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD )"
 CONN_CHECK_URI="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Dash.git"
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 osName=$( /usr/bin/lsb_release -cs )
