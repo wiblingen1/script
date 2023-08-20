@@ -401,6 +401,27 @@ fi
 sed -i 's|^tmpfs[[:blank:]]*/run[[:blank:]]*tmpfs[[:blank:]]*nodev,noatime,nosuid,mode=1777,size=32m[[:blank:]]*0[[:blank:]]*0$|tmpfs                   /run                    tmpfs   nodev,noatime,nosuid,mode=1777,size=64m         0       0|' /etc/fstab
 #
 
+# Update OLED C-lib to new version that supports RPI4:
+# 8/2023 - W0CHP
+#
+lib_path="/usr/local/lib/libArduiPi_OLED.so.1.0"
+target_timestamp=$(date -d "2023-08-20" +%s)
+timestamp=$(stat -c %Y "$lib_path" 2>/dev/null)
+size=$(stat -c %s "$lib_path" 2>/dev/null)
+threshold_size=63896
+if [ -n "$timestamp" ] && [ -n "$size" ]; then
+    if [ "$timestamp" -lt "$target_timestamp" ] && [ "$size" -lt "$threshold_size" ]; then
+        mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
+ 	declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater")
+	curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
+    else
+	:
+    fi
+else
+    echo "$lib_path not found or unable to get its information."
+fi
+#
+
 # add hw cache to rc.local and exec
 if ! grep -q 'hwcache' /etc/rc.local ; then
     sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 
