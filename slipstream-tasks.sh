@@ -429,6 +429,11 @@ if [[ $(platformDetect.sh) == *"sun8i"* ]]; then
 fi
 #
 
+# update daily cron shuffle rules in rc.local
+if grep -q 'shuf -i 3-4' /etc/rc.local ; then
+  sed -i "s/shuf -i 3-4/shuf -i 2-4/g" /etc/rc.local
+fi
+
 # add hw cache to rc.local and exec
 if ! grep -q 'hwcache' /etc/rc.local ; then
     sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 
