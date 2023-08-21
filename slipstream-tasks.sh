@@ -301,7 +301,9 @@ if ! check_nextion_driver; then
 	:
     else # yay no tgifspot hacks! 
 	declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
-	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+	systemctl stop nextiondriver.service
+	rm -rf /usr/local/bin/NextionDriver
+	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
 fi
 #
@@ -325,14 +327,14 @@ fi
 # stuck update fix
 if grep -q "Hardware = RPi" /etc/pistar-release; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
 fi
 
 # stuck version fix
 wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
 if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
 fi
 
 #  all proper sec/update repos are defined for bullseye, except on armv6 archs
