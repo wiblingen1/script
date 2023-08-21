@@ -501,6 +501,9 @@ pistar-services start > /dev/null 2>&1
 
 kernel_release=$(uname -r)
 if [[ $kernel_release == *"sunxi"* ]]; then    # armbian/sunxi!
+    if [ -e /boot/vmlinuz* ]; then # cleanup redundancies
+	rm -f /boot/vmlinuz*
+    fi
     if [[ $kernel_release == 6.* ]]; then    # already updated to 6.x
         :
     else    # armbian with 5.x kernel
