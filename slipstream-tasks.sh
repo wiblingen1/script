@@ -287,12 +287,12 @@ fi
 # ensure our native Nextion driver is installed - 6/8/2023
 check_nextion_driver() {
   if NextionDriver -V | grep -q "W0CHP"; then
-    return 0  # true
+    return 0  # true - W0CHP Driver
   else
-    return 1  # false
+    return 1  # false - NOT W0CHP Driver
   fi
 }
-if ! check_nextion_driver; then
+if ! check_nextion_driver; then # check_nextion_driver() != W0CHP
     # TGIFspots contain really weird hacks/scripts, etc.[1] for their Nextion
     # screens, and it all collides with WPSD and our native Nextion driver
     # support.  So lets ignore TGIFspots altogether.
@@ -302,9 +302,7 @@ if ! check_nextion_driver; then
     else # yay no tgifspot hacks! 
 	declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
 	systemctl stop nextiondriver.service  > /dev/null 2<&1
-	rm -rf /usr/local/bin/NextionDriver  > /dev/null 2<&1
-	rm -rf /usr/local/sbin/NextionDriver  > /dev/null 2<&1
-	rm -rf /usr/bin/NextionDriver  > /dev/null 2<&1
+	find / -executable | grep "NextionDriver$" | grep -v find | xargs -I {} rm -f {}
 	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
 fi
