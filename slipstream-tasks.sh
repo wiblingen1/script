@@ -301,8 +301,10 @@ if ! check_nextion_driver; then
 	:
     else # yay no tgifspot hacks! 
 	declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
-	systemctl stop nextiondriver.service
-	rm -rf /usr/local/bin/NextionDriver
+	systemctl stop nextiondriver.service  > /dev/null 2<&1
+	rm -rf /usr/local/bin/NextionDriver  > /dev/null 2<&1
+	rm -rf /usr/local/sbin/NextionDriver  > /dev/null 2<&1
+	rm -rf /usr/bin/NextionDriver  > /dev/null 2<&1
 	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
 fi
