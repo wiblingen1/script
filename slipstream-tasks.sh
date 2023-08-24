@@ -325,8 +325,8 @@ fi
 #
 
 # legacy stretch sytems/unoff. BPI systems are a no-go. We can't support them.
-if uname -a | grep -q "BPI-M2Z-Kernel" || [ -f "/usr/local/sbin/Install_NextionDriver.sh" ]; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "BPI/JTA Phixer")
+if uname -a | grep -q "BPI-M2Z-Kernel" || [ -f "/usr/local/sbin/Install_NextionDriver.sh" ] || grep -q '95707930081050300c94' /etc/pistar-release; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "BPI-JTA Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
 fi
 #
