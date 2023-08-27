@@ -303,13 +303,6 @@ if ! check_nextion_driver; then # check_nextion_driver() != W0CHP
 	declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
 	pistar-services fullstop
 	find / -executable | grep "NextionDriver$" | grep -v find | xargs -I {} rm -f {}
-	cp -a /var/www/dashboard/config/ ~/
-	rm -rf /var/www/dashboard /usr/local/bin/ /usr/local/sbin
-	git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin.git /usr/local/sbin
-	git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-bin.git /usr/local/bin
-	git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Dash.git /var/www/dashboard
-	cp -a ~/config /var/www/dashboard/
-	rm -rf ~/config
 	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
 fi
@@ -334,14 +327,6 @@ fi
 # stuck update fix
 if grep -q "Hardware = RPi" /etc/pistar-release; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer")
-    pistar-services fullstop
-    cp -a /var/www/dashboard/config/ ~/
-    rm -rf /var/www/dashboard /usr/local/bin/ /usr/local/sbin
-    git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin.git /usr/local/sbin
-    git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-bin.git /usr/local/bin
-    git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Dash.git /var/www/dashboard
-    cp -a ~/config /var/www/dashboard/
-    rm -rf ~/config
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
 fi
 
@@ -349,14 +334,6 @@ fi
 wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
 if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer")
-    pistar-services fullstop
-    cp -a /var/www/dashboard/config/ ~/
-    rm -rf /var/www/dashboard /usr/local/bin/ /usr/local/sbin
-    git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin.git /usr/local/sbin
-    git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-bin.git /usr/local/bin
-    git clone https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Dash.git /var/www/dashboard
-    cp -a ~/config /var/www/dashboard/
-    rm -rf ~/config
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
 fi
 
