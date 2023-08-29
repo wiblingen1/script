@@ -403,6 +403,9 @@ fi
 sed -i 's|^tmpfs[[:blank:]]*/run[[:blank:]]*tmpfs[[:blank:]]*nodev,noatime,nosuid,mode=1777,size=32m[[:blank:]]*0[[:blank:]]*0$|tmpfs                   /run                    tmpfs   nodev,noatime,nosuid,mode=1777,size=64m         0       0|' /etc/fstab
 #
 
+# incr. php session storage to 128k  - thanks KC1AWV!
+sed -i 's|^tmpfs[[:blank:]]*/var/lib/php/sessions[[:blank:]]*tmpfs[[:blank:]]*nodev,noatime,nosuid,mode=0777,size=64k[[:blank:]]*0[[:blank:]]*0$|tmpfs                   /var/lib/php/sessions   tmpfs   nodev,noatime,nosuid,mode=0777,size=128k        0       0|' /etc/fstab
+
 # Update OLED C-lib to new version that supports RPI4:
 # 8/2023 - W0CHP
 #
