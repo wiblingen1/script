@@ -14,12 +14,6 @@ function _rw() {
     mount -o remount,rw /
 }
 
-function _ro() {
-    sync
-    sync
-    sync
-}
-
 function DisableFirewall() {
     if [[ $RUNNING_W0CHP ]]; then
         _rw
@@ -28,8 +22,6 @@ function DisableFirewall() {
         bash /usr/local/sbin/pistar-firewall > /dev/null 2<&1
         if [ -t 1 ]; then
             echo "Firewall Disabled"
-            # This is running from a terminal, so go back ro R/O. Since this is called from another scipt(s) making R/O, ensure _ro is not called.
-            _ro
         fi
     else
         echo "ERROR: You must perform the full W0CHP-PiStar-Dash installation before disabling the firewall!"
@@ -45,8 +37,6 @@ function EnableFirewall() {
         bash /usr/local/sbin/pistar-firewall > /dev/null 2<&1
         if [ -t 1 ]; then
             echo "Firewall Enabled"
-            # This is running from a terminal, so go back ro R/O. Since this is called from another scipt(s) making R/O, ensure _ro is not called.
-            _ro
         fi
     else
         echo "ERROR: You must perform the full W0CHP-PiStar-Dash installation before (re-)enabling the firewall!"
@@ -61,7 +51,6 @@ function DisableCron() {
     systemctl mask cron.service > /dev/null 2<&1
         if [ -t 1 ]; then
             echo "Cron Disabled"
-	    _ro
         fi
 }
 
@@ -72,7 +61,6 @@ function EnableCron() {
     systemctl start cron.service > /dev/null 2<&1
         if [ -t 1 ]; then
             echo "Cron Enabled"
-	    _ro
         fi
 }
 
