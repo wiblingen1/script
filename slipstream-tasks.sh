@@ -329,6 +329,10 @@ if grep -q "Hardware = RPi" /etc/pistar-release; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
 fi
+if grep -q "Iface = Iface" /etc/pistar-release || grep -q '^Iface = *$' /etc/pistar-release; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "Iface SU Phixer")
+    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+fi
 
 # stuck version fix
 wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
