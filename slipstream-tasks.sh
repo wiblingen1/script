@@ -420,7 +420,7 @@ size=$(stat -c %s "$lib_path" 2>/dev/null)
 threshold_size=63896
 if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
     if [ -n "$timestamp" ] && [ -n "$size" ]; then
-	if [ "$timestamp" -lt "$target_timestamp" ] && [ "$size" -lt "$threshold_size" ]; then
+	if [ "$timestamp" -lt "$target_timestamp" ] || [ "$size" -lt "$threshold_size" ]; then
 	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
  	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater")
 	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
