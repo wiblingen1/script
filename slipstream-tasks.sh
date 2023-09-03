@@ -300,10 +300,12 @@ if ! check_nextion_driver; then # check_nextion_driver() != W0CHP
     if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
 	:
     else # yay no tgifspot hacks! 
-	declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
-	pistar-services fullstop
-	find / -executable | grep "NextionDriver$" | grep -v find | xargs -I {} rm -f {}
-	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+	if [ "${osName}" != "buster" ] ; then
+	    declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
+	    pistar-services fullstop
+	    find / -executable | grep "NextionDriver$" | grep -v find | xargs -I {} rm -f {}
+	    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+	fi
     fi
 fi
 #
@@ -324,21 +326,23 @@ if uname -a | grep -q "BPI-M2Z-Kernel" || [ -f "/usr/local/sbin/Install_NextionD
 fi
 #
 
-# stuck update fix
-if grep -q "Hardware = RPi" /etc/pistar-release; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
-fi
-if grep -q "Iface = Iface" /etc/pistar-release || grep -q '^Iface = *$' /etc/pistar-release; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "Iface SU Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
-fi
+if [ "${osName}" != "buster" ] ; then
+    # stuck update fix
+    if grep -q "Hardware = RPi" /etc/pistar-release; then
+	declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer")
+	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+    fi
+    if grep -q "Iface = Iface" /etc/pistar-release || grep -q '^Iface = *$' /etc/pistar-release; then
+	declare -a CURL_OPTIONS=('-Ls' '-A' "Iface SU Phixer")
+	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+    fi
 
-# stuck version fix
-wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
-if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+    # stuck version fix
+    wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
+    if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
+	declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer")
+	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+    fi
 fi
 
 #  all proper sec/update repos are defined for bullseye, except on armv6 archs
@@ -420,7 +424,7 @@ size=$(stat -c %s "$lib_path" 2>/dev/null)
 threshold_size=63896
 if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
     if [ -n "$timestamp" ] && [ -n "$size" ]; then
-	if [ "$timestamp" -lt "$target_timestamp" ] || [ "$size" -lt "$threshold_size" ]; then
+	if [ "$timestamp" -lt "$target_timestamp" ] && [ "$size" -lt "$threshold_size" ]; then
 	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
 	    rm -f /usr/local/lib/libArduiPi_OLED.so.1
  	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater")
