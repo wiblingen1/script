@@ -430,6 +430,7 @@ if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
  	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater")
 	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
 	    ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
+	    systemctl restart mmdvmhost.service
         else
 	    :
         fi
