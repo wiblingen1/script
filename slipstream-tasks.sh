@@ -422,8 +422,10 @@ if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
     if [ -n "$timestamp" ] && [ -n "$size" ]; then
 	if [ "$timestamp" -lt "$target_timestamp" ] || [ "$size" -lt "$threshold_size" ]; then
 	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
+	    rm -f /usr/local/lib/libArduiPi_OLED.so.1
  	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater")
 	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
+	    ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
         else
 	    :
         fi
@@ -431,9 +433,16 @@ if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
 	echo "$lib_path not found or unable to get its information."
     fi
 fi
-if [[ $(platformDetect.sh) == *"sun8i"* ]]; then
-    if [ -f '/usr/local/lib/libArduiPi_OLED.so.1.0.bak' ]; then
-	mv /usr/local/lib/libArduiPi_OLED.so.1.0.bak /usr/local/lib/libArduiPi_OLED.so.1.0
+# fix for weird symlink issue
+libOLEDlibsymlink="libArduiPi_OLED.so.1"
+libOLEDoldTarget="libArduiPi_OLED.so.1.0.bak"
+libOLEDfull_path="/usr/local/lib/$libOLEDlibsymlink"
+if [ -L "$libOLEDfull_path" ]; then
+    actual_target=$(readlink -f "$libOLEDfull_path")
+    if [ "$actual_target" == "/usr/local/lib/$libOLEDoldTarget" ]; then
+	rm -f $libOLEDfull_path
+	ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
+        systemctl restart mmdvmhost.service
     fi
 fi
 #
