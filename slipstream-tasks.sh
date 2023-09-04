@@ -10,6 +10,11 @@ osName=$( /usr/bin/lsb_release -cs )
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 UUID=$( grep "UUID" /etc/pistar-release | awk '{print $3}' )
 OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
+gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
+dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
+uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
+hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
+uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 # This part fully-disables read-only mode in Pi-Star and
 # W0CHP-PiStar-Dash installations.
@@ -176,7 +181,7 @@ fi
 # 7/2023 W0CHP
 #
 if [ ! -f '/lib/systemd/system/stop-nextion.service' ]; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "Nextion Halt Service Installer (slipstream)")
+    declare -a CURL_OPTIONS=('-Ls' '-A' "Nextion Halt Service Installer (slipstream) $uaStr")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/nextion-driver-term -o /usr/local/sbin/nextion-driver-term
     chmod a+x /usr/local/sbin/nextion-driver-term
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/stop-nextion.service -o /lib/systemd/system/stop-nextion.service
@@ -199,10 +204,10 @@ fi
 #
 
 # 5/27/23: Bootstrapping backend scripts
-uaStr="Slipstream Task"
+gitUaStr="Slipstream Task $uaStr"
 conn_check() {
     local url="$1"
-    local status=$(curl -s -o /dev/null -w "%{http_code}" -A "ConnCheck - $uaStr" -I "$url")
+    local status=$(curl -s -o /dev/null -w "%{http_code}" -A "ConnCheck - $gitUaStr" -I "$url")
 
     if [[ $status -ge 200 && $status -lt 400 ]]; then
   	echo "ConnCheck OK: $status"
@@ -216,10 +221,10 @@ repo_path="/usr/local/sbin"
 cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
 url="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin"
 if conn_check "$url"; then
-    if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${uaStr}" git fetch origin; then
+    if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${gitUaStr}" git fetch origin; then
         commits_behind=$(git rev-list --count HEAD..origin/master)
         if [[ $commits_behind -gt 0 ]]; then
-            if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${uaStr}" git pull origin master; then
+            if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
                 echo "Local sbin repository updated successfully. Restarting script..."
                 exec bash "$0" "$@" # Re-execute the script with the same arguments
             else
@@ -301,7 +306,7 @@ if ! check_nextion_driver; then # check_nextion_driver() != W0CHP
 	:
     else # yay no tgifspot hacks! 
 	if [ "${osName}" != "buster" ] ; then
-	    declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer")
+	    declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer $uaStr")
 	    pistar-services fullstop
 	    find / -executable | grep "NextionDriver$" | grep -v find | xargs -I {} rm -f {}
 	    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
@@ -313,7 +318,7 @@ fi
 # legacy buster-based with the TGIF spot nextion abominations are a no-go
 if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
     if [ "${osName}" = "buster" ] && [ $( awk -F'=' '/\[General\]/{flag=1} flag && /Display/{print $2; flag=0}' /etc/mmdvmhost) = "Nextion" ] ; then
-        declare -a CURL_OPTIONS=('-Ls' '-A' "TS Phixer")
+        declare -a CURL_OPTIONS=('-Ls' '-A' "TS Phixer $uaStr")
         curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
     fi
 fi
@@ -321,7 +326,7 @@ fi
 
 # legacy stretch sytems/unoff. BPI systems are a no-go. We can't support them.
 if uname -a | grep -q "BPI-M2Z-Kernel" || [ -f "/usr/local/sbin/Install_NextionDriver.sh" ] || grep -q '95707930081050300c94' /etc/pistar-release; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "BPI-JTA Phixer")
+    declare -a CURL_OPTIONS=('-Ls' '-A' "BPI-JTA Phixer $uaStr")
     curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
 fi
 #
@@ -329,18 +334,18 @@ fi
 if [ "${osName}" != "buster" ] ; then
     # stuck update fix
     if grep -q "Hardware = RPi" /etc/pistar-release; then
-	declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer")
+	declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer $uaStr")
 	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
     if grep -q "Iface = Iface" /etc/pistar-release || grep -q '^Iface = *$' /etc/pistar-release; then
-	declare -a CURL_OPTIONS=('-Ls' '-A' "Iface SU Phixer")
+	declare -a CURL_OPTIONS=('-Ls' '-A' "Iface SU Phixer $uaStr")
 	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
 
     # stuck version fix
     wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
     if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
-	declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer")
+	declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer $uaStr")
 	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
 fi
@@ -427,7 +432,7 @@ if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
 	if [ "$timestamp" -lt "$target_timestamp" ] && [ "$size" -lt "$threshold_size" ]; then
 	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
 	    rm -f /usr/local/lib/libArduiPi_OLED.so.1
- 	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater")
+ 	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater $uaStr")
 	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
 	    ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
 	    systemctl restart mmdvmhost.service
