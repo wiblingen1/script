@@ -341,10 +341,6 @@ if [ "${osName}" != "buster" ] ; then
 	declare -a CURL_OPTIONS=('-Ls' '-A' "Iface SU Phixer $uaStr")
 	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
-    if grep -q "10000000b784d9d4" /etc/pistar-release; then
-	declare -a CURL_OPTIONS=('-Ls' '-A' "HV Phixer $uaStr")
-	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
-    fi
     # stuck version fix
     wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
     if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
