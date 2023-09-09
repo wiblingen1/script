@@ -514,11 +514,6 @@ main_function() {
 	chown -R mmdvm:mmdvm /var/log/pi-star > /dev/null 2>&1
 	chmod 775 /var/log/pi-star > /dev/null 2>&1
 
- 	if grep -q "10000000b784d9d4" /etc/pistar-release; then
-	    declare -a CURL_OPTIONS=('-Ls' '-A' "HV Phixer $uaStr")
-	    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
-	fi
-
 	# run any slipstream tasks
 	bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
 
