@@ -76,6 +76,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
         systemctl disable mobilegps.timer > /dev/null 2<&1
         systemctl disable mobilegps.service > /dev/null 2<&1
         rm -rf /lib/systemd/system/mobilegps*
+	systemctl daemon-reload > /dev/null 2<&1
     fi
     if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
         echo "GPSd (required) not installed. Installing now..."
@@ -92,7 +93,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     # now fix upstream gpsd binding bug:
     if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
         curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket > /dev/null 2>&1
-        systemctl daemon-reload &> /dev/null 
+	systemctl daemon-reload > /dev/null 2<&1
     fi
     # ensure gpsd is only enabled by the user:
     if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
