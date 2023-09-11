@@ -456,6 +456,14 @@ if [ -L "$libOLEDfull_path" ]; then
 fi
 #
 
+# Update issue - 9/2023 W0CHP
+#
+if ! grep -q 'W0CHP' /etc/issue ; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater $uaStr")
+    curl "${CURL_OPTIONS[@]}" -o /etc/issue https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
+fi
+#
+
 # update daily cron shuffle rules in rc.local
 if grep -q 'shuf -i 3-4' /etc/rc.local ; then
   sed -i "s/shuf -i 3-4/shuf -i 2-4/g" /etc/rc.local
