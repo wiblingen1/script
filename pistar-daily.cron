@@ -123,6 +123,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     	mv /root/{config.php,ircddblocal.php,language.php} /var/www/dashboard/config/ # move back the user config files
     	mv /root/ip*ables.rules /etc/ # move back the user config files
     	/usr/local/sbin/pistar-services start > /dev/null 2<&1 
+	rm -rf /usr/sbin/WPSD-Installer > /dev/null 2<&1
     	exit 0
     fi
 
@@ -159,10 +160,6 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 	branch="master"
     fi
     GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/bin --git-dir=/usr/local/bin/.git pull origin "${branch}"
-
-    # update installer
-    curl -Ls -A "${uaStrSF}" ${W0CHP_INSTALL_SCRIPT_REPO} -o /usr/sbin/WPSD-Installer
-    chmod +x /usr/sbin/WPSD-Installer
 
     echo -e "\nUpdating Hostfiles..."
     # Host Files Update

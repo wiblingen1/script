@@ -464,6 +464,11 @@ if ! grep -q 'W0CHP' /etc/issue ; then
 fi
 #
 
+# legacy cleanups
+if [ -f '/usr/sbin/WPSD-Installer' ]; then
+    rm -rf /usr/sbin/WPSD-Installer
+fi
+
 # update daily cron shuffle rules in rc.local
 if grep -q 'shuf -i 3-4' /etc/rc.local ; then
   sed -i "s/shuf -i 3-4/shuf -i 2-4/g" /etc/rc.local

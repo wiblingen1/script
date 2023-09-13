@@ -23,7 +23,6 @@ fi
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 SUPPORTING_FILES_REPO="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
-W0CHP_INSTALL_SCRIPT_REPO="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer"
 CONN_CHECK_URI="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Dash.git"
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 osName=$( /usr/bin/lsb_release -cs )
@@ -396,10 +395,6 @@ main_function() {
 	    /usr/local/sbin/m17gateway.service install > /dev/null 2<&1
 	    systemctl daemon-reload > /dev/null 2<&1
 	fi
-
-	# update installer
-	curl -Ls -A "${uaStrSF}" ${W0CHP_INSTALL_SCRIPT_REPO} -o /usr/sbin/WPSD-Installer
-	chmod +x /usr/sbin/WPSD-Installer
 
 	# add CallLookupProvider to /etc/pistar-release if not there...
 	if ! grep -q 'CallLookupProvider =' /etc/pistar-release ; then
