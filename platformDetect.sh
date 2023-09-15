@@ -76,7 +76,7 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
         *b03112) raspberryVer="2GB - Sony UK";;
         *c03112) raspberryVer="4GB - Sony UK";;
         *d03114) raspberryVer="8GB - Sony UK";;
-        *a03115) raspberryVer="8GB - Sony UK";; # this was a very limited RPi4 B rev.1.5 run. Was pulled due to power mgmt issues, but we see a few in the wild :-/
+        *a03115) raspberryVer="Ltd. Prod.";; # this was a very limited RPi4 B rev.1.5 run. Was pulled due to power mgmt issues, but we see a few in the wild :-/
         *d03115) raspberryVer="8GB - Sony UK";;
         *c03130) raspberryVer="4GB - Sony UK";;
         *a03140) raspberryVer="CM4 Rev 1.0 1GB";;
