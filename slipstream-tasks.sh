@@ -15,6 +15,7 @@ dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git 
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+WPSD_IS_REPO="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
 
 # This part fully-disables read-only mode in Pi-Star and
 # W0CHP-PiStar-Dash installations.
@@ -309,7 +310,7 @@ if ! check_nextion_driver; then # check_nextion_driver() != W0CHP
 	    declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer $uaStr")
 	    pistar-services fullstop
 	    find / -executable | grep "NextionDriver$" | grep -v find | xargs -I {} rm -f {}
-	    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+	    curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
 	fi
     fi
 fi
@@ -319,7 +320,7 @@ fi
 if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
     if [ "${osName}" = "buster" ] && [ $( awk -F'=' '/\[General\]/{flag=1} flag && /Display/{print $2; flag=0}' /etc/mmdvmhost) = "Nextion" ] ; then
         declare -a CURL_OPTIONS=('-Ls' '-A' "TS Phixer $uaStr")
-        curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
+        curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
     fi
 fi
 #
@@ -327,7 +328,7 @@ fi
 # legacy stretch sytems/unoff. BPI systems are a no-go. We can't support them.
 if uname -a | grep -q "BPI-M2Z-Kernel" || [ -f "/usr/local/sbin/Install_NextionDriver.sh" ] || grep -q '95707930081050300c94' /etc/pistar-release; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "BPI-JTA Phixer $uaStr")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
+    curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
 fi
 #
 
@@ -335,17 +336,17 @@ if [ "${osName}" != "buster" ] ; then
     # stuck update fix
     if grep -q "Hardware = RPi" /etc/pistar-release; then
 	declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer $uaStr")
-	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+	curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
     if grep -q "Iface = Iface" /etc/pistar-release || grep -q '^Iface = *$' /etc/pistar-release; then
 	declare -a CURL_OPTIONS=('-Ls' '-A' "Iface SU Phixer $uaStr")
-	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+	curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
     # stuck version fix
     wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
     if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
 	declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer $uaStr")
-	curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/WPSD-Installer | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
+	curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
     fi
 fi
 
