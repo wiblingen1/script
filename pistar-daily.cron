@@ -65,10 +65,10 @@ systemctl stop pistar-watchdog.service > /dev/null 2>&1
 pistar-services stop > /dev/null 2>&1
 
 # connectivity check
-echo -e "\nChecking connectivity to update server..."
+echo -e "\nChecking connectivity to WPSD update server..."
 status_code=$(curl -I -m 6 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-    echo -e "Update server connection ok!"
+    echo -e "WPSD Update Server connection ok!"
 
     echo -e "\nPerforming maint..."
     # Check for gpsd
@@ -255,7 +255,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
 
 else
-    echo "Update server connection failure! Will try again during next scheduled job tommorrow."
+    echo "WPSD Update Server connection failure! Will try again during next scheduled job tommorrow."
 fi
 
 # maint. tasks

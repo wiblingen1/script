@@ -31,9 +31,9 @@ uaStr="WPSD-HostFileUpdater Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${
 # connectivity check
 status_code=$(curl -I -m 6 -A " ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null ${hostFileURL})
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-    echo "W0CHP Hostfile Update Server connection OK...updating hostfiles."
+    echo "WPSD Hostfile Update Server connection OK...updating hostfiles."
 else
-    echo "W0CHP Hostfile Update Server connection failed."
+    echo "WPSD Hostfile Update Server connection failed."
     exit 1
 fi
 

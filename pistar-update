@@ -35,12 +35,12 @@ INFO="[i]"
 
 # connectivity check
 conn_check() {
-    echo -e "\nChecking for connectivity to the W0CHP Update Server (can take up to 30 seconds; please wait...)"
+    echo -e "\nChecking for connectivity to the WPSD Update Server (can take up to 30 seconds; please wait...)"
     status_code=$(curl -I -m 30 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
     if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 	echo -e "${TICK} Connection established!\n"
     else
-	echo -e "[X] Cannot connect to the W0CHP Update Server. Try again later. Exiting...\n"
+	echo -e "[X] Cannot connect to the WPSD Update Server. Try again later. Exiting...\n"
 	exit 1
     fi
 }
