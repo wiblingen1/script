@@ -74,7 +74,7 @@ then
     ./up.sh
     echo ""
     rm -rf /tmp/mdofirmware 2> /dev/null
-    read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your Pi-Star System..."
+    read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your WPSD system..."
     shutdown -r now
     exit 0
   ;;
@@ -89,7 +89,7 @@ then
     ./up2.sh
     echo ""
     rm -rf /tmp/mdofirmware 2> /dev/null
-    read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your Pi-Star System..."
+    read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your WPSD system..."
     shutdown -r now
     exit 0
   ;;
@@ -104,7 +104,7 @@ then
     ./up.sh
     echo ""
     rm -rf /tmp/mdofirmware 2> /dev/null
-    read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your Pi-Star System..."
+    read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your WPSD system..."
     shutdown -r now
     exit 0
   ;;

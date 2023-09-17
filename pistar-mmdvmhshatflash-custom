@@ -100,7 +100,7 @@ then
 
     rm -rf STM32F10X_Lib
 
-    read -n 1 -s -r -p "Flashing ${1} to your modem complete, press any key to reboot your Pi-Star System..."
+    read -n 1 -s -r -p "Flashing ${1} to your modem complete, press any key to reboot your WPSD system..."
     echo ""
 
     shutdown -r now
