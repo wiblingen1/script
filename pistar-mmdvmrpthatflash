@@ -94,7 +94,7 @@ then
     
   case ${1} in
   rpt_hat)
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     wget https://www.df2et.de/mmdvm/RPT_Hat-12mhz.bin
     wget https://www.df2et.de/mmdvm/RPT_Hat-12mhz.bin.sha256
     sha256sum -c RPT_Hat-12mhz.bin.sha256
@@ -116,7 +116,7 @@ then
     exit 0
   ;;
   rpt_hat-12.288mhz)
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     wget https://www.df2et.de/mmdvm/RPT_Hat-12.288mhz.bin
     wget https://www.df2et.de/mmdvm/RPT_Hat-12.288mhz.bin.sha256
     sha256sum -c RPT_Hat-12.288mhz.bin.sha256
@@ -138,7 +138,7 @@ then
     exit 0
   ;;
   rpt_hat-14.4mhz)
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     wget https://www.df2et.de/mmdvm/RPT_Hat-14.4mhz.bin
     wget https://www.df2et.de/mmdvm/RPT_Hat-14.4mhz.bin.sha256
     sha256sum -c RPT_Hat-14.4mhz.bin.sha256
@@ -160,7 +160,7 @@ then
     exit 0
   ;;
   rpt_hat-19.2mhz)
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     wget https://www.df2et.de/mmdvm/RPT_Hat-19.2mhz.bin
     wget https://www.df2et.de/mmdvm/RPT_Hat-19.2mhz.bin.sha256
     sha256sum -c RPT_Hat-19.2mhz.bin.sha256

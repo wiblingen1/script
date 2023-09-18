@@ -74,14 +74,14 @@ echo ""
 if [ "$1" ]
 then
   API="https://repo.w0chp.net/api/v1/repos/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/tags"
-  VERSION=$(curl -s https://repo.w0chp.net/api/v1/repos/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/tags | jq -r '.[0].name')
+  VERSION=$(curl -s ${API} | jq -r '.[0].name')
   BASE_FW_URL="https://repo.w0chp.net/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/${VERSION}/scripts"
   case ${1} in
   hs_hat)
     # Flashing MMDVM_HS Hat Modem
     rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
     mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     curl -o /tmp/mmdvmhshatfirmware/flash.sh $BASE_FW_URL/install_fw_hshat.sh
     chmod +x /tmp/mmdvmhshatfirmware/flash.sh
     cd  /tmp/mmdvmhshatfirmware
@@ -96,7 +96,7 @@ then
     # Flashing MMDVM_HS Hat Modem with 12.288 MHz TCXO
     rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
     mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     curl -o /tmp/mmdvmhshatfirmware/flash.sh $BASE_FW_URL/install_fw_hshat-12mhz.sh
     chmod +x /tmp/mmdvmhshatfirmware/flash.sh
     cd  /tmp/mmdvmhshatfirmware
@@ -111,7 +111,7 @@ then
     # Flashing MMDVM_HS_DUAL Modem
     rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
     mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     curl -o /tmp/mmdvmhshatfirmware/flash.sh $BASE_FW_URL/install_fw_hsdualhat.sh
     chmod +x /tmp/mmdvmhshatfirmware/flash.sh
     cd  /tmp/mmdvmhshatfirmware
@@ -126,7 +126,7 @@ then
     # Flashing MMDVM_HS_DUAL Modem with 12.288 MHz TCXO
     rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
     mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     curl -o /tmp/mmdvmhshatfirmware/flash.sh $BASE_FW_URL/install_fw_hsdualhat-12mhz.sh
     chmod +x /tmp/mmdvmhshatfirmware/flash.sh
     cd  /tmp/mmdvmhshatfirmware
@@ -141,7 +141,7 @@ then
     # Flashing MMDVM_HS Hat Modem
     rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
     mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     curl -o /tmp/mmdvmhshatfirmware/flash.sh $BASE_FW_URL/install_fw_d2rg_mmdvmhs.sh
     chmod +x /tmp/mmdvmhshatfirmware/flash.sh
     cd  /tmp/mmdvmhshatfirmware

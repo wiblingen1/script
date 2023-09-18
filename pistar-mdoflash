@@ -67,7 +67,7 @@ then
     # Flashing RPi GPIO Modem
     rm -rf /tmp/mdofirmware 2> /dev/null
     mkdir /tmp/mdofirmware 2> /dev/null
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     wget -O /tmp/mdofirmware/up.sh https://github.com/BD7KLE/MDO-FW/raw/master/up.sh
     chmod +x /tmp/mdofirmware/up.sh
     cd  /tmp/mdofirmware
@@ -82,7 +82,7 @@ then
     # Flashing RPi GPIO Modem
     rm -rf /tmp/mdofirmware 2> /dev/null
     mkdir /tmp/mdofirmware 2> /dev/null
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     wget -O /tmp/mdofirmware/up2.sh https://github.com/BD7KLE/MDO-FW/raw/master/up2.sh
     chmod +x /tmp/mdofirmware/up2.sh
     cd  /tmp/mdofirmware
@@ -97,7 +97,7 @@ then
     # Flashing RPi GPIO Modem
     rm -rf /tmp/mdofirmware 2> /dev/null
     mkdir /tmp/mdofirmware 2> /dev/null
-    echo "Flashing your ${1} modem to the latest version"
+    echo "Flashing your ${1} modem to the latest version (${VERSION})..."
     wget -O /tmp/mdofirmware/up.sh https://github.com/BD7KLE/MDO-FW/raw/master/vhf.sh
     chmod +x /tmp/mdofirmware/up.sh
     cd  /tmp/mdofirmware
