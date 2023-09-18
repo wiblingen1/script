@@ -71,7 +71,7 @@ if [ "$1" ]
 then
   API="https://repo.w0chp.net/api/v1/repos/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/tags"
   VERSION=$(curl -s ${API} | jq -r 'map(.name | ltrimstr("v") | split(".") | map(tonumber)) | max_by(.[]) | join(".")') # jq hackery to always return the greatest ver. # from the json "name:" field since the json results are not ordered that way
-  BASE_FW_URL="https://repo.w0chp.net/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/${VERSION}/scripts"
+  BASE_FW_URL="https://repo.w0chp.net/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/v${VERSION}/scripts"
   case ${1} in
   skybridge)
     # Flashing BridgeCom Hat Modem
