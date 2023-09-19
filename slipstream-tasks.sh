@@ -205,10 +205,10 @@ fi
 #
 
 # 5/27/23: Bootstrapping backend scripts
+CONN_CHECK_URI="https://repo.w0chp.net/api/v1/repos/WPSD-Dev/W0CHP-PiStar-sbin/branches"
 gitUaStr="Slipstream Task $uaStr"
 conn_check() {
-    local url="$1"
-    local status=$(curl -s -o /dev/null -w "%{http_code}" -A "ConnCheck - $gitUaStr" -I "$url")
+    local status=$(curl -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
 
     if [[ $status -ge 200 && $status -lt 400 ]]; then
   	echo "ConnCheck OK: $status"
@@ -220,8 +220,7 @@ conn_check() {
 }
 repo_path="/usr/local/sbin"
 cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
-url="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin"
-#if conn_check "$url"; then
+if conn_check; then
     if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin check ${gitUaStr}" git fetch origin; then
         commits_behind=$(git rev-list --count HEAD..origin/master)
         if [[ $commits_behind -gt 0 ]]; then
@@ -239,11 +238,11 @@ url="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin"
         echo "Failed to fetch from the remote repository."
         exit 1
     fi
-#else
-#    echo "Failed to check the HTTP status of the repository URL: $url"
-#    exit 1
-#fi
-#
+else
+    echo "Failed to check the HTTP status of the repository URL: $url"
+    exit 1
+fi
+
 
 # 5/30/23: ensure www perms are correct:
 cd /var/www/dashboard && chmod 755 `find  -type d`
