@@ -25,7 +25,7 @@ fi
 
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
-CONN_CHECK_URI="https://repo.w0chp.net/api/v1/repos/WPSD-Dev/W0CHP-PiStar-sbin/branches"
+CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 osName=$( /usr/bin/lsb_release -cs )
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')

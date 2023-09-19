@@ -73,7 +73,7 @@ echo ""
 # Get all releases and let the user choose or check if seconad command line option is a valid version tag
 #
 # API URL
-API_URL="https://repo.w0chp.net/api/v1/repos/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/tags"
+API_URL="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
 
 # Get all tags from the API and store them in an array
 mapfile -t VERSIONS < <(curl -s "$API_URL" | jq -r '.[].name')
@@ -112,7 +112,7 @@ else
       VERSION="${VERSIONS[(($CHOICE - 1))]}"
       
       # Download the correct firmware based on the selected version and perform actions
-      BASE_FW_URL="https://repo.w0chp.net/WPSD-Dev/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/${VERSION}/scripts"
+      BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/${VERSION}/scripts"
       case ${1} in
          hs_hat)
             # Flashing MMDVM_HS Hat Modem

@@ -15,7 +15,7 @@ dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git 
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
-WPSD_IS_REPO="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
+WPSD_IS_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
 
 # This part fully-disables read-only mode in Pi-Star and
 # W0CHP-PiStar-Dash installations.
@@ -110,9 +110,9 @@ function gitURIupdate () {
     dir="$1"
     gitRemoteURI=$(git --work-tree=${dir} --git-dir=${dir}/.git config --get remote.origin.url)
 
-    git --work-tree=${dir} --git-dir=${dir}/.git config --get remote.origin.url | grep 'Chipster' &> /dev/null
+    git --work-tree=${dir} --git-dir=${dir}/.git config --get remote.origin.url | grep 'WPSD-Dev' &> /dev/null
     if [ $? == 0 ]; then
-        newURI=$( echo $gitRemoteURI | sed 's/Chipster/WPSD-Dev/' )
+        newURI=$( echo $gitRemoteURI | sed 's|repo\.w0chp\.net/WPSD-Dev|wpsd-swd.w0chp.net/WPSD-SWD|g' )
         git --work-tree=${dir} --git-dir=${dir}/.git remote set-url origin $newURI
     fi
 }
@@ -183,9 +183,9 @@ fi
 #
 if [ ! -f '/lib/systemd/system/stop-nextion.service' ]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "Nextion Halt Service Installer (slipstream) $uaStr")
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/nextion-driver-term -o /usr/local/sbin/nextion-driver-term
+    curl "${CURL_OPTIONS[@]}" https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/nextion-driver-term -o /usr/local/sbin/nextion-driver-term
     chmod a+x /usr/local/sbin/nextion-driver-term
-    curl "${CURL_OPTIONS[@]}" https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/stop-nextion.service -o /lib/systemd/system/stop-nextion.service
+    curl "${CURL_OPTIONS[@]}" https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/stop-nextion.service -o /lib/systemd/system/stop-nextion.service
     systemctl daemon-reload
     systemctl enable stop-nextion.service
 fi
@@ -205,7 +205,7 @@ fi
 #
 
 # 5/27/23: Bootstrapping backend scripts
-CONN_CHECK_URI="https://repo.w0chp.net/api/v1/repos/WPSD-Dev/W0CHP-PiStar-sbin/branches"
+CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
 gitUaStr="Slipstream Task $uaStr"
 conn_check() {
     local status=$(curl -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
@@ -432,7 +432,7 @@ if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
 	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
 	    rm -f /usr/local/lib/libArduiPi_OLED.so.1
  	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater $uaStr")
-	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
+	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
 	    ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
 	    systemctl restart mmdvmhost.service
         else
@@ -460,7 +460,7 @@ fi
 #
 if ! grep -q 'W0CHP' /etc/issue ; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "/etc/issue updater $uaStr")
-    curl "${CURL_OPTIONS[@]}" -o /etc/issue https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
+    curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
 fi
 #
 
