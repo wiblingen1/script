@@ -65,7 +65,8 @@ echo ""
 if [ "$1" ]
 then
   API="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
-  VERSION=$(curl -s ${API} | jq -r 'map(.name | ltrimstr("v") | split(".") | map(tonumber)) | max_by(.[]) | join(".")') # jq hackery to always return the greatest ver. # from the json "name:" field since the json results are not ordered that way
+  VERSION=$(curl -A "$UAstr" -s ${API} | jq -r 'map(.name | ltrimstr("v") | split(".") | map(tonumber)) | max_by(.[]) | join(".")') # jq hackery to always return the greatest ver. # from the json "name:" field since the json results are not ordered that way
+  UAstr="WPSD Modem FW Update Invocation"
   BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/v${VERSION}/scripts"
   case ${1} in
   pi)
@@ -73,7 +74,7 @@ then
     rm -rf /tmp/nanodvfirmware 2> /dev/null
     mkdir /tmp/nanodvfirmware 2> /dev/null
     echo "Flashing your ${1} modem to the latest version (${VERSION})..."
-    curl -o /tmp/nanodvfirmware/flash.sh $BASE_FW_URL/install_fw_nanodv_npi.sh
+    curl -A "$UAstr" -o /tmp/nanodvfirmware/flash.sh $BASE_FW_URL/install_fw_nanodv_npi.sh
     chmod +x /tmp/nanodvfirmware/flash.sh
     cd  /tmp/nanodvfirmware
     ./flash.sh
@@ -88,7 +89,7 @@ then
     rm -rf /tmp/nanodvfirmware 2> /dev/null
     mkdir /tmp/nanodvfirmware 2> /dev/null
     echo "Flashing your ${1} modem to the latest version (${VERSION})..."
-    curl -o /tmp/nanodvfirmware/flash.sh $BASE_FW_URL/install_fw_nanodv_usb.sh
+    curl -A "$UAstr" -o /tmp/nanodvfirmware/flash.sh $BASE_FW_URL/install_fw_nanodv_usb.sh
     chmod +x /tmp/nanodvfirmware/flash.sh
     cd  /tmp/nanodvfirmware
     ./flash.sh
