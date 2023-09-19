@@ -38,7 +38,7 @@ uaStr="ConnCheck (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Cal
 
 # connectivity check
 echo -e "\nChecking connectivity to WPSD update server..."
-status_code=$(curl -m 6 -A "${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+status_code=$(curl -L -m 6 -A "${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo -e "WPSD Update Server connection ok!"
     # grab and cache latest version

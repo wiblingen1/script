@@ -208,7 +208,7 @@ fi
 CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
 gitUaStr="Slipstream Task $uaStr"
 conn_check() {
-    local status=$(curl -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+    local status=$(curl -L -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
 
     if [[ $status -ge 200 && $status -lt 400 ]]; then
   	echo "ConnCheck OK: $status"
