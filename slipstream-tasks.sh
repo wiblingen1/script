@@ -221,11 +221,11 @@ conn_check() {
 repo_path="/usr/local/sbin"
 cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
 url="https://repo.w0chp.net/WPSD-Dev/W0CHP-PiStar-sbin"
-if conn_check "$url"; then
-    if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin check ${gitUaStr}" git fetch origin; then
+#if conn_check "$url"; then
+    if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin check ${gitUaStr}" git fetch origin; then
         commits_behind=$(git rev-list --count HEAD..origin/master)
         if [[ $commits_behind -gt 0 ]]; then
-            if env GIT_HTTP_CONNECT_TIMEOUT="2" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
+            if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
                 echo "Local sbin repository updated successfully. Restarting script..."
                 exec bash "$0" "$@" # Re-execute the script with the same arguments
             else
@@ -239,10 +239,10 @@ if conn_check "$url"; then
         echo "Failed to fetch from the remote repository."
         exit 1
     fi
-else
-    echo "Failed to check the HTTP status of the repository URL: $url"
-    exit 1
-fi
+#else
+#    echo "Failed to check the HTTP status of the repository URL: $url"
+#    exit 1
+#fi
 #
 
 # 5/30/23: ensure www perms are correct:
