@@ -4,7 +4,7 @@
 #                                                                             #
 #                      Pi-Star Firmware Update Tool                           #
 #                                                                             #
-#    Version 1.3, Code, Design and Development by Andy Taylor (MW0MWZ)        #
+#    Version 1.4, Code, Design and Development by Andy Taylor (MW0MWZ)        #
 #                          and Chip Cuccio (W0CHP)                            #
 #                                                                             #
 #                 Make it simple to update the Firmware                       #
@@ -21,7 +21,7 @@ fi
 if [ -z "$1" ]
 then
   echo "This tool is used to flash your ZUMSpot Modem"
-  echo "to use the command, you will need to pass the name of your modem,"
+  echo "to use the command, you will need to specify your modem type..."
   echo "please choose from the list below..."
   echo ""
   echo "To flash a ZUMSpot connected to GPIO, run:         pistar-zumspotflash rpi"
@@ -29,20 +29,23 @@ then
   echo "To flash a ZUMSpot USB Key, run:                   pistar-zumspotflash usb"
   echo "To flash a USB Connected Libre Modem, run:         pistar-zumspotflash libre"
   echo ""
-  echo "To flash MMDVM_HS Hat devices by DB9MAT & DF2ET please use pistar-mmdvmhshatflash"
-  echo "To flash MMDVM_HS Nano Hat devices please use pistar-vyehsflash"
-  echo "To flash your BD7KLE/BG3MDO devices please use pistar-mdoflash"
+  echo "To flash MMDVM_HS Hat devices by DB9MAT & DF2ET, etc., run: pistar-mmdvmhshatflash"
+  echo "To flash ZUMspot devices, run: pistar-zumspotflash"
+  echo "To flash NANO_DV devices, run: pistar-nanodvflash"
   echo ""
   # Get the pretty name for the chosen Modem according to the dashboard.
   if [ -f '/etc/dstar-radio.mmdvmhost' ]; then
-    # Get the modem that the user has selected.
     modemSelected=$(grep 'Hardware=' /etc/dstar-radio.mmdvmhost)
     modemSelected=${modemSelected#*=}
 
-    # Get the user friendly version of the selected Modem.
-    modemSelectedHuman=$(grep ${modemSelected} /var/www/dashboard/admin/configure.php)
+    # Get the user-friendly version of the selected Modem.
+    modemSelectedHuman=$(grep value=\"${modemSelected}\" /var/www/dashboard/admin/configure.php | head -n 1)
     modemSelectedHuman=${modemSelectedHuman#*\">}
     modemSelectedHuman=${modemSelectedHuman::-9}
+
+    # Replace "&amp;" with "&" in modemSelectedHuman
+    modemSelectedHuman=${modemSelectedHuman//&amp;/&}
+
     echo "Selected Modem:     ${modemSelectedHuman}"
   fi
 

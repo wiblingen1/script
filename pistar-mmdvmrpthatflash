@@ -27,35 +27,37 @@ then
   echo "To flash RPT_HAT (14.4000MHz TCXO) connected to GPIO, run: pistar-mmdvmrpthatflash rpt_hat-14.4mhz"
   echo "To flash RPT_HAT (19.2000MHz TCXO) connected to GPIO, run: pistar-mmdvmrpthatflash rpt_hat-19.2mhz"
   echo ""
-# Get the pretty name for the chosen Modem according to the dashboard.
+  # Get the pretty name for the chosen Modem according to the dashboard.
   if [ -f '/etc/dstar-radio.mmdvmhost' ]; then
-    # Get the modem that the user has selected.
     modemSelected=$(grep 'Hardware=' /etc/dstar-radio.mmdvmhost)
     modemSelected=${modemSelected#*=}
 
-    # Get the user friendly version of the selected Modem.
+    # Get the user-friendly version of the selected Modem.
     modemSelectedHuman=$(grep value=\"${modemSelected}\" /var/www/dashboard/admin/configure.php | head -n 1)
     modemSelectedHuman=${modemSelectedHuman#*\">}
     modemSelectedHuman=${modemSelectedHuman::-9}
+
+    # Replace "&amp;" with "&" in modemSelectedHuman
+    modemSelectedHuman=${modemSelectedHuman//&amp;/&}
+
     echo "Selected Modem:     ${modemSelectedHuman}"
   fi
-  
+
   # Get the Modem info from the Log
   numLogs=$(ls -1rt /var/log/pi-star/MMDVM-*.log | wc -l)
   if [[ ${numLogs} -gt 0 ]]; then
     # Get the physically connected modem from the logs
-    modemLog=$(tac $(ls -1rt /var/log/pi-star/MMDVM-*.log | tail -n1 ) | grep "protocol" -m 1 | sed -n 's/description: /&\n/;s/.*\n//p')
+    modemLog=$(tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1)
     echo "Connected Hardware: ${modemLog}"
-    
+
     # Get the TCXO data
     if [[ ${modemLog} == *"MHz"* ]]; then
-      tcxoData=$(echo ${modemLog} | sed -e "s/.*\s\(\w\+\.\w\+ MHz\)\s.*/\1/")
+      tcxoData=$(echo ${modemLog} | awk '{print $3}')
       echo "TCXO Value:         ${tcxoData}"
     fi
   fi
   exit 0
 fi
-
 #
 # OK we know what the modem is, let get the firmware string from the log...
 #
