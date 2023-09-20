@@ -227,7 +227,7 @@ if conn_check; then
             if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
 		if [ $? -ne 0 ]; then
 		    declare -a CURL_OPTIONS=('-Ls' '-A' "S-sbin Phixer $uaStr")
-		    curl "${CURL_OPTIONS[@]}" $W0CHP_INSTALL_SCRIPT_REPO | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+		    curl "${CURL_OPTIONS[@]}" $W0CHP_INSTALL_SCRIPT_REPO | env NO_SELF_UPDATE=1 env NO_AC=1 env FORCE_RD=1 bash -s -- -idc > /dev/null 2<&1
 		    exit 1
 		fi
                 echo "Local sbin repository updated successfully. Restarting script..."

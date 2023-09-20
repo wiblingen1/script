@@ -75,7 +75,8 @@ echo ""
 # API URL
 API_URL="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
 
-UAstr="WPSD Modem FW Update Invocation (client side)"
+script_name=$(basename "$0")
+UAstr="WPSD Modem FW Update Invocation (client side: $script_name)"
 
 # Get all tags from the API and store them in an array
 mapfile -t VERSIONS < <(curl -A "$UAstr" -s "$API_URL" | jq -r '.[].name')
