@@ -30,6 +30,7 @@ uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | 
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 uaStrSF="WPSD-SuppFiles (Manual Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+W0CHP_INSTALL_SCRIPT_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
 TICK="[✓]"
 INFO="[i]"
 
@@ -109,6 +110,11 @@ git_update() {
                         	if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep pistar-update 2>/dev/null)" = "pistar-update" ]; then
                                 	echo -e "\n[!] New version of the Updater available. Performing self-update..."
                                 	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
+					if [ $? -ne 0 ]; then
+					    declare -a CURL_OPTIONS=('-Ls' '-A' "S-sbin Phixer $uaStr")
+        				    curl "${CURL_OPTIONS[@]}" $W0CHP_INSTALL_SCRIPT_REPO | env NO_SELF_UPDATE=1 env NO_AC=1 bash -s -- -idc > /dev/null 2<&1
+        				    exit 1
+    					fi
                                 	echo -e "ChangeLog (last 3 changes):"
 					echo -e "---------------------------"
                                 	git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
