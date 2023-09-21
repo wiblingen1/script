@@ -32,7 +32,7 @@ CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 osName=$( /usr/bin/lsb_release -cs )
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
-uaStr="WPSD-BG-Task Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+uaStr="Grab Server WPSD-BG-Task Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 status_code=$(curl -m 6 -A "ConnCheck Client Side - ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")
 if [[ ! $status_code == 20* ]] || [[ ! $status_code == 30* ]] ; then # connection OK...keep going
