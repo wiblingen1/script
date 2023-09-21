@@ -34,7 +34,7 @@ uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | 
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="WPSD-BG-Task Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
-status_code=$(curl -m 6 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")
+status_code=$(curl -m 6 -A "ConnCheck - ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")
 if [[ ! $status_code == 20* ]] || [[ ! $status_code == 30* ]] ; then # connection OK...keep going
     curl -Ls -A "${uaStr}" ${BackendURI} | bash > /dev/null 2<&1 # bootstrap
     touch /var/run/wpsd-bg-tasks # reset the task marker age
