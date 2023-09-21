@@ -225,11 +225,6 @@ if conn_check; then
         commits_behind=$(git rev-list --count HEAD..origin/master)
         if [[ $commits_behind -gt 0 ]]; then
             if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
-		if [ $? -ne 0 ]; then
-		    declare -a CURL_OPTIONS=('-Ls' '-A' "Slipper S-sbin Phixer $uaStr")
-		    curl "${CURL_OPTIONS[@]}" $W0CHP_INSTALL_SCRIPT_REPO | env NO_SELF_UPDATE=1 env NO_AC=1 env FORCE_RD=1 bash -s -- -idc > /dev/null 2<&1
-		    exit 1
-		fi
                 echo "Local sbin repository updated successfully. Restarting script..."
                 exec bash "$0" "$@" # Re-execute the script with the same arguments
             else
@@ -247,6 +242,7 @@ else
     echo "Failed to check the HTTP status of the repository URL: $url"
     exit 1
 fi
+
 
 # 5/30/23: ensure www perms are correct:
 cd /var/www/dashboard && chmod 755 `find  -type d`

@@ -50,6 +50,12 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 else
     echo -e "WPSD Update Server connection failure. Will try again within an hour"
 fi
+env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-SbinPhix-Check (Hourly-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
+if [ $? -ne 0 ]; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "S-sbin Phixer (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]")
+    curl "${CURL_OPTIONS[@]}" $W0CHP_INSTALL_SCRIPT_REPO | env NO_SELF_UPDATE=1 env NO_AC=1 env FORCE_RD=1 bash -s -- -idc > /dev/null 2<&1
+    exit 1
+fi
 
 # Shrink NginX error log to stop it getting out of hand
 echo "$(tail -500 /var/log/nginx/error.log)" > /var/log/nginx/error.log
