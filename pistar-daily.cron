@@ -131,10 +131,23 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     # Update sbin
     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
     if [ $? -ne 0 ]; then
-	declare -a CURL_OPTIONS=('-Ls' '-A' "S-sbin Phixer $uaStr")
-	curl "${CURL_OPTIONS[@]}" $W0CHP_INSTALL_SCRIPT_REPO | env NO_SELF_UPDATE=1 env NO_AC=1 env FORCE_RD=1 bash -s -- -idc > /dev/null 2<&1
-    	exit 1
-    fi
+        if grep -q LOGNDROP /etc/iptables.rules; then
+            fwState="enabled"
+        else
+            fwState="disabled"
+        fi
+        GIT_REPO=/usr/local/sbin
+        rm -rf $GIT_REPO
+        env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="BF_sbin-Reset (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]]" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-sbin.git $GIT_REPO
+        if [ "$fwState" == "enabled" ]; then
+           /usr/local/sbin/pistar-system-manager -efw
+        else
+           /usr/local/sbin/pistar-system-manager -dfw
+        fi
+	exec "$0" "$@"
+        exit 1
+    fi      
+
     echo -e "\nResetting firewall back to user prefs..."
     if [ "$fwState" == "enabled" ]; then
 	/usr/local/sbin/pistar-system-manager -efw
