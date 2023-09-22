@@ -469,6 +469,14 @@ if [ -f '/usr/sbin/WPSD-Installer' ]; then
     rm -rf /usr/sbin/WPSD-Installer
 fi
 
+# avahi service names
+if grep -q 'Pi-Star Web Interface' /etc/avahi/services/http.service ; then
+    sed -i 's/Pi-Star Web Interface/WPSD Web Interface/g' /etc/avahi/services/http.service
+fi
+if grep -q 'Pi-Star SSH' /etc/avahi/services/ssh.service ; then
+    sed -i 's/Pi-Star SSH/WPSD SSH/g' /etc/avahi/services/ssh.service
+fi
+
 # update daily cron shuffle rules in rc.local
 if grep -q 'shuf -i 3-4' /etc/rc.local ; then
   sed -i "s/shuf -i 3-4/shuf -i 2-4/g" /etc/rc.local
