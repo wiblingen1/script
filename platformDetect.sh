@@ -3,7 +3,8 @@
 # Return the version of the Raspberry Pi or other clone boards
 # Written by Andy Taylor (MW0MWZ)
 # Enhanced by W0CHP
-#
+# Used in various places across the software
+# 
 # Pi Rev codes available at <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes>
 
 # Pull the CPU Model from /proc/cpuinfo

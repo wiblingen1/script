@@ -2,7 +2,7 @@
 
 # This script checks for background/bootstrap tasks, which are used for near
 # real-time bug fixes, etc. (exec'd before manual and cron updates; called from
-# dashboard's index.php).
+# dashboard's main index page via JS refresh/reload func).
 
 if [ "$(id -u)" != "0" ]; then # must be root
   exit 1

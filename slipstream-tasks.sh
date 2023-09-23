@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## THis script is for near-real-time and periodic fixes, etc.
+
 # Make sure we are root
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
@@ -242,7 +244,6 @@ else
     echo "Failed to check the HTTP status of the repository URL: $url"
     exit 1
 fi
-
 
 # 5/30/23: ensure www perms are correct:
 cd /var/www/dashboard && chmod 755 `find  -type d`
