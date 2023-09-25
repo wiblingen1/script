@@ -21,6 +21,8 @@ fi
 #
 if [ -z "$1" ]
 then
+  clear
+  echo ""
   echo "This tool is used to flash a custom made firmware to your MMDVM_HS Hat Modem"
   echo ""
   echo "Pre-built nightly firmware configured from the templates can be downloaded from:"
@@ -33,6 +35,10 @@ then
   echo ""
   echo "Use this script and the generated firmware at your own risk!"
   echo "Usage: $(basename ${0}) <firmware.bin>"
+  echo ""
+  echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
+  echo "We simply provide scripts to update the firmware. For actual firmware support,"
+  echo "you will need to utilize other support resources from the firmware developers/maintainers or the web".
   echo ""
   exit 0
 fi

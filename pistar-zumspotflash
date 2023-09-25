@@ -20,6 +20,8 @@ fi
 #
 if [ -z "$1" ]
 then
+  clear
+  echo ""
   echo "This tool is used to flash your ZUMSpot Modem"
   echo "to use the command, you will need to specify your modem type..."
   echo "please choose from the list below..."
@@ -32,6 +34,10 @@ then
   echo "To flash MMDVM_HS Hat devices by DB9MAT & DF2ET, etc., run: pistar-mmdvmhshatflash"
   echo "To flash ZUMspot devices, run: pistar-zumspotflash"
   echo "To flash NANO_DV devices, run: pistar-nanodvflash"
+  echo ""
+  echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
+  echo "We simply provide scripts to update the firmware. For actual firmware support,"
+  echo "you will need to utilize other support resources from the firmware developers/maintainers or the web".
   echo ""
   # Get the pretty name for the chosen Modem according to the dashboard.
   if [ -f '/etc/dstar-radio.mmdvmhost' ]; then

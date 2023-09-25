@@ -18,6 +18,8 @@ fi
 
 if [ -z "$1" ]
 then
+  clear
+  echo ""
   echo "This tool is used to flash your MMDVM_HS Hat Modem"
   echo "to use the command, you will need to pass the name of your modem,"
   echo "please choose from the list below..."
@@ -26,6 +28,10 @@ then
   echo "To flash RPT_HAT (12.2880MHz TCXO) connected to GPIO, run: pistar-mmdvmrpthatflash rpt_hat-12.288mhz"
   echo "To flash RPT_HAT (14.4000MHz TCXO) connected to GPIO, run: pistar-mmdvmrpthatflash rpt_hat-14.4mhz"
   echo "To flash RPT_HAT (19.2000MHz TCXO) connected to GPIO, run: pistar-mmdvmrpthatflash rpt_hat-19.2mhz"
+  echo ""
+  echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
+  echo "We simply provide scripts to update the firmware. For actual firmware support,"
+  echo "you will need to utilize other support resources from the firmware developers/maintainers or the web".
   echo ""
   # Get the pretty name for the chosen Modem according to the dashboard.
   if [ -f '/etc/dstar-radio.mmdvmhost' ]; then
