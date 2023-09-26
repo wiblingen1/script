@@ -51,16 +51,17 @@ else
     echo -e "WPSD Update Server connection failure. Will try again within an hour"
 fi
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-    env GIT_HTTP_CONNECT_TIMEOUT="10" GIT_HTTP_USER_AGENT="sbin-Checker $uaStr" git -C /usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
-    if [ $? -ne 0 ]; then # reset bsin if pull fails
+    exit_status=$(env GIT_HTTP_CONNECT_TIMEOUT="10" GIT_HTTP_USER_AGENT="sbin-Checker $uaStr" git -C /usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master)
+    if [ $? -ne 0 ]; then # reset sbin if pull fails
+	exit_status_message="$exit_status"
         if grep -q LOGNDROP /etc/iptables.rules; then
             fwState="enabled"
         else
             fwState="disabled"
         fi
-        GIT_REPO=/usr/local/sbin
-        rm -rf $GIT_REPO
-        env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="BF_sbin-Reset (Hourly-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-sbin.git $GIT_REPO
+        sbin_repo=/usr/local/sbin
+        rm -rf $sbin_repo
+        env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="BF_sbin-Reset [$exit_status_message] (Hourly-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-sbin.git $sbin_repo
         if [ "$fwState" == "enabled" ]; then
            /usr/local/sbin/pistar-system-manager -efw
         else
