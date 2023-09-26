@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## THis script is for near-real-time and periodic fixes, etc.
+## This script is for near-real-time and periodic fixes, etc.
 
 # Make sure we are root
 if [ "$(id -u)" != "0" ]; then
@@ -490,4 +490,8 @@ if ! grep -q 'hwcache' /etc/rc.local ; then
 else
     /usr/local/sbin/pistar-hwcache
 fi
+if ! grep -q 'slipstream-tasks' /etc/rc.local ; then
+    sed -i '/^\/usr\/local\/sbin\/pistar-hwcache/a \\n\n# slipstream tasks\n\/usr\/local\/sbin\/slipstream-tasks.sh' /etc/rc.local 
+fi
+
 #
