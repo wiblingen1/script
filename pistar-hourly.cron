@@ -67,8 +67,6 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
         else
            /usr/local/sbin/pistar-system-manager -dfw
         fi
-	exec "$0" "$@"
-	exit 1
     fi
 fi
 

@@ -125,8 +125,6 @@ git_update() {
 					    else
 						/usr/local/sbin/pistar-system-manager -dfw
 					    fi
-					    exec "$0" "$@"
-					    exit 1
     					fi
                                 	echo -e "ChangeLog (last 3 changes):"
 					echo -e "---------------------------"
