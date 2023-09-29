@@ -17,6 +17,18 @@ if [ "$(id -u)" != "0" ];then
     exit 1
 fi
 
+# check age of task marker file if it exists, and if it's < 4 hours young, bail.
+if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "14400" ]; then
+    echo "Hostfles are less than 4 hours old. Not updating."
+    exit 0
+fi
+
+exec 200>/var/lock/wpsd-hostfiles.lock || exit 1 # only one exec per time
+if ! flock -n 200 ; then
+  echo "Process already running"
+  exit 1
+fi
+
 # Get the W0CHP-PiStar-Dash Version
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
@@ -287,6 +299,8 @@ sed -ie '1d' ${RADIOIDDB}
 # make link for legacy nextion configs
 rm -rf ${STRIPPED}
 ln -s ${RADIOIDDB} ${STRIPPED}
+
+touch /var/run/hostfiles-up # create/reset marker
 
 exit 0
 
