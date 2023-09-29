@@ -13,18 +13,11 @@ if ! flock -n 200 ; then
   exit 1
 fi
 
-# create and check age of task marker file
-if [ ! -f '/var/run/wpsd-bg-tasks' ] ; then # marker file doesn't exist. Create it and bail until next script call
-    touch /var/run/wpsd-bg-tasks
-    exit 0
+# check age of task marker file if it exists, and if it's < 1 hour young, bail.
+if [  -f '/var/run/wpsd-bg-tasks' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/wpsd-bg-tasks") ))" -lt "3600" ]; then
+    exit 0 # marker either does not exist ot it's 1+ hour - so we continue running this script...
 fi
 
-# check age of task marker file. if it's < 1 hour young, bail.
-if [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/wpsd-bg-tasks") ))" -lt "3600" ]; then
-    exit 0
-fi
-
-# task marker file exists, AND is > 1 hours; run the bootstrap/background tasks...
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 BackendURI="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/bg-tasks/run-tasks.sh"
@@ -37,7 +30,7 @@ uaStr="Grab Server WPSD-BG-Task Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUI
 status_code=$(curl -m 6 -A "ConnCheck Client Side - ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")
 if [[ ! $status_code == 20* ]] || [[ ! $status_code == 30* ]] ; then # connection OK...keep going
     curl -Ls -A "${uaStr}" ${BackendURI} | bash > /dev/null 2<&1 # bootstrap
-    touch /var/run/wpsd-bg-tasks # reset the task marker age
+    touch /var/run/wpsd-bg-tasks # create/reset the task marker age
 else
     exit 1 # connection bad; bail.
 fi
