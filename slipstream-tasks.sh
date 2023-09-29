@@ -494,4 +494,11 @@ if ! grep -q 'slipstream-tasks' /etc/rc.local ; then
     sed -i '/^\/usr\/local\/sbin\/pistar-hwcache/a \\n\n# slipstream tasks\n\/usr\/local\/sbin\/slipstream-tasks.sh' /etc/rc.local 
 fi
 
-#
+# ensure hostfiles are updated more regularly
+# check age of task marker file if it exists, and if it's < 2 hours young, bail.
+if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "7200" ]; then
+    :
+else
+    /usr/local/sbin/HostFilesUpdate.sh &> /dev/null
+    touch /var/run/hostfiles-up # create/reset marker
+fi
