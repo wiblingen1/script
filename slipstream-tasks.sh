@@ -495,8 +495,8 @@ if ! grep -q 'slipstream-tasks' /etc/rc.local ; then
 fi
 
 # ensure hostfiles are updated more regularly
-# check age of task marker file if it exists, and if it's < 2 hours young, bail.
-if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "7200" ]; then
+# check age of task marker file if it exists, and if it's < 4 hours young, bail.
+if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "14400" ]; then
     :
 else
     /usr/local/sbin/HostFilesUpdate.sh &> /dev/null
