@@ -17,9 +17,9 @@ if [ "$(id -u)" != "0" ];then
     exit 1
 fi
 
-# check age of task marker file if it exists, and if it's < 4 hours young, bail.
-if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "14400" ]; then
-    echo "Hostfles are less than 4 hours old. Not updating."
+# check age of task marker file if it exists, and if it's < 8 hours young, bail.
+if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "28880" ]; then
+    echo "Hostfles are less than 8 hours old. Not updating."
     exit 0
 fi
 
@@ -82,38 +82,38 @@ STRIPPED=/usr/local/etc/stripped.csv
 COUNTRIES=/usr/local/etc/country.csv
 
 # How many backups?
-FILEBACKUP=1
+FILEBACKUP=3 # max 3 per day since we check for updates every 8 hrs.
 
 # Create backup of old files
 if [ ${FILEBACKUP} -ne 0 ]; then
-	cp ${APRSHOSTS} ${APRSHOSTS}.$(date +%Y%m%d)
-	cp  ${DCSHOSTS} ${DCSHOSTS}.$(date +%Y%m%d)
-	cp  ${DExtraHOSTS} ${DExtraHOSTS}.$(date +%Y%m%d)
-	cp  ${DMRIDFILE} ${DMRIDFILE}.$(date +%Y%m%d)
-	cp  ${DMRHOSTS} ${DMRHOSTS}.$(date +%Y%m%d)
-	cp  ${DPlusHOSTS} ${DPlusHOSTS}.$(date +%Y%m%d)
-	cp  ${P25HOSTS} ${P25HOSTS}.$(date +%Y%m%d)
-	cp  ${M17HOSTS} ${M17HOSTS}.$(date +%Y%m%d)
-	cp  ${YSFHOSTS} ${YSFHOSTS}.$(date +%Y%m%d)
-	cp  ${FCSHOSTS} ${FCSHOSTS}.$(date +%Y%m%d)
-	cp  ${XLXHOSTS} ${XLXHOSTS}.$(date +%Y%m%d)
-	cp  ${NXDNIDFILE} ${NXDNIDFILE}.$(date +%Y%m%d)
-	cp  ${NXDNHOSTS} ${NXDNHOSTS}.$(date +%Y%m%d)
-	cp  ${TGLISTBM} ${TGLISTBM}.$(date +%Y%m%d)
-	cp  ${TGLISTTGIF} ${TGLISTTGIF}.$(date +%Y%m%d)
-	cp  ${TGLISTFREESTARIPSC2} ${TGLISTFREESTARIPSC2}.$(date +%Y%m%d)
-	cp  ${TGLISTSYSTEMX} ${TGLISTSYSTEMX}.$(date +%Y%m%d)
-	cp  ${TGLISTFREEDMR} ${TGLISTFREEDMR}.$(date +%Y%m%d)
-	cp  ${TGLISTDMRPLUS} ${TGLISTDMRPLUS}.$(date +%Y%m%d)
-	cp  ${TGLISTP25} ${TGLISTP25}.$(date +%Y%m%d)
-	cp  ${TGLISTNXDN} ${TGLISTNXDN}.$(date +%Y%m%d)
-	cp  ${TGLISTYSF} ${TGLISTYSF}.$(date +%Y%m%d)
-	cp  ${BMTGNAMES} ${BMTGNAMES}.$(date +%Y%m%d)
+	cp ${APRSHOSTS} ${APRSHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DCSHOSTS} ${DCSHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DExtraHOSTS} ${DExtraHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DMRIDFILE} ${DMRIDFILE}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DMRHOSTS} ${DMRHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DPlusHOSTS} ${DPlusHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${P25HOSTS} ${P25HOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${M17HOSTS} ${M17HOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${YSFHOSTS} ${YSFHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${FCSHOSTS} ${FCSHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${XLXHOSTS} ${XLXHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${NXDNIDFILE} ${NXDNIDFILE}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${NXDNHOSTS} ${NXDNHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTBM} ${TGLISTBM}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTTGIF} ${TGLISTTGIF}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTFREESTARIPSC2} ${TGLISTFREESTARIPSC2}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTSYSTEMX} ${TGLISTSYSTEMX}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTFREEDMR} ${TGLISTFREEDMR}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTDMRPLUS} ${TGLISTDMRPLUS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTP25} ${TGLISTP25}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTNXDN} ${TGLISTNXDN}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTYSF} ${TGLISTYSF}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${BMTGNAMES} ${BMTGNAMES}.$(date +%Y-%m-%d_%H:%M)
 	if [ -f ${GROUPSNEXTION} ] ; then
-	    cp  ${GROUPSNEXTION} ${GROUPSNEXTION}.$(date +%Y%m%d)
+	    cp  ${GROUPSNEXTION} ${GROUPSNEXTION}.$(date +%Y-%m-%d_%H:%M)
 	fi
-	cp  ${GROUPSTXT} ${GROUPSTXT}.$(date +%Y%m%d)
-	cp  ${STRIPPED} ${STRIPPED}.$(date +%Y%m%d)
+	cp  ${GROUPSTXT} ${GROUPSTXT}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${STRIPPED} ${STRIPPED}.$(date +%Y-%m-%d_%H:%M)
 fi
 
 # Prune backups
@@ -207,9 +207,9 @@ cat /tmp/DMRIds.tmp  2>/dev/null | grep -v '^#' | awk '($1 > 999999) && ($1 < 10
 rm -f /tmp/DMRIds.tmp
 # radio ID DMR DB sanity checks
 NUMOFLINES=$(wc -l ${DMRIDFILE} | awk '{print $1}')
-if (( $NUMOFLINES < 230000 )) # revert file back to day before
+if (( $NUMOFLINES < 230000 )) # revert to lastest backup file
 then
-    cp ${DMRIDFILE}.$(date +%Y%m%d) ${DMRIDFILE}
+    cp $(ls -tr /usr/local/etc/DMRIds.dat* | tail -2 | head -1) ${DMRIDFILE}
 fi
 
 curl --fail -L -o ${P25HOSTS} -s ${hostFileURL}/P25_Hosts.txt --user-agent "${uaStr}"
