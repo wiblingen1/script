@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Pi-Star Hourly Cron Job Script W0CHP 
+# WPSD Hourly Cron Job Script W0CHP 
 #
 
 mount -o remount,rw / # for shits and giggles
