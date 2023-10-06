@@ -73,7 +73,7 @@ echo ""
 if [ "$1" ]
 then
   API="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
-  VERSION=$(curl -L -A "$UAstr" -s ${API} | jq -r 'map(.name | ltrimstr("v") | split(".") | map(tonumber)) | max_by(.[]) | join(".")') # jq hackery to always return the greatest ver. # from the json "name:" field since the json results are not ordered that way
+  VERSION=$(curl -L -A "$UAstr" -s ${API} | jq -r 'map(.name | ltrimstr("v") | select(. != "") | split(".") | map(tonumber)) | max_by(.[]) | join(".")') # jq hackery to always return the greatest ver. # from the json "name:" field since the json results are not ordered that way
   # Trim any leading or trailing whitespace from VERSION
   VERSION=$(echo "$VERSION" | tr -d '[:space:]')
   BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/v${VERSION}/scripts"
