@@ -2,11 +2,8 @@
 #
 ##############################################################################
 #                                                                            #
-#                          Pi-Star TGIF API Tool                             #
+#                            WPSD TGIF API Tool                              #
 #                                                                            #
-#     Version 0.1, Code, Design and Development by Andy Taylor (MW0MWZ).     #
-#                                                                            #
-#                 Added the option to manage TalkGroups                      #
 #                                                                            #
 ##############################################################################
 #
@@ -107,7 +104,7 @@ fi
 
 # Function to get status
 function get_status () {
-  STATUS=$(curl -f -S -s -H "Content-Type: application/json" -H "User-Agent: Pi-Star TGIF API Tool" -X GET ${STATUSURL} 2>&1)
+  STATUS=$(curl -f -S -s -H "Content-Type: application/json" -H "User-Agent: WPSD TGIF API Tool" -X GET ${STATUSURL} 2>&1)
   ret=$?
 
   # Check curl return code
@@ -217,7 +214,7 @@ esac
 
 # Do the magic
 echo " Request to TGIF API: ${REQUEST}"
-RESULT=$(wget -q -O - --user-agent="Pi-Star cli tool for: ${DMRID}" --header="Content-Type: application/x-www-form-urlencoded" "${APIURL}")
+RESULT=$(wget -q -O - --user-agent="WPSD CLI tool for: ${DMRID}" --header="Content-Type: application/x-www-form-urlencoded" "${APIURL}")
 if [[ ${RESULT} == 200 ]]; then
 	RESULT="OK"
 else
