@@ -1,13 +1,8 @@
 #!/bin/bash
 #########################################################
 #                                                       #
-#              HostFilesUpdate.sh Updater               #
-#                                                       #
-#      Written for Pi-Star (http://www.pistar.uk/)      #
-#               By Andy Taylor (MW0MWZ)                 #
-#                  Enhanced by W0CHP                    #
-#                                                       #
-#   Based on the update script by Tony Corbett G0WFV    #
+#              Host, TG, and ID DB files Updater        #
+#                       by W0CHP                        #
 #                                                       #
 #########################################################
 
@@ -18,9 +13,11 @@ if [ "$(id -u)" != "0" ];then
 fi
 
 # check age of task marker file if it exists, and if it's < 8 hours young, bail.
-if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "28880" ]; then
-    echo "Hostfles are less than 8 hours old. Not updating."
-    exit 0
+if [[ ${FORCE} -ne 1 ]] ; then
+    if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "28880" ]; then
+	echo "Hostfles are less than 8 hours old. Not updating."
+	exit 0
+    fi
 fi
 
 exec 200>/var/lock/wpsd-hostfiles.lock || exit 1 # only one exec per time
