@@ -300,7 +300,7 @@ ln -s ${RADIOIDDB} ${STRIPPED}
 touch /var/run/hostfiles-up # create/reset marker
 
 if [ -t 1 ] ; then
-    echo -e "\b\b\b: DONE.\b"
+    echo -e "\b\b\bDONE.\b"
 else
     echo -e "* DONE *"
 fi
