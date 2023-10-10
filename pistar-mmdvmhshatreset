@@ -2,11 +2,8 @@
 #
 ##############################################################################
 #                                                                            #
-#                     Pi-Star MMDVM HS_HAT Reset Tool                        #
-#                                                                            #
-#     Version 1.2, Code, Design and Development by Andy Taylor (MW0MWZ).     #
-#                                                                            #
-#     Make it simple to reset an MMDVM board from the CLI on Pi-Star .       #
+#                        WPSD MMDVM HS_HAT Reset Tool                        #
+#            Makes it simple to reset an MMDVM board from the CLI            #
 #                                                                            #
 ##############################################################################
 #
@@ -25,10 +22,11 @@ else
   model=""
 fi
 
-# Make the "boot" option only work on Pi 4 hardware
+# Make the "boot" option only work on Pi 4/5 hardware
 if [ "${1}" = "boot" ]; then
-    if [ "${model}" != "Pi4" ]; then
-        exit 0
+    if [ "${model}" != "Pi4" ] || [ "${model}" != "Pi5" ]; then
+    echo "The 'boot' option only works with Pi 4 and Pi 5 boards. Try again without the 'boot' option."
+        exit 1
     fi
 fi
 
