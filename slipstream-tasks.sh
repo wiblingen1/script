@@ -101,6 +101,9 @@ fi
 # 10/23 W0CHP
 files=(
   /etc/dmrgateway
+  /etc/ysfgateway
+  /etc/p25gateway
+  /etc/nxdngateway
   /etc/ircddbgateway
   /etc/m17gateway
   /etc/mmdvmhost
@@ -126,6 +129,11 @@ for file in "${files[@]}"; do
         echo -n "$file_content" > "$file"
       fi
     fi
+  fi
+done
+for file in "${files[@]}"; do
+  if [[ -f "$file" ]]; then
+    sed -i 's/_W0CHP-PiStar-Dash/_WPSD/g' "$file"
   fi
 done
 #
