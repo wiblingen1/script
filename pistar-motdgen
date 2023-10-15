@@ -25,9 +25,8 @@ COL_LIGHT_RED='\e[31m'
 COL_BRIGHT_RED='\e[1;31m'
 COL_LIGHT_CYAN='\e[1;36m'
 COL_REG_CYAN='\e[38;5;30m'
-COL_REG_BLUE='\e[34m'
-COL_REG_ORANGE='\e[38;5;202m'
-COL_LIGHT_BLUE='\e[94m'
+COL_REG_ORANGE='\e[38;5;173m'
+COL_LIGHT_BLUE='\e[1;46m'
 COL_LIGHT_MAGENTA='\e[1;35m'
 COL_LIGHT_YELLOW='\e[1;93m'
 COL_REG_YELLOW='\e[93m'
@@ -39,20 +38,18 @@ DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
 # WPSD git id
 gitId=$( cat /etc/.W0CHP-PiStar-Dash.remote_version )
 
-echo -e "${COL_LIGHT_CYAN}"
-cat << "EOF" > /etc/motd
-        Welcome to
- _       ______  _____ ____
-| |     / / __ \/ ___// __ \
-| | /| / / /_/ /\__ \/ / / /
-| |/ |/ / ____/___/ / /_/ /
-|__/|__/_/    /____/_____/
-EOF
-echo -e "${COL_NC}
-  (${COL_REG_BLUE}WPSD Ver.# ${COL_REG_ORANGE}${gitId}${COL_NC})
+echo -e "${COL_REG_CYAN}
+██╗    ██╗██████╗ ███████╗██████╗ 
+██║    ██║██╔══██╗██╔════╝██╔══██╗
+██║ █╗ ██║██████╔╝███████╗██║  ██║
+██║███╗██║██╔═══╝ ╚════██║██║  ██║
+╚███╔███╔╝██║     ███████║██████╔╝
+ ╚══╝╚══╝ ╚═╝     ╚══════╝╚═════╝${COL_NC}
+${COL_LIGHT_CYAN}
+WPSD${COL_NC} Ver.# ${COL_REG_YELLOW}${gitId}${COL_NC}
 
 ${INFO} Your dashboard can be accesed from:
 ${COL_LIGHT_MAGENTA}http://$(hostname)/  http://$(hostname).local  http://$(hostname -I | awk '{print $1}')/${COL_NC}
 
 ${INFO} Pi-star command-line tools all begin with \"pistar-\".
-" >> /etc/motd
+" > /etc/motd
