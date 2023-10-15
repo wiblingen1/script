@@ -96,6 +96,40 @@ if grep -q "AX 25" /etc/mmdvmhost; then
 fi
 #
 
+# migrate legacy network info URLs
+# 
+# 10/23 W0CHP
+files=(
+  /etc/dmrgateway
+  /etc/ircddbgateway
+  /etc/m17gateway
+  /etc/mmdvmhost
+  /etc/nxdn2dmr
+  /etc/ysf2dmr
+  /etc/ysf2nxdn
+  /etc/ysf2p25
+  /etc/WPSD_config_mgr/*/*
+)
+old_url="http://www.mw0mwz.co.uk/pi-star/"
+new_url="https://wpsd.radio"
+for file in "${files[@]}"; do
+  if [[ -f "$file" ]]; then
+    if grep -qi "$old_url" "$file"; then
+      file_content=$(<"$file")
+      if [[ $file_content == *'URL='* ]]; then
+        file_content="${file_content//URL=/URL=}"
+        file_content="${file_content//$old_url/$new_url}"
+        echo -n "$file_content" > "$file"
+      elif [[ $file_content == *'url='* ]]; then # ircddbgw etc. uses lowercase keys
+        file_content="${file_content//url=/url=}"
+        file_content="${file_content//$old_url/$new_url}"
+        echo -n "$file_content" > "$file"
+      fi
+    fi
+  fi
+done
+#
+
 # fix YSF2DMR config file w/bad call preventing startup
 #
 # 7/2023
