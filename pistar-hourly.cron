@@ -36,40 +36,6 @@ cronMins=$(shuf -i 0-59 -n 1)
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="ConnCheck (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
-# connectivity check
-echo -e "\nChecking connectivity to WPSD update server..."
-status_code=$(curl -L -m 6 -A "${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
-if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-    echo -e "WPSD Update Server connection ok!"
-    # grab and cache latest version
-    gitFolder="/var/www/dashboard"
-    gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
-    gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
-    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
-    echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
-else
-    echo -e "WPSD Update Server connection failure. Will try again within an hour"
-fi
-if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-    exit_status=$(env GIT_HTTP_CONNECT_TIMEOUT="10" GIT_HTTP_USER_AGENT="sbin-Checker $uaStr" git -C /usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master)
-    if [ $? -ne 0 ]; then # reset sbin if pull fails
-	exit_status_message="$exit_status"
-        if grep -q LOGNDROP /etc/iptables.rules; then
-            fwState="enabled"
-        else
-            fwState="disabled"
-        fi
-        sbin_repo=/usr/local/sbin
-        rm -rf $sbin_repo
-        env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="BF_sbin-Reset [$exit_status_message] (Hourly-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-sbin.git $sbin_repo
-        if [ "$fwState" == "enabled" ]; then
-           /usr/local/sbin/pistar-system-manager -efw
-        else
-           /usr/local/sbin/pistar-system-manager -dfw
-        fi
-    fi
-fi
-
 # Shrink NginX error log to stop it getting out of hand
 echo "$(tail -500 /var/log/nginx/error.log)" > /var/log/nginx/error.log
 
@@ -100,8 +66,19 @@ sed -i "/cron.hourly/c ${cronMins}  *   * * *   root    cd / && run-parts --repo
 bash /usr/local/sbin/pistar-motdgen
 
 # run any slipstream tasks
-bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
+bash /usr/local/sbin/slipstream-tasks.sh
 
-/bin/sync
-/bin/sync
-/bin/sync
+# connectivity check
+echo -e "\nChecking connectivity to WPSD update server..."
+status_code=$(curl -L -m 6 -A "${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
+    echo -e "WPSD Update Server connection ok!"
+    # grab and cache latest version
+    gitFolder="/var/www/dashboard"
+    gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
+    gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
+    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
+    echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
+else
+    echo -e "WPSD Update Server connection failure. Will try again within an hour"
+fi

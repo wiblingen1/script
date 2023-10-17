@@ -340,66 +340,6 @@ else
 fi
 #
 
-# ensure our native Nextion driver is installed - 6/8/2023
-check_nextion_driver() {
-  if NextionDriver -V | grep -q "W0CHP"; then
-    return 0  # true - W0CHP Driver
-  else
-    return 1  # false - NOT W0CHP Driver
-  fi
-}
-if ! check_nextion_driver; then # check_nextion_driver() != W0CHP
-    # TGIFspots contain really weird hacks/scripts, etc.[1] for their Nextion
-    # screens, and it all collides with WPSD and our native Nextion driver
-    # support.  So lets ignore TGIFspots altogether.
-    # [1] <https://github.com/EA7KDO/Scripts>
-    if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
-	:
-    else # yay no tgifspot hacks! 
-	if [ "${osName}" != "buster" ] ; then
-	    declare -a CURL_OPTIONS=('-Ls' '-A' "NextionDriver Phixer $uaStr")
-	    pistar-services fullstop
-	    find / -executable | grep "NextionDriver$" | grep -v find | xargs -I {} rm -f {}
-	    curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
-	fi
-    fi
-fi
-#
-
-# legacy buster-based with the TGIF spot nextion abominations are a no-go
-if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
-    if [ "${osName}" = "buster" ] && [ $( awk -F'=' '/\[General\]/{flag=1} flag && /Display/{print $2; flag=0}' /etc/mmdvmhost) = "Nextion" ] ; then
-        declare -a CURL_OPTIONS=('-Ls' '-A' "TS Phixer $uaStr")
-        curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
-    fi
-fi
-#
-
-# legacy stretch sytems/unoff. BPI systems are a no-go. We can't support them.
-if uname -a | grep -q "BPI-M2Z-Kernel" || [ -f "/usr/local/sbin/Install_NextionDriver.sh" ] || grep -q '95707930081050300c94' /etc/pistar-release; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "BPI-JTA Phixer $uaStr")
-    curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 env FORCE_RD=1 bash -s -- -rd > /dev/null 2<&1
-fi
-#
-
-if [ "${osName}" != "buster" ] ; then
-    # stuck update fix
-    if grep -q "Hardware = RPi" /etc/pistar-release; then
-	declare -a CURL_OPTIONS=('-Ls' '-A' "SU Phixer $uaStr")
-	curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
-    fi
-    if grep -q "Iface = Iface" /etc/pistar-release || grep -q '^Iface = *$' /etc/pistar-release; then
-	declare -a CURL_OPTIONS=('-Ls' '-A' "Iface SU Phixer $uaStr")
-	curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
-    fi
-    # stuck version fix
-    wpsd_ver=$(grep -oP 'WPSD_Ver = \K.*' "/etc/pistar-release")
-    if [[ -z "$wpsd_ver" || ${#wpsd_ver} -lt 10 ]]; then
-	declare -a CURL_OPTIONS=('-Ls' '-A' "SV Phixer $uaStr")
-	curl "${CURL_OPTIONS[@]}" $WPSD_IS_REPO | env NO_SELF_UPDATE=1 bash -s -- -idc > /dev/null 2<&1
-    fi
-fi
-
 #  all proper sec/update repos are defined for bullseye, except on armv6 archs
 if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
     if ! grep -q 'bullseye-security' /etc/apt/sources.list ; then
@@ -426,21 +366,6 @@ if [ $( uname -m ) == "armv6l" ] ; then
         apt-get update
         apt-get install -y php7.4-fpm php7.4-readline php7.4-mbstring php7.4-cli php7.4-zip php7.4-opcache
         systemctl restart php7.4-fpm
-    fi
-fi
-#
-
-# handle missing/expired keys for buster
-if [ "${osName}" = "buster" ] ; then
-    if apt-key adv --list-public-keys --with-fingerprint --with-colons | grep -q 0E98404D386FA1D9 > /dev/null 2<&1 ; then
-	:
-    else
-	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 0E98404D386FA1D9 > /dev/null 2<&1
-    fi
-    if apt-key adv --list-public-keys --with-fingerprint --with-colons | grep -q 6ED0E7B82643E131 > /dev/null 2<&1 ; then
-	:
-    else
-	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 6ED0E7B82643E131 > /dev/null 2<&1
     fi
 fi
 #
