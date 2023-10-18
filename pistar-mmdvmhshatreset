@@ -12,22 +12,24 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-# Detect Pi4 Hardware
+# Special Pi4/5 handling...
+# Detect Pi4/5 Hardware
 if [ "$(/usr/local/sbin/platformDetect.sh | grep "Pi 4 Model" | wc -l)" -ge 1 ]; then
   model="Pi4"
-elif
-    [ "$(/usr/local/sbin/platformDetect.sh | grep "Pi 5 Model" | wc -l)" -ge 1 ]; then
+elif [ "$(/usr/local/sbin/platformDetect.sh | grep "Pi 5 Model" | wc -l)" -ge 1 ]; then
   model="Pi5"
 else
   model=""
 fi
-
-# Make the "boot" option only work on Pi 4/5 hardware
+# Make the "boot" option only work on Pi 4/5 hardware, due to GPIO changes in the boards.
+# The "boot" arg. leaves mmdvmhost services alone since they have not started yet and we
+# need the pi4/5 GPIO pins to init before MMDVMHost. No "boot" option is for when MMDVMhost
+# is started/running after boouo
 if [ "${1}" = "boot" ]; then
-    if [ "${model}" != "Pi4" ] || [ "${model}" != "Pi5" ]; then
+  if [ "${model}" != "Pi4" ] && [ "${model}" != "Pi5" ]; then
     echo "The 'boot' option only works with Pi 4 and Pi 5 boards. Try again without the 'boot' option."
-        exit 1
-    fi
+    exit 1
+  fi
 fi
 
 if [ -f '/etc/dstar-radio.mmdvmhost' ]; then
