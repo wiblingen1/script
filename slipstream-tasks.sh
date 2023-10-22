@@ -17,10 +17,8 @@ dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git 
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
-WPSD_IS_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
 
-# This part fully-disables read-only mode in Pi-Star and
-# W0CHP-PiStar-Dash installations.
+# This part fully-disables read-only mode
 #
 # 1/2023 - W0CHP (updated on 2/23/2023)
 #
@@ -303,6 +301,7 @@ cd /var/www/dashboard && chmod 755 `find  -type d`
 isInstalled=$(dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -c "ok installed")
 if [[ $isInstalled -eq 0 ]]; then
   echo "lsb-release package is not installed. Installing..."
+  sudo apt-get update
   sudo apt-get -y install lsb-release base-files
 else
   :
@@ -355,8 +354,8 @@ if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
         echo "deb http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list
     fi
 fi
-# Bulleye backports, etc. cause php-fpm segfaults on armv6 (Pi 01st gen) archs...
-# So we'll stick with the "normal" repos for these archs (retro busster image bugfix)
+# Bulleye backports, etc. cause php-fpm segfaults on armv6 (Pi 0w 1st gen) archs...
+# So we'll stick with the "normal" repos for these archs (retro buster image bugfix)
 if [ $( uname -m ) == "armv6l" ] ; then
     if grep -q 'bullseye-security' /etc/apt/sources.list ; then
         sed -i '/bullseye-security/d' /etc/apt/sources.list
@@ -432,7 +431,7 @@ if [ -L "$libOLEDfull_path" ]; then
 fi
 #
 
-# Update issue - 9/2023 W0CHP
+# Update /etc/issue - 9/2023 W0CHP
 #
 if ! grep -q 'W0CHP' /etc/issue ; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "/etc/issue updater $uaStr")
