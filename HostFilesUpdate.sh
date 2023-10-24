@@ -110,7 +110,7 @@ if [ ${FILEBACKUP} -ne 0 ]; then
 	    cp  ${GROUPSNEXTION} ${GROUPSNEXTION}.$(date +%Y-%m-%d_%H:%M)
 	fi
 	cp  ${GROUPSTXT} ${GROUPSTXT}.$(date +%Y-%m-%d_%H:%M)
-	cp  ${STRIPPED} ${STRIPPED}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${RADIOIDDB} ${RADIOIDDB}.$(date +%Y-%m-%d_%H:%M)
 fi
 
 # Prune backups
@@ -140,7 +140,7 @@ if [ -f ${GROUPSNEXTION} ] ; then
     ${BMTGNAMES}
     ${GROUPSTXT}
     ${GROUPSNEXTION}
-    ${STRIPPED}"
+    ${RADIOIDDB}"
 else
     FILES="${APRSHOSTS}
     ${DCSHOSTS}
@@ -166,7 +166,7 @@ else
     ${TGLISTYSF}
     ${BMTGNAMES}
     ${GROUPSTXT}
-    ${STRIPPED}"
+    ${RADIOIDDB}"
 fi
 
 for file in ${FILES}
@@ -227,6 +227,7 @@ curl --fail -L -o ${TGLISTNXDN} -s ${hostFileURL}/TGList_NXDN.txt --user-agent "
 curl --fail -L -o ${TGLISTYSF} -s ${hostFileURL}/TGList_YSF.txt --user-agent "${uaStr}"
 curl --fail -L -o ${COUNTRIES} -s ${hostFileURL}/country.csv --user-agent "${uaStr}"
 curl --fail -L -o ${BMTGNAMES} -s ${hostFileURL}/BM_TGs.json --user-agent "${uaStr}"
+curl --fail -L -o ${RADIOIDDB_TMP}.bz2 -s ${hostFileURL}/user.csv.bz2 --user-agent "${uaStr}"
 
 # BM TG List for live caller and (legacy) nextion screens:
 cp ${BMTGNAMES} ${GROUPSTXT}
@@ -286,13 +287,12 @@ if [ -f "/root/XLXHosts.txt" ]; then
 fi
 
 # Nextion and LiveCaller DMR ID DB's
-curl --fail -L -o ${RADIOIDDB_TMP}.bz2 -s ${hostFileURL}/user.csv.bz2 --user-agent "${uaStr}"
 bunzip2 -f ${RADIOIDDB_TMP}.bz2
 # sort
 cat /tmp/user.csv | sort -un -k1n -o ${RADIOIDDB}
 rm -f $RADIOIDDB_TMP
 # remove header
-sed -ie '1d' ${RADIOIDDB}
+sed -i '1d' ${RADIOIDDB}
 # make link for legacy nextion configs
 rm -rf ${STRIPPED}
 ln -s ${RADIOIDDB} ${STRIPPED}
@@ -303,6 +303,18 @@ if [ -t 1 ] ; then
     echo -e "\b\b\bDONE.\b"
 else
     echo -e "* DONE *"
+fi
+
+# legacy cleanups
+if [ -f /usr/local/etc/user.csve ] ; then
+    rm -f /usr/local/etc/user.csve
+fi
+pattern="/usr/local/etc/stripped.csv.*"
+files=($pattern)
+if [ ${#files[@]} -gt 0 ]; then
+  for file in "${files[@]}"; do
+     rm -f "$file"
+  done
 fi
 
 exit 0

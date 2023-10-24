@@ -5,6 +5,10 @@
 
 mount -o remount,rw / # for shits and giggles
 
+if [ ! -t 1 ]; then
+  exec &> /tmp/WPSD-hourly-cron.log
+fi
+
 # migrate config update notice
 if grep -q ConfUpdReqd /etc/mmdvmhost ; then
     grep ConfUpdReqd /etc/mmdvmhost | sed 's/=/ = /' >> /etc/pistar-release
