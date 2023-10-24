@@ -2,10 +2,8 @@
 #
 ###############################################################################
 #                                                                             #
-#                        Pi-Star Auto Update Tool                             #
-#                                                                             #
-#              Design and Development by Andy Taylor (MW0MWZ)                 #
-#                            Enhanced by W0CHP                                #
+#                           WPSD Update Program                               #
+#                                 by W0CHP                                    #
 #                                                                             #
 ###############################################################################
 #
@@ -218,16 +216,16 @@ main_function() {
 	    fi
 	fi
 
-	echo "Updating W0CHP-PiStar-Dash Scripts and Support Programs..."
+	echo "Updating WPSD Scripts and Support Programs..."
 	git_update /usr/local/sbin
 	#systemctl daemon-reload > /dev/null 2>&1
 	echo -e "${TICK} Done!\n"
 
-	echo "Updating W0CHP-PiStar-Dash Digital Voice and Related Binaries..."
+	echo "Updating WPSD Digital Voice and Related Binaries..."
 	git_update /usr/local/bin
 	echo -e "${TICK} Done!\n"
 
-	echo "Updating W0CHP-PiStar-Dash Web Dashboard Software..."
+	echo "Updating WPSD Web Dashboard Software..."
 	git_update /var/www/dashboard
 	echo -e "${TICK} Done!\n"
 
