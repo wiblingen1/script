@@ -64,8 +64,9 @@ fi
 #
 # OK we know what the modem is, let get the firmware string from the log...
 #
+echo ""
+echo "Found modem:"
 tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1
-read -n 1 -s -r -p "Press any key to write the ${1} firmware to this modem or Ctrl-C to quit..."
 echo ""
 #
 # Download the correct firmware
@@ -75,6 +76,15 @@ then
   API="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
   VERSION=$(curl -L -A "$UAstr" -s ${API} | jq -r 'map(.name | ltrimstr("v") | select(. != "") | split(".") | map(tonumber)) | max_by(.[]) | join(".")') # jq hackery to always return the greatest ver. # from the json "name:" field since the json results are not ordered that way
   # Trim any leading or trailing whitespace from VERSION
+
+  read -n 1 -s -r -p "Press any key to write the latest ${1} firmware version (v${VERSION}) to this modem, or 'q' to abort..."
+  echo ""
+
+  if [[ "$REPLY" =~ [qQ] ]]; then
+    echo "Aborting firmware update."
+    exit 1
+  fi
+
   VERSION=$(echo "$VERSION" | tr -d '[:space:]')
   BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/v${VERSION}/scripts"
   script_name=$(basename "$0")

@@ -76,8 +76,6 @@ fi
 # OK we know what the modem is, let get the firmware string from the log...
 #
 tac $(ls -1rt /var/log/pi-star/MMDVM-*.log | tail -n1 ) | grep "protocol" -m 1 | sed -n 's/description: /&\n/;s/.*\n//p'
-read -n 1 -s -r -p "Press any key to downgrade the ${1} firmware on this modem or Ctrl-C to quit..."
-echo ""
 
 # Get all releases and let the user choose or check if seconad command line option is a valid version tag
 #
@@ -87,8 +85,8 @@ API_URL="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Late
 script_name=$(basename "$0")
 UAstr="WPSD Modem FW Update Invocation (client side: $script_name)"
 
-# Get all tags from the API and store them in an array
-mapfile -t VERSIONS < <(curl -L -A "$UAstr" -s "$API_URL" | jq -r '.[].name')
+# Get all tags from the API and store them in an array, sorted in reverse order
+mapfile -t VERSIONS < <(curl -L -A "$UAstr" -s "$API_URL" | jq -r '.[].name' | sort -V -r)
 
 # Check if a version tag is provided as the second command line argument
 if [ "$2" ]; then
@@ -103,7 +101,7 @@ if [ "$2" ]; then
    fi
 else
    # List available versions for the user to choose from
-   echo "Available versions:"
+   echo "Available versions (newest to oldest):"
    I=1
    for version in "${VERSIONS[@]}"; do
       echo "${I}) $version"
@@ -112,7 +110,7 @@ else
 
    # Prompt the user to choose a version
    echo ""
-   echo -n "Please enter the line number of the version you want to select or \"q\" to abort and press [ENTER]: "
+   echo -n "Please enter the line number of the version you want to select and press [ENTER], or \"q\" to abort: "
    read CHOICE
    echo ""
    if [ "$CHOICE" == "q" -o "$CHOICE" == "Q" ]; then
@@ -122,6 +120,14 @@ else
       echo "Your choice: ${CHOICE} (${VERSIONS[(($CHOICE - 1))]})"
       echo ""
       VERSION="${VERSIONS[(($CHOICE - 1))]}"
+
+      read -n 1 -s -r -p "Press any key to downgrade the ${1} firmware on this modem or 'q' to abort..."
+      echo ""
+
+      if [[ "$REPLY" =~ [qQ] ]]; then
+        echo "Aborting firmware update."
+        exit 1
+      fi
       
       # Download the correct firmware based on the selected version and perform actions
       # Trim any leading or trailing whitespace from VERSION
