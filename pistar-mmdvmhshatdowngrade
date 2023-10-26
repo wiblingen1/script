@@ -101,7 +101,7 @@ if [ "$2" ]; then
    fi
 else
    # List available versions for the user to choose from
-   echo "Available versions (newest to oldest):"
+   echo -e "\nAvailable versions (newest to oldest):\n"
    I=1
    for version in "${VERSIONS[@]}"; do
       echo "${I}) $version"
@@ -121,8 +121,8 @@ else
       echo ""
       VERSION="${VERSIONS[(($CHOICE - 1))]}"
 
-      read -n 1 -s -r -p "Press any key to downgrade the ${1} firmware on this modem or 'q' to abort..."
-      echo ""
+      read -n 1 -s -r -p "Press any key to install the ${1} firmware on this modem or 'q' to abort..."
+      echo -e "\n"
 
       if [[ "$REPLY" =~ [qQ] ]]; then
         echo "Aborting firmware update."
@@ -138,7 +138,7 @@ else
             # Flashing MMDVM_HS Hat Modem
             rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
             mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-            echo "Flashing your ${1} modem to version ${VERSION}"
+            echo "Flashing your ${1} modem to ${VERSION}"
 	    curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/install_fw_hshat.sh"
             chmod +x /tmp/mmdvmhshatfirmware/flash.sh
             cd  /tmp/mmdvmhshatfirmware
