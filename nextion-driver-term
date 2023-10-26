@@ -1,0 +1,5 @@
+#!/bin/sh
+
+/usr/bin/killall NextionDriver
+
+exit 0
