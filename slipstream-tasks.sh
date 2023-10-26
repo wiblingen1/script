@@ -72,6 +72,15 @@ if grep -qo 'alias rpi-rw=' /etc/bash.bashrc ; then
 fi
 #
 
+# Tweak shelliniabox/web ssh colors:
+#
+# 10/2023 - W0CHP
+if ! grep -q "Terminal.css" "/etc/default/shellinabox"; then
+    sed -i 's/SHELLINABOX_ARGS=.*$/SHELLINABOX_ARGS="--no-beep --disable-ssl-menu --disable-ssl --css=\/etc\/shellinabox\/options-enabled\/00_White\\ On\\ Black.css --css=\/etc\/shellinabox\/options-enabled\/01+Color\\ Terminal.css"/' /etc/default/shellinabox
+    systemctl restart shellinabox.service
+fi
+# 
+
 # Fix legacy radio type misspelling
 #
 # 6/2023 - W0CHP
