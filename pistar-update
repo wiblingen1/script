@@ -89,50 +89,42 @@ git_update() {
 	fi
 
 	if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
-		echo -e "${INFO} Updates found for ${gitFolder} - Installing..."
-        	# W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
-        	if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
-                cd ${gitFolder}
-                git stash > /dev/null 2<&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
-                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} &> /dev/null
-                git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2<&1 # restore user config files from stash
-                git stash clear > /dev/null 2<&1 # housekeeping
-                echo -e "ChangeLog (last 3 changes):"
+	    echo -e "${INFO} Updates found for ${gitFolder} - Installing..."
+	    # WPSD has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
+	    if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
+		cd ${gitFolder}
+		git stash > /dev/null 2<&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} &> /dev/null
+		git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2<&1 # restore user config files from stash
+		git stash clear > /dev/null 2<&1 # housekeeping
+		echo -e "ChangeLog (last 3 changes):"
 		echo -e "---------------------------"
-                git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
-        	else
-			# New updater version - Self-update and re-exec:
-			if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
-                        	git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard 
-                        	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch
-                        	if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep pistar-update 2>/dev/null)" = "pistar-update" ]; then
-                                	echo -e "\n[!] New version of the Updater available. Performing self-update..."
-                                	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
-                                	echo -e "ChangeLog (last 3 changes):"
-					echo -e "---------------------------"
-                                	git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
-                                	if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
-                                        	echo "Forcing update..."
-						if [ -f ${gitFolder}/pistar-upnp.service ]; then
-						rm -f ${gitFolder}/pistar-upnp.service
-					fi
-                                        env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
-                                fi
-                                echo -e "\n[*] Relaunching Updater with the new version..."
-                                exec "$0" "$@"
-                                exit 1
-                        fi
-                fi
-		# special case for /usr/local/bin bullseye & buster
+		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
+	    else
+		# New updater version - Self-update and re-exec:
+		if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
+		    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch
+		    if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep pistar-update 2>/dev/null)" = "pistar-update" ]; then
+			echo -e "\n[!] New version of the Updater available. Performing self-update..."
+			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
+			echo -e "ChangeLog (last 3 changes):"
+			echo -e "---------------------------"
+			git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
+			if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
+			    echo "Forcing update..."
+				if [ -f ${gitFolder}/pistar-upnp.service ]; then
+				    rm -f ${gitFolder}/pistar-upnp.service
+				fi
+				env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
+				env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
+			    fi
+			echo -e "\n[*] Relaunching Updater with the new version..."
+			exec "$0" "$@"
+			exit 1
+		    fi
+		fi
 		if [[ ${gitFolder} == "/usr/local/bin" ]]; then
 		    # Update the Binaries
-		    if [ "${osName}" = "buster" ]; then
-		    	#branch="buster" #sunsetting
-		    	branch="master"
-		        env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git checkout -q "${branch}" &> /dev/null
-		    else
-		    	branch="master"
-		    fi
                     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin "${branch}" &> /dev/null
                     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/${branch} &> /dev/null
 		fi
