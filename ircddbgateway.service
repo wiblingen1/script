@@ -36,11 +36,6 @@ if [ -f /etc/dstar-radio.mmdvmhost ]; then
 	if [ "$(sed -n '/^\[D-Star Network\]/,/^\[/p' /etc/mmdvmhost | grep '^GatewayAddress' | awk -F '=' '{print $2}')" != "127.0.0.1" ]; then
 	   exit 0;
 	fi
-else
-	# Running DStarRepeater Mode, check the gateway is on this machine
-	if [ "$(grep ^gatewayAddress /etc/dstarrepeater | awk -F '=' '{print $2}')" != "127.0.0.1" ]; then
-	   exit 0;
-	fi
 fi
 
 if [[ $(egrep -h -i "1234567|M1ABC" ${CONFIG} | wc -l) -gt 0 ]]; then

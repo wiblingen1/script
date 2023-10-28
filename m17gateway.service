@@ -69,8 +69,6 @@ esac
 test -x ${DAEMON_PATH}${DAEMON} || exit 0
 test -r $CONFIG || exit 0
 
-# if dstarrepeater is configured or running, dont start this daemon!
-! test -r /etc/dstar-radio.dstarrepeater || exit 0
 
 # Make sure M17 Networking is on
 if [ $(sed -n '/^\[M17 Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable" | awk -F '=' '{print $2}') = "0" ]; then

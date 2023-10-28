@@ -27,8 +27,6 @@ ipVar=`hostname -I | cut -d' ' -f1`
 test -x ${DAEMON_PATH}${DAEMON} || exit 0
 test -r $CONFIG || exit 0
 
-# if dstarrepeater is configured or running, dont start this daemon!
-! test -r /etc/dstar-radio.dstarrepeater || exit 0
 
 if [ `sed -n '/\[NXDN Network\]/{n;p;}' /etc/mmdvmhost | cut -c 8` = "0" ]; then
 	exit 0;

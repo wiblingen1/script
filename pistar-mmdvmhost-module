@@ -111,14 +111,7 @@ else
   echo "Did you want ${MODULE} to be Enabled or Disabled?"
   exit 1
 fi
-#
-# Is this host configured for MMDVMHost
-#
-! test -r /etc/dstar-radio.dstarrepeater || exit 1
-test -r /etc/dstar-radio.mmdvmhost || exit 1
-#
-# Flight Checks passed... Do some logic
-#
+
 if [ "${CUR_STATUS}" == "${NEW_STATUS}" ]; then
   # Nothing to do
   echo "${MODULE} is already set to ${NEW_STATUS}, nothing to do."

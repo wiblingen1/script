@@ -28,8 +28,6 @@ TGSTATIC=`grep Static= /etc/p25gateway | sed 's/Static=//'`
 test -x ${DAEMON_PATH}${DAEMON} || exit 0
 test -r $CONFIG || exit 0
 
-# if dstarrepeater is configured or running, dont start this daemon!
-! test -r /etc/dstar-radio.dstarrepeater || exit 0
 
 if [ `sed -n '/^\[P25 Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable=" | cut -c 8` = "0" ]; then
 	if [ `sed -n '/^\[System Fusion\]/,/^\[/p' /etc/mmdvmhost | grep "^Enable=" | cut -c 8` = "0" ]; then

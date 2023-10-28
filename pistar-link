@@ -2,12 +2,7 @@
 #
 ##############################################################################
 #                                                                            #
-#                     Pi-Star ircDDBGateway link Tool                        #
-#                                                                            #
-#     Version 1.0, Code, Design and Development by Andy Taylor (MW0MWZ).     #
-#                                                                            #
-#         Make it simple to link reflectors from the CLI on Pi-Star.         #
-#                  Origional suggestion by Adrian (VK4TUX)                   #
+#                        WPSD ircDDBGateway link Tool                        #
 #                                                                            #
 ##############################################################################
 #
@@ -18,7 +13,9 @@ fi
 
 # Setup some variables
 cmd=/usr/local/bin/remotecontrold
-module=$(grep -m 1 'callsign=' /etc/dstarrepeater | awk -F "=" '/callsign/ {print $2}')
+#module=$(grep -m 1 'callsign=' /etc/dstarrepeater | awk -F "=" '/callsign/ {print $2}')
+callsign=$(grep -oP 'gatewayCallsign=\K[^ ]+' /etc/ircddbgateway)
+module="$callsign  B"
 
 if [ -z "$1" ]
 then

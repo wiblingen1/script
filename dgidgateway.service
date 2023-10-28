@@ -65,8 +65,6 @@ esac
 test -x ${DAEMON_PATH}${DAEMON} || exit 1
 test -r $CONFIG || exit 1
 
-# if dstarrepeater is configured or running, dont start this daemon!
-! test -r /etc/dstar-radio.dstarrepeater || exit 1
 
 if [[ $(egrep -h -i "M1ABC" ${CONFIG} | wc -l) -gt 0 ]]; then
   exit 1;
