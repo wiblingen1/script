@@ -2,9 +2,9 @@
 #
 ##############################################################################
 #                                                                            #
-#                          Pi-Star XLX DMR link Tool                         #
+#                            WPSD XLX DMR link Tool                          #
 #                                                                            #
-#     Version 1.0, Code, Design and Development by Chip Cuccio, W0CHP.       #
+#     Version 1.2, Code, Design and Development by Chip Cuccio, W0CHP.       #
 #                                                                            #
 #              Make it simple to link XLX DMR reflectors from the CLI.       #
 #                                                                            #
@@ -41,6 +41,20 @@ unlink)
   echo ""
   exit 0
 ;;
+pause-xlx)
+  touch /etc/.dmr-xlx_disabled
+  systemctl stop cron
+  cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 disable xlx > /dev/null 2<&1
+  systemctl start cron
+  echo -e "XLX Network Paused"
+;;
+resume-xlx)
+  systemctl stop cron
+  cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 enable xlx > /dev/null 2<&1
+  rm -rf /etc/.dmr-xlx_disabled
+  systemctl start cron
+  echo -e "XLX Network Resumed"
+;; 
 *)
   if [ ${#1} -ne 3 ]; then
     echo -e "Invalid XLX Reflector, ${1^^}"
