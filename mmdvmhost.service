@@ -21,12 +21,25 @@ SLEEP=/bin/sleep
 USER=root
 GROUP=mmdvm
 LOGDIR=/var/log/pi-star
-ipVar=`hostname -I | cut -d' ' -f1`
+
+# Function to check if any network interface has an IP address
+interface_has_ip() {
+  local interfaces=($(ip -o addr show | awk '{print $2}'))
+  
+  for interface in "${interfaces[@]}"; do
+    if [[ $interface != "lo" ]]; then
+      if ip addr show dev $interface | grep -q 'inet '; then
+        return 0
+      fi
+    fi
+  done
+  
+  return 1
+}
 
 # Pre-flight checks...
 test -x ${DAEMON_PATH}${DAEMON} || exit 0
 test -r $CONFIG || exit 0
-
 test -r /etc/dstar-radio.mmdvmhost || exit 0
 
 # Verify the logging directory exists, if not create it and setup the ownership / permissions
@@ -43,14 +56,13 @@ case "$1" in
 			exit 0;
 		else
 			# Wait for an IP address
-			until [ "$ipVar" != " " ]; do
-				sleep 10
-				ipVar=`hostname -I | cut -d' ' -f1`
+			#echo "Waiting for an IP address on any network interface..."
+			while ! interface_has_ip; do
+			    sleep 1
 			done
+			#echo "An IP address has been found. Starting $DAEMON..."
                         chown -R ${GROUP}:${GROUP} $LOGDIR
                         chmod 775 $LOGDIR
-			#/usr/local/sbin/pistar-mmdvmhsreset boot > /dev/null 2<&1
-			#sleep 5
 			nice -n -10 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON started as PID "`$PGREP $DAEMON`
 			(sleep 3s; /usr/sbin/service ircddbgateway start)&
@@ -78,8 +90,6 @@ case "$1" in
 			$SLEEP 3
                         chown -R ${GROUP}:${GROUP} $LOGDIR
                         chmod 775 $LOGDIR
-			#/usr/local/sbin/pistar-mmdvmhsreset boot > /dev/null 2<&1
-			#sleep 5
 			nice -n -10 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON re-started as PID "`${PGREP} ${DAEMON}`
 			(sleep 3s; /usr/sbin/service ircddbgateway restart)&
@@ -88,8 +98,6 @@ case "$1" in
 			echo -e "$DAEMON is not running"
                         chown -R ${GROUP}:${GROUP} $LOGDIR
                         chmod 775 $LOGDIR
-			#/usr/local/sbin/pistar-mmdvmhsreset boot > /dev/null 2<&1
-			#sleep 5
 			nice -n -10 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON re-started as PID "`${PGREP} ${DAEMON}`
 			(sleep 3s; /usr/sbin/service ircddbgateway restart)&
