@@ -1,25 +1,44 @@
 #!/bin/bash
 #
-###############################################################################
-#                                                                             #
-#                     Pi-Star Firmware Downgrade Tool                         #
-#                                                                             #
-#    Version 0.4, Code, Design and Development by Florian Wolters (DF2ET).    #
-#                     Idea by Stefan Espringal (DL1BH)                        #
-#                                                                             #
-#                  Based on work by Andy Taylor (MW0MZW)                      #
-#                            Andy Uribe CA6JAU                                #
-#                           Chip Cuccio (W0CHP)                               #
-#                                                                             #
-#               Make it simple to downgrade the Firmware                      #
-#                                                                             #
-###############################################################################
+########################################################
+#                                                      #
+#          WPSD Modem Firmware Downgrade Utility       #
+#                  Chip Cuccio (W0CHP)                 #
+#                                                      #
+########################################################
 #
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
   exit 1
 fi
-#
+
+if [[ ${SUPP_COL} -eq 0 ]]; then
+    COL_NC='\e[0m' # No Color
+    BOLD='\e[1m'
+    REVERSE='\e[7m'
+    COL_LIGHT_GREEN='\e[1;32m'
+    COL_BRIGHT_GREEN='\e[1;92m'
+    COL_LIGHT_RED='\e[31m'
+    COL_BRIGHT_RED='\e[1;31m'
+    COL_LIGHT_CYAN='\e[1;36m'
+    COL_REG_CYAN='\e[38;5;30m'
+    COL_REG_ORANGE='\e[38;5;173m'
+    COL_LIGHT_BLUE='\e[1;34m'
+    COL_LIGHT_MAGENTA='\e[1;35m'
+    COL_LIGHT_YELLOW='\e[1;93m'
+    COL_REG_YELLOW='\e[93m'
+    INFO="${BOLD}[i]${COL_NC}"
+    NOTE="${BOLD}[${COL_LIGHT_YELLOW}!${COL_NC}]"
+    TICK="${BOLD}[${COL_LIGHT_GREEN}✓${COL_NC}]"
+    CROSS="${BOLD}[${COL_BRIGHT_RED}✗${COL_NC}]"
+    DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
+else
+    INFO="[i]"
+    NOTE="[!]"
+    TICK="[✓]"
+    CROSS="[✗]"
+    DONE="Done!"
+fi
 
 #
 # Output some useful information when no variables are passed
@@ -27,10 +46,11 @@ fi
 if [ -z "$1" ]
 then
   clear
+  echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} No modem specified!"
   echo ""
-  echo "This tool is used to downgrade the firmware of your MMDVM_HS Hat Modem"
-  echo "to use the command, you will need to specify your modem type..."
-  echo "please choose from the list below..."
+  echo "This tool is used to downgrade the firmware of your MMDVM_HS Hat Modem."
+  echo "To use the command, you will need to specify your modem type..."
+  echo "Please choose from the list below, and run the command again:"
   echo ""
   echo "To downgrade HS_HAT (14.7456MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatdowngrade hs_hat"
   echo "To downgrade HS_HAT (12.288MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatdowngrade hs_hat-12mhz"
@@ -41,7 +61,7 @@ then
   echo "We simply provide scripts to update the firmware. For actual firmware support,"
   echo "you will need to utilize other support resources from the firmware developers/maintainers or the web".
   echo ""
-  # Get the pretty name for the chosen Modem according to the dashboard.
+  # Get the friendly name for the chosen Modem according to the dashboard.
   if [ -f '/etc/dstar-radio.mmdvmhost' ]; then
     modemSelected=$(grep 'Hardware=' /etc/dstar-radio.mmdvmhost)
     modemSelected=${modemSelected#*=}
@@ -54,7 +74,7 @@ then
     # Replace "&amp;" with "&" in modemSelectedHuman
     modemSelectedHuman=${modemSelectedHuman//&amp;/&}
 
-    echo "Selected Modem:     ${modemSelectedHuman}"
+    echo "Modem selected in Dashboard: ${modemSelectedHuman}"
   fi
 
   # Get the Modem info from the Log
@@ -67,17 +87,22 @@ then
     # Get the TCXO data
     if [[ ${modemLog} == *"MHz"* ]]; then
       tcxoData=$(echo ${modemLog} | awk '{print $3}')
-      echo "TCXO Value:         ${tcxoData}"
+      echo "TCXO Value: ${tcxoData}"
     fi
   fi
   exit 0
 fi
+
 #
 # OK we know what the modem is, let get the firmware string from the log...
 #
-tac $(ls -1rt /var/log/pi-star/MMDVM-*.log | tail -n1 ) | grep "protocol" -m 1 | sed -n 's/description: /&\n/;s/.*\n//p'
+clear
+echo ""
+echo "Found modem:"
+tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1
+echo ""
 
-# Get all releases and let the user choose or check if seconad command line option is a valid version tag
+# Get all releases and let the user choose, or check if second command line option is a valid version tag
 #
 # API URL
 API_URL="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
@@ -85,8 +110,11 @@ API_URL="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Late
 script_name=$(basename "$0")
 UAstr="WPSD Modem FW Update Invocation (client side: $script_name)"
 
+echo "Retrieving available firmmware version numbers from online repository..."
 # Get all tags from the API and store them in an array, sorted in reverse order
 mapfile -t VERSIONS < <(curl -L -A "$UAstr" -s "$API_URL" | jq -r '.[].name' | sort -V -r)
+sleep 2
+echo -e "${INFO} ${COL_LIGHT_BLUE}Complete.${COL_NC}"
 
 # Check if a version tag is provided as the second command line argument
 if [ "$2" ]; then
@@ -121,10 +149,11 @@ else
       echo ""
       VERSION="${VERSIONS[(($CHOICE - 1))]}"
 
-      read -n 1 -s -r -p "Press any key to install the ${1} firmware on this modem or 'q' to abort..."
-      echo -e "\n"
+      read -n 1 -s -r -p "Press any key to install the '${1}' firmware on this modem or 'q' to abort..."
+      echo ""
 
       if [[ "$REPLY" =~ [qQ] ]]; then
+        echo ""
         echo "Aborting firmware update."
         exit 1
       fi
@@ -133,77 +162,61 @@ else
       # Trim any leading or trailing whitespace from VERSION
       VERSION=$(echo "$VERSION" | tr -d '[:space:]')
       BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/${VERSION}/scripts"
+      flash_modem() {
+        echo "Downloading latest '$1' firmware version ($VERSION)..."
+        rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
+        mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
+        curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/$2"
+        chmod +x /tmp/mmdvmhshatfirmware/flash.sh
+        cd /tmp/mmdvmhshatfirmware
+        sleep 2
+        echo "Flashing '$1' modem with the latest firmware version ($VERSION) - please wait..."
+        output=$(./flash.sh 2>&1)
+
+        flash_successful=false  # Initialize to false
+        if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
+          flash_successful=true
+        fi
+        rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
+
+        if $flash_successful; then
+          echo ""
+          echo -e -n "${TICK} ${DONE}${COL_NC} '$1' modem flash complete - press any key to reboot your WPSD system..."
+          read -n 1 -s -r -p ""
+          echo ""
+          shutdown -r now
+        else
+          echo -e "\n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is likely locked. Contact the supplier of your modem for support."
+          echo ""
+        fi
+        exit 0
+      }
+
       case ${1} in
-         hs_hat)
-            # Flashing MMDVM_HS Hat Modem
-            rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-            mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-            echo "Flashing your ${1} modem to ${VERSION}"
-	    curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/install_fw_hshat.sh"
-            chmod +x /tmp/mmdvmhshatfirmware/flash.sh
-            cd  /tmp/mmdvmhshatfirmware
-            ./flash.sh
-            echo ""
-            rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-            read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your WPSD system..."
-            shutdown -r now
-            exit 0
-         ;;
-         hs_hat-12mhz)
-            # Flashing MMDVM_HS Hat Modem with 12.288 MHz TCXO
-            rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-            mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-            echo "Flashing your ${1} modem to the ${VERSION} version"
-	    curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/nstall_fw_hshat-12mhz.sh"
-            chmod +x /tmp/mmdvmhshatfirmware/flash.sh
-            cd  /tmp/mmdvmhshatfirmware
-            ./flash.sh
-            echo ""
-            rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-            read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your WPSD system..."
-            shutdown -r now
-            exit 0
-         ;;
-         hs_dual_hat)
-            # Flashing MMDVM_HS_DUAL Modem
-            rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-            mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-            echo "Flashing your ${1} modem to the ${VERSION} version"
-	    curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/install_fw_hsdualhat.sh"
-            chmod +x /tmp/mmdvmhshatfirmware/flash.sh
-            cd  /tmp/mmdvmhshatfirmware
-            ./flash.sh
-            echo ""
-            rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-            read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your WPSD system..."
-            shutdown -r now
-            exit 0
-         ;;
-         hs_dual_hat-12mhz)
-            # Flashing MMDVM_HS_DUAL Modem with 12.288 MHz TCXO
-            rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-            mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-            echo "Flashing your ${1} modem to the ${VERSION} version"
-	    curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/install_fw_hsdualhat-12mhz.sh"
-            chmod +x /tmp/mmdvmhshatfirmware/flash.sh
-            cd  /tmp/mmdvmhshatfirmware
-            ./flash.sh
-            echo ""
-            rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-            read -n 1 -s -r -p "Flashing your ${1} modem complete, press any key to reboot your WPSD system..."
-            shutdown -r now
-            exit 0
-         ;;
-         *)
-            # Un-recognised modem choice
-            echo "Your Choice of ${1} modem is not supported by this update tool"
-            exit 1
-         ;;
+        hs_hat)
+          flash_modem "${1}" "install_fw_hshat.sh"
+          ;;
+        hs_hat-12mhz)
+          flash_modem "${1}" "install_fw_hshat-12mhz.sh"
+          ;;
+        hs_dual_hat)
+          flash_modem "${1}" "install_fw_hsdualhat.sh"
+          ;;
+        hs_dual_hat-12mhz)
+          flash_modem "${1}" "install_fw_hsdualhat-12mhz.sh"
+          ;;
+        hs_hat_ambe)
+          flash_modem "${1}" "install_fw_d2rg_mmdvmhs.sh"
+          ;;
+        *)
+          # Unrecognized modem choice
+          echo "Your choice of '${1}' modem is not supported in this program."
+          exit 1
+          ;;
       esac
    else
       echo "Invalid choice. Aborting ..."
       exit 2
    fi
-
 fi
 exit 2
