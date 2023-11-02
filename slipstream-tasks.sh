@@ -473,9 +473,13 @@ if ! grep -q 'hwcache' /etc/rc.local ; then
 else
     /usr/local/sbin/pistar-hwcache
 fi
+
+# add slipstream to rc.local
 if ! grep -q 'slipstream-tasks' /etc/rc.local ; then
     sed -i '/^\/usr\/local\/sbin\/pistar-hwcache/a \\n\n# slipstream tasks\n\/usr\/local\/sbin\/slipstream-tasks.sh' /etc/rc.local 
 fi
+# now make it run in bknd. since it may have already been in rc.local w/out the nohup &
+sed -i '/\/usr\/local\/sbin\/slipstream-tasks.sh/ s|^\(.*\)/usr/local/sbin/slipstream-tasks.sh\(.*\)$|\1nohup /usr/local/sbin/slipstream-tasks.sh \&\2|' /etc/rc.local
 
 # ensure hostfiles are updated more regularly
 /usr/local/sbin/HostFilesUpdate.sh &> /dev/null
