@@ -137,14 +137,21 @@ else
    done
 
    # Prompt the user to choose a version
-   echo ""
-   echo -n "Please enter the line number of the version you want to select and press [ENTER], or \"q\" to abort: "
-   read CHOICE
-   echo ""
-   if [ "$CHOICE" == "q" -o "$CHOICE" == "Q" ]; then
+    echo ""
+    echo -n "Please enter the line number of the version you want to select and press [ENTER], or \"q\" to abort: "
+    read CHOICE
+    echo ""
+
+    # Check if CHOICE is "q" or "Q"
+    if [ "$CHOICE" == "q" -o "$CHOICE" == "Q" ]; then
       echo "Aborted."
       exit 1
-   elif [ $CHOICE -ge 1 -a $CHOICE -le ${#VERSIONS[@]} ]; then
+    fi
+
+    # Convert CHOICE to an integer
+    CHOICE=$((CHOICE))
+
+    if [ "$CHOICE" -ge 1 -a "$CHOICE" -le ${#VERSIONS[@]} ]; then
       echo "Your choice: ${CHOICE} (${VERSIONS[(($CHOICE - 1))]})"
       echo ""
       VERSION="${VERSIONS[(($CHOICE - 1))]}"
@@ -157,20 +164,20 @@ else
         echo "Aborting firmware update."
         exit 1
       fi
-      
+ 
       # Download the correct firmware based on the selected version and perform actions
       # Trim any leading or trailing whitespace from VERSION
       VERSION=$(echo "$VERSION" | tr -d '[:space:]')
       BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/${VERSION}/scripts"
       flash_modem() {
-        echo "Downloading latest '$1' firmware version ($VERSION)..."
+        echo "Downloading '$1' selected firmware version ($VERSION)..."
         rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
         mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
         curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/$2"
         chmod +x /tmp/mmdvmhshatfirmware/flash.sh
         cd /tmp/mmdvmhshatfirmware
         sleep 2
-        echo "Flashing '$1' modem with the latest firmware version ($VERSION) - please wait..."
+        echo "Flashing '$1' modem with the selected firmware version ($VERSION) - please wait..."
         output=$(./flash.sh 2>&1)
 
         flash_successful=false  # Initialize to false
