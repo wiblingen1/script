@@ -169,7 +169,7 @@ then
       echo ""
       shutdown -r now
     else
-      echo -e "\n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is likely locked. Contact the supplier of your modem for support."
+      echo -e "\n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is possibly locked from the vendor. Contact the supplier of your modem for support."
       echo ""
     fi
     exit 0
