@@ -42,7 +42,7 @@ if [ "$1" ]; then
     hs_hat_nano_hotspot)
       firmware_file="nano_hotspot_fw.bin"
       ;;
-    hs_hat_lonestar)
+    hs_hat_lonestar-usb)
       firmware_file="lonestar_usb_fw.bin"
       ;;
 
@@ -54,49 +54,42 @@ if [ "$1" ]; then
 fi
 
 # set some pretty colors
-if [[ ${SUPP_COL} -eq 0 ]]; then
-    COL_NC='\e[0m' # No Color
-    BOLD='\e[1m'
-    REVERSE='\e[7m'
-    COL_LIGHT_GREEN='\e[1;32m'
-    COL_BRIGHT_GREEN='\e[1;92m'
-    COL_LIGHT_RED='\e[31m'
-    COL_BRIGHT_RED='\e[1;31m'
-    COL_LIGHT_CYAN='\e[1;36m'
-    COL_REG_CYAN='\e[38;5;30m'
-    COL_REG_ORANGE='\e[38;5;173m'
-    COL_LIGHT_ORANGE='\e[38;5;208m'
-    COL_LIGHT_BLUE='\e[1;34m'
-    COL_LIGHT_MAGENTA='\e[1;35m'
-    COL_LIGHT_YELLOW='\e[1;93m'
-    COL_REG_YELLOW='\e[93m'
-    INFO="${BOLD}[i]${COL_NC}"
-    NOTE="${BOLD}[${COL_LIGHT_YELLOW}!${COL_NC}]"
-    TICK="${BOLD}[${COL_LIGHT_GREEN}✓${COL_NC}]"
-    CROSS="${BOLD}[${COL_BRIGHT_RED}✗${COL_NC}]"
-    DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
-else
-    INFO="[i]"
-    NOTE="[!]"
-    TICK="[✓]"
-    CROSS="[✗]"
-    DONE="Done!"
-fi
+COL_NC='\e[0m' # No Color
+BOLD='\e[1m'
+REVERSE='\e[7m'
+COL_LIGHT_GREEN='\e[1;32m'
+COL_BRIGHT_GREEN='\e[1;92m'
+COL_LIGHT_RED='\e[31m'
+COL_BRIGHT_RED='\e[1;31m'
+COL_LIGHT_CYAN='\e[1;36m'
+COL_REG_CYAN='\e[38;5;30m'
+COL_REG_ORANGE='\e[38;5;173m'
+COL_LIGHT_ORANGE='\e[38;5;208m'
+COL_LIGHT_BLUE='\e[1;34m'
+COL_LIGHT_MAGENTA='\e[1;35m'
+COL_LIGHT_YELLOW='\e[1;93m'
+COL_REG_YELLOW='\e[93m'
+INFO="${BOLD}[i]${COL_NC}"
+NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
+TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
+CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
+DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
+COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
 
 # some flashy flashing status while the modem flashes ;)
-# Add these variables to define the spinner
 SPINNER_PID=
 SPINNER_CHARS="/-\|"
-
-# Function to display a spinner
 spinner() {
     local i=0
     while :; do
-        printf "    [${SPINNER_CHARS:$i:1}] Flashing modem firmware... \r"
+        printf "    [${SPINNER_CHARS:$i:1}] Flashing modem firmware - please wait... \r"
         i=$(( (i + 1) % 4 ))
         sleep 0.1
     done
 }
+
+# put HW type in a var
+hardware=$(grep -i hardware /etc/pistar-release | awk -F "= " '{print $2}')
 
 #
 # Output some useful information when no variables are passed
@@ -110,32 +103,34 @@ then
   echo "To use the command, you will need to specify your modem type..."
   echo "Please choose from the list below, and run the command again:"
   echo ""
-  echo "To flash HS_HAT (14.7456MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatflash hs_hat"
-  echo "To flash HS_HAT (12.2880MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatflash hs_hat-12mhz"
-  echo "To flash HS_DUAL_HAT (14.7456MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatflash hs_dual_hat"
-  echo "To flash HS_DUAL_HAT (12.2880MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatflash hs_dual_hat-12mhz"
-  echo "To flash HS_HAT_AMBE (14.7456MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatflash hs_hat_ambe"
+  echo "  HS_HAT (14.7456MHz TCXO) connected to GPIO: pistar-mmdvmhshatflash hs_hat"
+  echo "  HS_HAT (12.2880MHz TCXO) connected to GPIO: pistar-mmdvmhshatflash hs_hat-12mhz"
+  echo "  HS_DUAL_HAT (14.7456MHz TCXO) connected to GPIO: pistar-mmdvmhshatflash hs_dual_hat"
+  echo "  HS_DUAL_HAT (12.2880MHz TCXO) connected to GPIO: pistar-mmdvmhshatflash hs_dual_hat-12mhz"
+  echo ""
+  echo "  HS_HAT_AMBE (14.7456MHz TCXO) connected to GPIO: pistar-mmdvmhshatflash hs_hat_ambe"
+  echo "  HS_HAT_GENERIC (14.7456MHz TCXO) connected to GPIO: pistar-mmdvmhshatflash hs_hat_generic"
+  echo "  HS_HAT_GENERIC_DUPLEX (14.7456MHz TCXO) connected to GPIO: pistar-mmdvmhshatflash hs_hat_generic_duplex"
+  echo "  HS_HAT_GENERIC_DUPLEX (14.7456MHz TCXO) connected to USB: pistar-mmdvmhshatflash hs_hat_generic_duplex-usb"
+  echo ""
+  echo "  LoneStar/LS MMDVM USB (14.7456MHz TCXO) connected to USB: pistar-mmdvmhshatflash hs_hat_lonestar-usb"
+  echo ""
+  echo "  Nano_hotSPOT (14.7456MHz TCXO) connected to GPIO: pistar-mmdvmhshatflash nano_hotspot_fw.bin"
   echo ""
   echo "--------------------------------------------------------------------------------------------------"
-  echo ""
   echo "If you have a different modem..."
   echo ""
-  echo "	To flash ZUMspot devices, run: pistar-zumspotflash"
-  echo "	To flash BridgeCom SkyBridge devices, run: pistar-skybridgeflash"
-  echo "	To flash NANO_DV devices, run: pistar-nanodvflash"
-  echo ""
+  echo "ZUMspot devices: pistar-zumspotflash"
+  echo "BridgeCom SkyBridge devices: pistar-skybridgeflash"
+  echo "NANO_DV devices: pistar-nanodvflash"
   echo "--------------------------------------------------------------------------------------------------"
-  echo ""
   echo "To DOWNGRADE your MMDVM_HS Hat Modem firmware to an older version..."
   echo ""
-  echo "	run: pistar-mmdvmhshatdowngrade"
-  echo ""
+  echo "run: pistar-mmdvmhshatdowngrade"
   echo "--------------------------------------------------------------------------------------------------"
-  echo ""
   echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
   echo "We simply provide scripts to update the firmware. For actual firmware support,"
   echo "you will need to utilize other support resources from the firmware developers/maintainers or the web".
-  echo ""
   echo "--------------------------------------------------------------------------------------------------"
   echo ""
 
@@ -226,45 +221,54 @@ then
     rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
     mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
     curl -L -s -A "$UAstr" -o "/tmp/mmdvmhshatfirmware/$firmware_file" "$BASE_FW_URL"
-    echo -e -n "    ${COL_BRIGHT_GREEN}${TICK}${COL_NC} Complete.${COL_NC}"
+    echo -e -n "    ${COL_BRIGHT_GREEN}${TICK} Complete."
+    echo ""
     sleep 1
 
-    echo -e "\n\nDownloading MD5 checksum file..."
+    echo -e "\nDownloading MD5 checksum file..."
     sleep 1
     curl -L -s -A "$UAstr" -o "/tmp/mmdvmhshatfirmware/MD5SUMS.txt" "$BASE_FW_URL/../MD5SUMS.txt"
-    echo -e -n "    ${COL_BRIGHT_GREEN}${TICK}${COL_NC} Complete.${COL_NC}"
+    echo -e -n "    ${COL_BRIGHT_GREEN}${TICK} Complete."
+    echo ""
     sleep 1
 
     # MD5 checksum validation setup
     calculated_md5=$(md5sum "/tmp/mmdvmhshatfirmware/$firmware_file" | awk '{print $1}')
     expected_md5=$(grep "$firmware_file" /tmp/mmdvmhshatfirmware/MD5SUMS.txt | awk '{print $1}')
-    echo -e "\n\nValidating file integrity..."
+    echo -e "\nValidating file integrity..."
     sleep 1
     if [ -z "$expected_md5" ]; then # not in file!
-        echo -e "    \n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} MD5 checksum value not found for the selected firmware. Aborting."
+        echo -e "\n    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} MD5 checksum value not found for the selected firmware. Aborting."
         exit 1
     fi
+
     # Perform MD5 validation
     if [ "$calculated_md5" == "$expected_md5" ]; then
         sleep 1
-        echo -e -n "    ${TICK} Passed!${COL_NC} File integrity validation succeeded."
+        echo -e -n "    ${TICK} Passed! File integrity validation succeeded."
+        echo ""
         sleep 1
     else
-        echo -e "    \n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} File integrity validation failed for the downloaded firmware. Aborting."
+        echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} File integrity validation failed for the downloaded firmware. Aborting."
     fi
 
     # checksum valid; flash!
-    echo -e "\n\nPreparing to flash '$1' modem with the latest firmware version ($VERSION) - please wait..."
+    echo -e "\nPreparing to flash '$1' modem with the latest firmware version ($VERSION)..."
     sleep 1
+
     # Start the spinner function in the background
     spinner &
+
     # Capture the spinner's PID
     SPINNER_PID=$!
+
     cd /tmp/mmdvmhshatfirmware
+
     # Download STM32F10X_Lib (only for binary tools)
     if [ ! -d "./STM32F10X_Lib/utils" ]; then
       env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$UAstr" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/STM32F10X_Lib.git &> /dev/null
     fi
+
     # Configure vars depending on OS
     if [ $(uname -s) == "Linux" ]; then
 	if [ $(uname -m) == "x86_64" ]; then
@@ -300,18 +304,32 @@ then
 	ST_FLASH="./STM32F10X_Lib/utils/macosx/st-flash"
 	STM32FLASH="./STM32F10X_Lib/utils/macosx/stm32flash"
     fi
+
     # Stop MMDVMHost process to free up the serial port
     systemctl stop mmdvmhost.timer >/dev/null 2>&1
     systemctl stop mmdvmhost.service >/dev/null 2>&1
+
+    # Arch GPIO handling
+    if [[ ${hardware} == "NanoPi" ]]; then
+      echo 3 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio3/direction
+      echo 1 > /sys/class/gpio/gpio3/value
+      echo 3 > /sys/class/gpio/unexport
+    fi
+
     # Upload the firmware to the modem and place output into buffer for fail/success checking logic
-    output=$(eval sudo $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0  2>&1)
+    $STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn's always work on some Chinesium locked modems)
+    output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0 2>&1)
+
     # Kill the spinner process (make the cursor visible again)
     kill $SPINNER_PID &>/dev/null
+
     # did we flash successfully?
     flash_successful=false  # Initialize to false
     if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
       flash_successful=true
     fi
+
     if $flash_successful; then
       # reset the fw version # in the mmdvmhost logs
       sed -i '/MMDVM protocol version: 1, description:/d; /MMDVM protocol version: 2, description:/d' /var/log/pi-star/MMDVM-*.log  >/dev/null 2>&1
@@ -319,13 +337,9 @@ then
       systemctl start mmdvmhost.service >/dev/null 2>&1
       systemctl start mmdvmhost.timer >/dev/null 2>&1
       rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-      echo -e -n "    ${TICK} ${DONE}${COL_NC} '$1' modem firmware flash version $VERSION complete! - Modem reinitialized.\n\n"
-      #read -n 1 -s -r -p ""
-      #echo ""
-      #shutdown -r now
+      echo -e -n "    ${TICK} ${COMPL} '$1' modem firmware flash version $VERSION complete! - Modem reinitialized.\n\n"
     else
-      echo -e "    \n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is possibly locked from the vendor. Contact the supplier of your modem for support."
-      # Start MMDVMHost processes to free serial port
+      echo -e "\n    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is possibly locked from the vendor. Contact the supplier of your modem for support."
       systemctl start mmdvmhost.service >/dev/null 2>&1
       systemctl start mmdvmhost.timer >/dev/null 2>&1
       rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
