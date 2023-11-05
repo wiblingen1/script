@@ -30,6 +30,22 @@ if [ "$1" ]; then
     hs_hat_ambe)
       firmware_file="d2rg_mmdvm_hs.bin"
       ;;
+    hs_hat_generic)
+      firmware_file="generic_gpio_fw.bin"
+      ;;
+    hs_hat_generic_duplex)
+      firmware_file="generic_duplex_gpio_fw.bin"
+      ;;
+    hs_hat_generic_duplex-usb)
+      firmware_file="generic_duplex_usb_fw.bin"
+      ;;
+    hs_hat_nano_hotspot)
+      firmware_file="nano_hotspot_fw.bin"
+      ;;
+    hs_hat_lonestar)
+      firmware_file="lonestar_usb_fw.bin"
+      ;;
+
     *)
       echo "Your choice of the modem, '${1}', is not supported in this program."
       exit 1
