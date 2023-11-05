@@ -12,6 +12,32 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+# Check CLI arguments and determine the modem type and its respective FW file...
+if [ "$1" ]; then
+  case $1 in
+    hs_hat)
+      firmware_file="mmdvm_hs_hat_fw.bin"
+      ;;
+    hs_hat-12mhz)
+      firmware_file="mmdvm_hs_hat_fw-12mhz.bin"
+      ;;
+    hs_dual_hat)
+      firmware_file="mmdvm_hs_dual_hat_fw.bin"
+      ;;
+    hs_dual_hat-12mhz)
+      firmware_file="mmdvm_hs_dual_hat_fw-12mhz.bin"
+      ;;
+    hs_hat_ambe)
+      firmware_file="d2rg_mmdvm_hs.bin"
+      ;;
+    *)
+      echo "Your choice of the modem, '${1}', is not supported in this program."
+      exit 1
+      ;;
+  esac
+fi
+
+# set some pretty colors
 if [[ ${SUPP_COL} -eq 0 ]]; then
     COL_NC='\e[0m' # No Color
     BOLD='\e[1m'
@@ -23,6 +49,7 @@ if [[ ${SUPP_COL} -eq 0 ]]; then
     COL_LIGHT_CYAN='\e[1;36m'
     COL_REG_CYAN='\e[38;5;30m'
     COL_REG_ORANGE='\e[38;5;173m'
+    COL_LIGHT_ORANGE='\e[38;5;208m'
     COL_LIGHT_BLUE='\e[1;34m'
     COL_LIGHT_MAGENTA='\e[1;35m'
     COL_LIGHT_YELLOW='\e[1;93m'
@@ -39,6 +66,21 @@ else
     CROSS="[✗]"
     DONE="Done!"
 fi
+
+# some flashy flashing status while the modem flashes ;)
+# Add these variables to define the spinner
+SPINNER_PID=
+SPINNER_CHARS="/-\|"
+
+# Function to display a spinner
+spinner() {
+    local i=0
+    while :; do
+        printf "    [${SPINNER_CHARS:$i:1}] Flashing modem firmware... \r"
+        i=$(( (i + 1) % 4 ))
+        sleep 0.1
+    done
+}
 
 #
 # Output some useful information when no variables are passed
@@ -118,7 +160,14 @@ fi
 # OK we know what the modem is, let get the firmware string from the log...
 #
 clear
-echo ""
+
+echo -e -n "${COL_LIGHT_CYAN}"
+echo ' _      _____  _______ 
+| | /| / / _ \/ __/ _ \
+| |/ |/ / ___/\ \/ // /
+|__/|__/_/  /___/____/'
+echo -e -n "${COL_NC}${COL_LIGHT_ORANGE}Modem Firmware Update Utility${COL_NC}\n\n"
+
 echo "Found modem:"
 tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1
 echo ""
@@ -130,14 +179,15 @@ if [ "$1" ]
 then
   script_name=$(basename "$0")
   UAstr="WPSD Modem FW Update Invocation (client side: $script_name)"
+
+  # get the latest FW version from the git repo API
   API="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
   VERSION=$(curl -L -A "$UAstr" -s ${API} | jq -r 'map(.name | ltrimstr("v") | select(. != "") | split(".") | map(tonumber)) | max_by(.[]) | join(".")') # jq hackery to always return the greatest ver. # from the json "name:" field since the json results are not ordered that way
   # Trim any leading or trailing whitespace from VERSION
   VERSION=$(echo "$VERSION" | tr -d '[:space:]')
-
   echo "Retrieving latest available firmmware version number from online repository..."
-  sleep 2
-  echo -e "${INFO} ${COL_LIGHT_BLUE}Found version ${VERSION}.${COL_NC}"
+  sleep 1
+  echo -e "    ${INFO} ${COL_LIGHT_BLUE}Found version ${VERSION} for '${1}' (${firmware_file}).${COL_NC}"
   echo ""
 
   read -n 1 -s -r -p "Press any key to flash the latest '${1}' firmware version (${VERSION}) to this modem, or 'q' to abort..."
@@ -149,60 +199,126 @@ then
     exit 1
   fi
 
-  BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/v${VERSION}/scripts"
+  BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/v${VERSION}/$firmware_file"
 
-  flash_modem() {
+  flash_modem() { # the meat!
+    local firmware_file="$2"  # Pass the firmware_file as an argument
+
     echo ""
     echo "Downloading latest '$1' firmware version ($VERSION)..."
+    sleep 1
     rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
     mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
-    curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/$2"
-    chmod +x /tmp/mmdvmhshatfirmware/flash.sh
+    curl -L -s -A "$UAstr" -o "/tmp/mmdvmhshatfirmware/$firmware_file" "$BASE_FW_URL"
+    echo -e -n "    ${COL_BRIGHT_GREEN}${TICK}${COL_NC} Complete.${COL_NC}"
+    sleep 1
+
+    echo -e "\n\nDownloading MD5 checksum file..."
+    sleep 1
+    curl -L -s -A "$UAstr" -o "/tmp/mmdvmhshatfirmware/MD5SUMS.txt" "$BASE_FW_URL/../MD5SUMS.txt"
+    echo -e -n "    ${COL_BRIGHT_GREEN}${TICK}${COL_NC} Complete.${COL_NC}"
+    sleep 1
+
+    # MD5 checksum validation setup
+    calculated_md5=$(md5sum "/tmp/mmdvmhshatfirmware/$firmware_file" | awk '{print $1}')
+    expected_md5=$(grep "$firmware_file" /tmp/mmdvmhshatfirmware/MD5SUMS.txt | awk '{print $1}')
+    echo -e "\n\nValidating file integrity..."
+    sleep 1
+    if [ -z "$expected_md5" ]; then # not in file!
+        echo -e "    \n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} MD5 checksum value not found for the selected firmware. Aborting."
+        exit 1
+    fi
+    # Perform MD5 validation
+    if [ "$calculated_md5" == "$expected_md5" ]; then
+        sleep 1
+        echo -e -n "    ${TICK} Passed!${COL_NC} File integrity validation succeeded."
+        sleep 1
+    else
+        echo -e "    \n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} File integrity validation failed for the downloaded firmware. Aborting."
+    fi
+
+    # checksum valid; flash!
+    echo -e "\n\nPreparing to flash '$1' modem with the latest firmware version ($VERSION) - please wait..."
+    sleep 1
+    # Start the spinner function in the background
+    spinner &
+    # Capture the spinner's PID
+    SPINNER_PID=$!
     cd /tmp/mmdvmhshatfirmware
-    sleep 2
-    echo "Flashing '$1' modem with the latest firmware version ($VERSION) - please wait..."
-    output=$(./flash.sh 2>&1)
-  
+    # Download STM32F10X_Lib (only for binary tools)
+    if [ ! -d "./STM32F10X_Lib/utils" ]; then
+      env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$UAstr" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/STM32F10X_Lib.git &> /dev/null
+    fi
+    # Configure vars depending on OS
+    if [ $(uname -s) == "Linux" ]; then
+	if [ $(uname -m) == "x86_64" ]; then
+		DFU_RST="./STM32F10X_Lib/utils/linux64/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/linux64/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/linux64/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/linux64/stm32flash"
+	elif [ $(uname -m) == "aarch64" ] ; then
+		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
+	elif [ $(uname -m) == "armv7l" ]; then
+		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
+	elif [ $(uname -m) == "armv6l" ]; then
+		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
+	else
+		DFU_RST="./STM32F10X_Lib/utils/linux/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/linux/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/linux/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/linux/stm32flash"
+	fi
+    fi
+    if [ $(uname -s) == "Darwin" ]; then
+	DFU_RST="./STM32F10X_Lib/utils/macosx/upload-reset"
+	DFU_UTIL="./STM32F10X_Lib/utils/macosx/dfu-util"
+	ST_FLASH="./STM32F10X_Lib/utils/macosx/st-flash"
+	STM32FLASH="./STM32F10X_Lib/utils/macosx/stm32flash"
+    fi
+    # Stop MMDVMHost process to free up the serial port
+    systemctl stop mmdvmhost.timer >/dev/null 2>&1
+    systemctl stop mmdvmhost.service >/dev/null 2>&1
+    # Upload the firmware to the modem and place output into buffer for fail/success checking logic
+    output=$(eval sudo $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0  2>&1)
+    # Kill the spinner process (make the cursor visible again)
+    kill $SPINNER_PID &>/dev/null
+    # did we flash successfully?
     flash_successful=false  # Initialize to false
     if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
       flash_successful=true
     fi
-    rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-
     if $flash_successful; then
-      echo ""
-      echo -e -n "${TICK} ${DONE}${COL_NC} '$1' modem flash complete - press any key to reboot your WPSD system..."
-      read -n 1 -s -r -p ""
-      echo ""
-      shutdown -r now
+      # reset the fw version # in the mmdvmhost logs
+      sed -i '/MMDVM protocol version: 1, description:/d; /MMDVM protocol version: 2, description:/d' /var/log/pi-star/MMDVM-*.log  >/dev/null 2>&1
+      # re-nit!
+      systemctl start mmdvmhost.service >/dev/null 2>&1
+      systemctl start mmdvmhost.timer >/dev/null 2>&1
+      rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
+      echo -e -n "    ${TICK} ${DONE}${COL_NC} '$1' modem firmware flash version $VERSION complete! - Modem reinitialized.\n\n"
+      #read -n 1 -s -r -p ""
+      #echo ""
+      #shutdown -r now
     else
-      echo -e "\n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is possibly locked from the vendor. Contact the supplier of your modem for support."
+      echo -e "    \n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is possibly locked from the vendor. Contact the supplier of your modem for support."
+      # Start MMDVMHost processes to free serial port
+      systemctl start mmdvmhost.service >/dev/null 2>&1
+      systemctl start mmdvmhost.timer >/dev/null 2>&1
+      rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
       echo ""
     fi
     exit 0
   }
 
-  case ${1} in
-    hs_hat)
-      flash_modem "${1}" "install_fw_hshat.sh"
-      ;;
-    hs_hat-12mhz)
-      flash_modem "${1}" "install_fw_hshat-12mhz.sh"
-      ;;
-    hs_dual_hat)
-      flash_modem "${1}" "install_fw_hsdualhat.sh"
-      ;;
-    hs_dual_hat-12mhz)
-      flash_modem "${1}" "install_fw_hsdualhat-12mhz.sh"
-      ;;
-    hs_hat_ambe)
-      flash_modem "${1}" "install_fw_d2rg_mmdvmhs.sh"
-      ;;
-    *)
-      # Unrecognized modem choice
-      echo "Your choice of ${1} modem is not supported in this program."
-      exit 1
-      ;;
-  esac
+  flash_modem "${1}" "${firmware_file}"
 fi
 exit 0
+
