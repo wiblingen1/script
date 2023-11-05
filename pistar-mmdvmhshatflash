@@ -82,9 +82,9 @@ SPINNER_CHARS="/-\|"
 spinner() {
     local i=0
     while :; do
-        printf "    [${SPINNER_CHARS:$i:1}] Flashing modem firmware - please wait... \r"
+        printf "    [${SPINNER_CHARS:$i:1}] Flashing modem - please wait... \r"
         i=$(( (i + 1) % 4 ))
-        sleep 0.1
+        sleep 0.2
     done
 }
 
@@ -198,7 +198,7 @@ then
   VERSION=$(echo "$VERSION" | tr -d '[:space:]')
   echo "Retrieving latest available firmmware version number from online repository..."
   sleep 1
-  echo -e "    ${INFO} ${COL_LIGHT_BLUE}Found version ${VERSION} for '${1}' (${firmware_file}).${COL_NC}"
+  echo -e "    ${INFO} Found lastest version: ${COL_LIGHT_BLUE}${VERSION}${COL_NC}"
   echo ""
 
   read -n 1 -s -r -p "Press any key to flash the latest '${1}' firmware version (${VERSION}) to this modem, or 'q' to abort..."
@@ -318,7 +318,7 @@ then
     fi
 
     # Upload the firmware to the modem and place output into buffer for fail/success checking logic
-    $STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn's always work on some Chinesium locked modems)
+    $STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
     output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0 2>&1)
 
     # Kill the spinner process (make the cursor visible again)
@@ -337,7 +337,7 @@ then
       systemctl start mmdvmhost.service >/dev/null 2>&1
       systemctl start mmdvmhost.timer >/dev/null 2>&1
       rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-      echo -e -n "    ${TICK} ${COMPL} '$1' modem firmware flash version $VERSION complete! - Modem reinitialized.\n\n"
+      echo -e -n "    ${TICK} ${COMPL} Modem firmware flash complete!\n        Modem reinitialized.\n\n"
     else
       echo -e "\n    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is possibly locked from the vendor. Contact the supplier of your modem for support."
       systemctl start mmdvmhost.service >/dev/null 2>&1
@@ -349,6 +349,7 @@ then
   }
 
   flash_modem "${1}" "${firmware_file}"
+
 fi
 exit 0
 
