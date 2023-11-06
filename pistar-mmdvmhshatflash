@@ -1,9 +1,41 @@
 #!/bin/bash
+
+COL_NC='\e[0m' # No Color
+BOLD='\e[1m'
+REVERSE='\e[7m'
+COL_LIGHT_GREEN='\e[1;32m'
+COL_BRIGHT_GREEN='\e[1;92m'
+COL_LIGHT_RED='\e[31m'
+COL_BRIGHT_RED='\e[1;31m'
+COL_LIGHT_CYAN='\e[1;36m'
+COL_REG_CYAN='\e[38;5;30m'
+COL_REG_ORANGE='\e[38;5;173m'
+COL_LIGHT_ORANGE='\e[38;5;208m'
+COL_LIGHT_BLUE='\e[1;34m'
+COL_LIGHT_MAGENTA='\e[1;35m'
+COL_LIGHT_YELLOW='\e[1;93m'
+COL_REG_YELLOW='\e[93m'
+INFO="${BOLD}[i]${COL_NC}"
+NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
+TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
+CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
+DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
+COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
+
 clear
-echo -e "\nThe old command 'pistar-mmdvmhshatflash' is deprecated. Please use 'wpsd-modemflash' instead."
+echo -e "\n${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} The old command 'pistar-mmdvmhshatflash' is deprecated. Please use 'wpsd-modemflash' instead."
 
-echo -e "\nI'll run the command for you in 5 seconds, without any options, so you can see the new help syntax...\n"
+echo -e "\nI'll run the command for you in 10 seconds, without any options, so you can read the new help syntax...\n"
 
-sleep 5
+for ((i=10; i>=1; i--)); do
+  printf "\r${INFO} Starting in $i seconds... Press 'q' to abort "
+  if [[ -t 0 ]]; then
+    read -t 1 -n 1 key
+    if [[ $key == "q" || $key == "Q" ]]; then
+      printf "\nAborted by user\n"
+      exit 1
+    fi
+  fi
+done
 
-exec /usr/local/sbin/wpsd-modemflash
+exec env EXT_CALL=1 /usr/local/sbin/wpsd-modemflash

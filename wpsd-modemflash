@@ -12,6 +12,12 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+#
+# Note to devs/vendors/etc.:
+# To run as non-interactive, pass the `NP=1` env. var to the script with appprorpate modem type args.
+# E.g.: sudo NP=1 wpsd-modemflash hs_hat
+#
+
 # Check CLI arguments and determine the modem type and its respective FW file...
 if [ "$1" ]; then
   case $1 in
@@ -112,8 +118,12 @@ spinner() {
     done
 }
 
-# put HW type in a var
+# put HW types in some vars
 hardware=$(grep -i hardware /etc/pistar-release | awk -F "= " '{print $2}')
+numLogs=$(ls -1rt /var/log/pi-star/MMDVM-*.log | wc -l)
+if [[ ${numLogs} -gt 0 ]]; then
+    modem_description_line=$(tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1)
+fi
 
 #
 # Output some useful information when no variables are passed
@@ -121,33 +131,37 @@ hardware=$(grep -i hardware /etc/pistar-release | awk -F "= " '{print $2}')
 if [ -z "$1" ]
 then
   clear
-  echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} No modem specified!"
+  if [[ "${EXT_CALL}" != "1" ]]; then
+      echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} No modem specified!"
+  fi
   echo ""
-  echo "This tool is used to flash/upgrade your MMDVM_HS Hat Modem"
-  echo "To use the command, you will need to specify your modem type..."
-  echo "Please choose from the list below, and run the command again:"
+  echo "This utility is used to flash/upgrade your hotspot modem/radio."
+  echo "To use the command, you need to specify your modem type..."
+  echo "Please choose from the list below, and run this command again:"
   echo ""
-  echo "  HS_HAT (14.7456MHz TCXO) connected to GPIO: wpsd-modemflash hs_hat"
-  echo "  HS_HAT (12.2880MHz TCXO) connected to GPIO: wpsd-modemflash hs_hat-12mhz"
-  echo "  HS_DUAL_HAT (14.7456MHz TCXO) connected to GPIO: wpsd-modemflash hs_dual_hat"
-  echo "  HS_DUAL_HAT (12.2880MHz TCXO) connected to GPIO: wpsd-modemflash hs_dual_hat-12mhz"
+  echo "  Modem Type						Command"
+  echo "--------------------------------------------------------------------------------------------------"
+  echo "  HS_HAT (14.7456MHz TCXO) GPIO:			wpsd-modemflash hs_hat"
+  echo "  HS_HAT (12.2880MHz TCXO) GPIO:			wpsd-modemflash hs_hat-12mhz"
+  echo "  HS_DUAL_HAT (14.7456MHz TCXO) GPIO:			wpsd-modemflash hs_dual_hat"
+  echo "  HS_DUAL_HAT (12.2880MHz TCXO) GPIO:			wpsd-modemflash hs_dual_hat-12mhz"
   echo ""
-  echo "  HS_HAT_AMBE (14.7456MHz TCXO) connected to GPIO: wpsd-modemflash hs_hat_ambe"
-  echo "  HS_HAT_GENERIC (14.7456MHz TCXO) connected to GPIO: wpsd-modemflash hs_hat_generic"
-  echo "  HS_HAT_GENERIC_DUPLEX (14.7456MHz TCXO) connected to GPIO: wpsd-modemflash hs_hat_generic_duplex"
-  echo "  HS_HAT_GENERIC_DUPLEX (14.7456MHz TCXO) connected to USB: wpsd-modemflash hs_hat_generic_duplex-usb"
-  echo "  Nano_hotSPOT by BI7JTA (14.7456MHz TCXO) connected to GPIO: wpsd-modemflash hs_hat_nano_hotspot"
+  echo "  HS_HAT_AMBE (14.7456MHz TCXO) GPIO:			wpsd-modemflash hs_hat_ambe"
+  echo "  MMDVM_HS_GENERIC (14.7456MHz TCXO) GPIO:		wpsd-modemflash hs_hat_generic"
+  echo "  MMDVM_HS_GENERIC_DUPLEX (14.7456MHz TCXO) GPIO:	wpsd-modemflash hs_hat_generic_duplex"
+  echo "  MMDVM_HS_GENERIC_DUPLEX (14.7456MHz TCXO) USB:	wpsd-modemflash hs_hat_generic_duplex-usb"
+  echo "  Nano_hotSPOT by BI7JTA (14.7456MHz TCXO) GPIO:	wpsd-modemflash hs_hat_nano_hotspot"
   echo ""
-  echo "  LoneStar LS MMDVM USB (14.7456MHz TCXO) connected to USB: wpsd-modemflash hs_hat_lonestar-usb"
-  echo "  SkyBridge board/hotspots (14.7456MHz TCXO) connected to GPIO: wpsd-modemflash skybridge"
+  echo "  LoneStar LS MMDVM USB (14.7456MHz TCXO) USB:		wpsd-modemflash hs_hat_lonestar-usb"
+  echo "  SkyBridge board/hotspots (14.7456MHz TCXO) GPIO:	wpsd-modemflash skybridge"
   echo ""
-  echo "  ZUMSpot RPi boards/hotspots connected to GPIO: wpsd-modemflash zum_rpi"
-  echo "  ZUMspot USB stick: wpsd-modemflash zum_usb"
-  echo "  ZUMSpot RPi duplex GPIO board/hotspots: wpsd-modemflash zum_rpi-duplex"
-  echo "  ZUMspot Libre Kit or generic MMDVM_HS board: wpsd-modemflash zum_libre"
+  echo "  ZUMSpot RPi boards/hotspots GPIO:			wpsd-modemflash zum_rpi"
+  echo "  ZUMspot USB stick:					wpsd-modemflash zum_usb"
+  echo "  ZUMSpot RPi duplex GPIO board/hotspots:		wpsd-modemflash zum_rpi-duplex"
+  echo "  ZUMspot Libre Kit or generic MMDVM_HS board:		wpsd-modemflash zum_libre"
   echo ""
-  echo "  NANO_DV NPi connected to GPIO by BG4TGO: wpsd-modemflash nanodv_npi"
-  echo "  NANO_DV connected to USB by BG4TG: wpsd-modemflash nanodb_usb"
+  echo "  NANO_DV NPi GPIO by BG4TGO:				wpsd-modemflash nanodv_npi"
+  echo "  NANO_DV USB by BG4TG:					wpsd-modemflash nanodb_usb"
   echo ""
   echo "--------------------------------------------------------------------------------------------------"
   echo "To DOWNGRADE your MMDVM_HS Hat Modem firmware to an older version..."
@@ -155,8 +169,8 @@ then
   echo "  run: wpsd-downgrademmdvmhshat"
   echo "--------------------------------------------------------------------------------------------------"
   echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
-  echo "We simply provide scripts to update the firmware. For actual firmware support,"
-  echo "you will need to utilize other support resources from the firmware developers/maintainers or the web".
+  echo "We simply provide utilities to update the firmware. For actual firmware support, you will need to"
+  echo "utilize other support resources from the firmware developers/maintainers or the web".
   echo "--------------------------------------------------------------------------------------------------"
   echo ""
 
@@ -176,19 +190,15 @@ then
     echo "Modem selected in Dashboard: ${modemSelectedHuman}"
   fi
 
-  # Get the Modem info from the Log
-  numLogs=$(ls -1rt /var/log/pi-star/MMDVM-*.log | wc -l)
-  if [[ ${numLogs} -gt 0 ]]; then
-    # Get the physically connected modem from the logs
-    modemLog=$(tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1)
-    echo "Connected Hardware: ${modemLog}"
-    
-    # Get the TCXO data
-    if [[ ${modemLog} == *"MHz"* ]]; then
-      tcxoData=$(echo ${modemLog} | awk '{print $3}')
-      echo "TCXO Value: ${tcxoData}"
-    fi
-  echo ""
+  # Get the Modem info from the var
+  if [ -n "$modem_description_line" ]; then
+    echo "Connected Hardware: $modem_description_line"
+      # Get the TCXO data
+      if [[ ${modem_description_line} == *"MHz"* ]]; then
+        tcxoData=$(echo ${modem_description_line} | awk '{print $3}')
+        echo "TCXO Value: ${tcxoData}"
+      fi
+      echo ""
   fi
   exit 0
 fi
@@ -205,9 +215,12 @@ echo '    _      _____  _______
    |__/|__/_/  /___/____/'
 echo -e -n "${COL_NC}${COL_LIGHT_ORANGE}${BOLD}Modem Firmware Update Utility${COL_NC}\n\n"
 
-echo "Found modem installed:"
-tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1
-echo ""
+
+if [ -n "$modem_description_line" ]; then
+    echo "Found modem installed:"
+    echo "$modem_description_line"
+    echo ""
+fi
 
 #
 # Download & flash the latest firmware for the type specified in the arg.
@@ -264,7 +277,7 @@ then
     # MD5 checksum validation setup
     calculated_md5=$(md5sum "/tmp/mmdvmhshatfirmware/$firmware_file" | awk '{print $1}')
     expected_md5=$(grep "$firmware_file" /tmp/mmdvmhshatfirmware/MD5SUMS.txt | awk '{print $1}')
-    echo -e "\nValidating file integrity..."
+    echo -e "\nValidating firmware file integrity..."
     sleep 1
     if [ -z "$expected_md5" ]; then # not in file!
         echo -e "\n    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} MD5 checksum value not found for the selected firmware. Aborting."
@@ -276,6 +289,9 @@ then
         sleep 1
         echo -e -n "    ${TICK} Passed! File integrity validation succeeded."
         echo ""
+	# Stop MMDVMHost process to free up the serial port
+	systemctl stop mmdvmhost.timer >/dev/null 2>&1
+	systemctl stop mmdvmhost.service >/dev/null 2>&1
         sleep 1
     else
         echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} File integrity validation failed for the downloaded firmware. Aborting."
@@ -334,10 +350,6 @@ then
 	STM32FLASH="./STM32F10X_Lib/utils/macosx/stm32flash"
     fi
 
-    # Stop MMDVMHost process to free up the serial port
-    systemctl stop mmdvmhost.timer >/dev/null 2>&1
-    systemctl stop mmdvmhost.service >/dev/null 2>&1
-
     # Arch GPIO handling
     if [[ ${hardware} == "NanoPi" ]]; then
       echo 3 > /sys/class/gpio/export
@@ -366,11 +378,16 @@ then
       systemctl start mmdvmhost.service >/dev/null 2>&1
       systemctl start mmdvmhost.timer >/dev/null 2>&1
       rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
-      echo -e -n "    ${TICK} ${COMPL} Modem firmware flash complete!\n        Modem reinitialized.\n\n"
+      echo -e -n "    ${TICK} ${COMPL} Modem firmware flash complete!\n        Modem reinitialized.\n"
+      echo ""
+      echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} You will need to refresh your dashboard to see the updated firmware version.\n"
     else
+      echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. The serial port was"
+      echo -e "                either busy, or the modem is possibly locked from the vendor."
+      echo -e "                You can try running this command again, or you can contact the"
+      echo -e "                supplier of your modem for support.\n"
       systemctl start mmdvmhost.service >/dev/null 2>&1
       systemctl start mmdvmhost.timer >/dev/null 2>&1
-      echo -e "\n    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is possibly locked from the vendor. Contact the supplier of your modem for support."
       rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
       echo ""
     fi
