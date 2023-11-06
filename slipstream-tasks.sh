@@ -475,11 +475,17 @@ else
 fi
 
 # add slipstream to rc.local
-if ! grep -q 'slipstream-tasks' /etc/rc.local ; then
-    sed -i '/^\/usr\/local\/sbin\/pistar-hwcache/a \\n\n# slipstream tasks\n\/usr\/local\/sbin\/slipstream-tasks.sh' /etc/rc.local 
+# Define the correct entry
+correct_entry="nohup /usr/local/sbin/slipstream-tasks.sh &"
+# Check if the correct entry already exists in /etc/rc.local
+if grep -q -x "$correct_entry" /etc/rc.local; then
+  :
+else
+  # Remove the legacy entries and add the correct entry
+  sed -i '/nohup nohup.*&/d' /etc/rc.local
+  sed -i '/\/usr\/local\/sbin\/slipstream-tasks\.sh/d' /etc/rc.local
+  sed -i '/# slipstream tasks/a '"$correct_entry"'' /etc/rc.local
 fi
-# now make it run in bknd. since it may have already been in rc.local w/out the nohup &
-sed -i '/\/usr\/local\/sbin\/slipstream-tasks.sh/ s|^\(.*\)/usr/local/sbin/slipstream-tasks.sh\(.*\)$|\1nohup /usr/local/sbin/slipstream-tasks.sh \&\2|' /etc/rc.local
 
 # ensure hostfiles are updated more regularly
 /usr/local/sbin/HostFilesUpdate.sh &> /dev/null
