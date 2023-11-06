@@ -237,7 +237,7 @@ else
 fi
 
 # maint. tasks
-/usr/local/sbin/wpsd-backend-maint > /dev/null 2>&1
+/usr/local/sbin/.wpsd-backend-maint > /dev/null 2>&1
 
 # Add DGIdGateway timer to the APRS timer (dependency).
 if ! grep -q 'Before=mmdvmhost.timer' /lib/systemd/system/aprsgateway.service ; then
