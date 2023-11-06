@@ -1,0 +1,238 @@
+#!/bin/bash
+#
+########################################################
+#                                                      #
+#          WPSD Modem Firmware Downgrade Utility       #
+#                  Chip Cuccio (W0CHP)                 #
+#                                                      #
+########################################################
+#
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
+if [[ ${SUPP_COL} -eq 0 ]]; then
+    COL_NC='\e[0m' # No Color
+    BOLD='\e[1m'
+    REVERSE='\e[7m'
+    COL_LIGHT_GREEN='\e[1;32m'
+    COL_BRIGHT_GREEN='\e[1;92m'
+    COL_LIGHT_RED='\e[31m'
+    COL_BRIGHT_RED='\e[1;31m'
+    COL_LIGHT_CYAN='\e[1;36m'
+    COL_REG_CYAN='\e[38;5;30m'
+    COL_REG_ORANGE='\e[38;5;173m'
+    COL_LIGHT_BLUE='\e[1;34m'
+    COL_LIGHT_MAGENTA='\e[1;35m'
+    COL_LIGHT_YELLOW='\e[1;93m'
+    COL_REG_YELLOW='\e[93m'
+    INFO="${BOLD}[i]${COL_NC}"
+    NOTE="${BOLD}[${COL_LIGHT_YELLOW}!${COL_NC}]"
+    TICK="${BOLD}[${COL_LIGHT_GREEN}✓${COL_NC}]"
+    CROSS="${BOLD}[${COL_BRIGHT_RED}✗${COL_NC}]"
+    DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
+else
+    INFO="[i]"
+    NOTE="[!]"
+    TICK="[✓]"
+    CROSS="[✗]"
+    DONE="Done!"
+fi
+
+#
+# Output some useful information when no variables are passed
+#
+if [ -z "$1" ]
+then
+  clear
+  echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} No modem specified!"
+  echo ""
+  echo "This tool is used to downgrade the firmware of your MMDVM_HS Hat Modem."
+  echo "To use the command, you will need to specify your modem type..."
+  echo "Please choose from the list below, and run the command again:"
+  echo ""
+  echo "To downgrade HS_HAT (14.7456MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatdowngrade hs_hat"
+  echo "To downgrade HS_HAT (12.288MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatdowngrade hs_hat-12mhz"
+  echo "To downgrade HS_DUAL_HAT (14.7456MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatdowngrade hs_dual_hat"
+  echo "To downgrade HS_DUAL_HAT (12.2880MHz TCXO) connected to GPIO, run: pistar-mmdvmhshatdowngrade hs_dual_hat-12mhz"
+  echo ""
+  echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
+  echo "We simply provide scripts to update the firmware. For actual firmware support,"
+  echo "you will need to utilize other support resources from the firmware developers/maintainers or the web".
+  echo ""
+  # Get the friendly name for the chosen Modem according to the dashboard.
+  if [ -f '/etc/dstar-radio.mmdvmhost' ]; then
+    modemSelected=$(grep 'Hardware=' /etc/dstar-radio.mmdvmhost)
+    modemSelected=${modemSelected#*=}
+
+    # Get the user-friendly version of the selected Modem.
+    modemSelectedHuman=$(grep value=\"${modemSelected}\" /var/www/dashboard/admin/configure.php | head -n 1)
+    modemSelectedHuman=${modemSelectedHuman#*\">}
+    modemSelectedHuman=${modemSelectedHuman::-9}
+
+    # Replace "&amp;" with "&" in modemSelectedHuman
+    modemSelectedHuman=${modemSelectedHuman//&amp;/&}
+
+    echo "Modem selected in Dashboard: ${modemSelectedHuman}"
+  fi
+
+  # Get the Modem info from the Log
+  numLogs=$(ls -1rt /var/log/pi-star/MMDVM-*.log | wc -l)
+  if [[ ${numLogs} -gt 0 ]]; then
+    # Get the physically connected modem from the logs
+    modemLog=$(tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1)
+    echo "Connected Hardware: ${modemLog}"
+
+    # Get the TCXO data
+    if [[ ${modemLog} == *"MHz"* ]]; then
+      tcxoData=$(echo ${modemLog} | awk '{print $3}')
+      echo "TCXO Value: ${tcxoData}"
+    fi
+  fi
+  exit 0
+fi
+
+#
+# OK we know what the modem is, let get the firmware string from the log...
+#
+clear
+echo ""
+echo "Found modem:"
+tac $(ls -1rt /var/log/pi-star/MMDVM-*.log) | sed -n 's/description: /&\n/;s/.*\n//p' | head -1
+echo ""
+
+# Get all releases and let the user choose, or check if second command line option is a valid version tag
+#
+# API URL
+API_URL="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
+
+script_name=$(basename "$0")
+UAstr="WPSD Modem FW Update Invocation (client side: $script_name)"
+
+echo "Retrieving available firmmware version numbers from online repository..."
+# Get all tags from the API and store them in an array, sorted in reverse order
+mapfile -t VERSIONS < <(curl -L -A "$UAstr" -s "$API_URL" | jq -r '.[].name' | sort -V -r)
+sleep 2
+echo -e "${INFO} ${COL_LIGHT_BLUE}Complete.${COL_NC}"
+
+# Check if a version tag is provided as the second command line argument
+if [ "$2" ]; then
+   VERSION="$2"
+
+   # Check if the provided tag is in the list of tags
+   if [[ " ${VERSIONS[@]} " =~ " $VERSION " ]]; then
+      echo "Selected version: $VERSION"
+      # Perform your desired action with the selected version here
+   else
+      echo "Invalid version: $VERSION"
+   fi
+else
+   # List available versions for the user to choose from
+   #echo -e "\nAvailable versions (newest to oldest):\n"
+   #I=1
+   #for version in "${VERSIONS[@]}"; do
+   #   echo "${I}) $version"
+   #   I=$((I + 1))
+   #done
+
+  # List available versions (excluding the newest version) for the user to choose from
+  echo -e "\nAvailable downgrade versions:\n"
+  I=1
+  for ((i = 1; i < ${#VERSIONS[@]}; i++)); do
+    version="${VERSIONS[i]}"
+    echo "${I}) $version"
+    I=$((I + 1))
+  done
+
+   # Prompt the user to choose a version
+    echo ""
+    echo -n "Please enter the line number of the version you want to select and press [ENTER], or \"q\" to abort: "
+    read CHOICE
+    echo ""
+
+    # Check if CHOICE is "q" or "Q"
+    if [ "$CHOICE" == "q" -o "$CHOICE" == "Q" ]; then
+      echo "Aborted."
+      exit 1
+    fi
+
+    # Convert CHOICE to an integer
+    CHOICE=$((CHOICE))
+
+    if [ "$CHOICE" -ge 1 -a "$CHOICE" -le ${#VERSIONS[@]} ]; then
+      echo "Your choice: ${CHOICE} (${VERSIONS[(($CHOICE - 1))]})"
+      echo ""
+      VERSION="${VERSIONS[(($CHOICE - 1))]}"
+
+      read -n 1 -s -r -p "Press any key to install the '${1}' firmware on this modem or 'q' to abort..."
+      echo ""
+
+      if [[ "$REPLY" =~ [qQ] ]]; then
+        echo ""
+        echo "Aborting firmware update."
+        exit 1
+      fi
+ 
+      # Download the correct firmware based on the selected version and perform actions
+      # Trim any leading or trailing whitespace from VERSION
+      VERSION=$(echo "$VERSION" | tr -d '[:space:]')
+      BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/${VERSION}/scripts"
+      flash_modem() {
+        echo "Downloading '$1' selected firmware version ($VERSION)..."
+        rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
+        mkdir /tmp/mmdvmhshatfirmware 2> /dev/null
+        curl -L -s -A "$UAstr" -o /tmp/mmdvmhshatfirmware/flash.sh "$BASE_FW_URL/$2"
+        chmod +x /tmp/mmdvmhshatfirmware/flash.sh
+        cd /tmp/mmdvmhshatfirmware
+        sleep 2
+        echo "Flashing '$1' modem with the selected firmware version ($VERSION) - please wait..."
+        output=$(./flash.sh 2>&1)
+
+        flash_successful=false  # Initialize to false
+        if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
+          flash_successful=true
+        fi
+        rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
+
+        if $flash_successful; then
+          echo ""
+          echo -e -n "${TICK} ${DONE}${COL_NC} '$1' modem flash complete - press any key to reboot your WPSD system..."
+          read -n 1 -s -r -p ""
+          echo ""
+          shutdown -r now
+        else
+          echo -e "\n${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. Your modem is possibly locked from the vendor. Contact the supplier of your modem for support."
+          echo ""
+        fi
+        exit 0
+      }
+
+      case ${1} in
+        hs_hat)
+          flash_modem "${1}" "install_fw_hshat.sh"
+          ;;
+        hs_hat-12mhz)
+          flash_modem "${1}" "install_fw_hshat-12mhz.sh"
+          ;;
+        hs_dual_hat)
+          flash_modem "${1}" "install_fw_hsdualhat.sh"
+          ;;
+        hs_dual_hat-12mhz)
+          flash_modem "${1}" "install_fw_hsdualhat-12mhz.sh"
+          ;;
+        hs_hat_ambe)
+          flash_modem "${1}" "install_fw_d2rg_mmdvmhs.sh"
+          ;;
+        *)
+          # Unrecognized modem choice
+          echo "Your choice of '${1}' modem is not supported in this program."
+          exit 1
+          ;;
+      esac
+   else
+      echo "Invalid choice. Aborting ..."
+      exit 2
+   fi
+fi
+exit 2
