@@ -289,9 +289,6 @@ then
         sleep 1
         echo -e -n "    ${TICK} Passed! File integrity validation succeeded."
         echo ""
-	# Stop MMDVMHost process to free up the serial port
-	systemctl stop mmdvmhost.timer >/dev/null 2>&1
-	systemctl stop mmdvmhost.service >/dev/null 2>&1
         sleep 1
     else
         echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} File integrity validation failed for the downloaded firmware. Aborting."
@@ -299,7 +296,9 @@ then
 
     # checksum valid; flash!
     echo -e "\nPreparing to flash '$1' modem with the latest firmware version ($VERSION)..."
-    sleep 1
+    # Stop MMDVMHost process to free up the serial port
+    systemctl stop mmdvmhost.timer >/dev/null 2>&1
+    systemctl stop mmdvmhost.service >/dev/null 2>&1
 
     # Start the spinner function in the background
     spinner &
@@ -380,7 +379,7 @@ then
       rm -rf /tmp/mmdvmhshatfirmware 2> /dev/null
       echo -e -n "    ${TICK} ${COMPL} Modem firmware flash complete!\n        Modem reinitialized.\n"
       echo ""
-      echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} You will need to refresh your dashboard to see the updated firmware version.\n"
+      echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} You will need to refresh your dashboard to reflect the updated firmware version.\n"
     else
       echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. The serial port was"
       echo -e "                either busy, or the modem is possibly locked from the vendor."
