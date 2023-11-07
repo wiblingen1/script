@@ -263,7 +263,7 @@ main_function() {
 	    systemctl mask gpsd.socket > /dev/null 2>&1
 	fi
 
-	/usr/local/sbin/wpsd-backend-maint > /dev/null 2>&1
+	/usr/local/sbin/.wpsd-backend-maint > /dev/null 2>&1
 
 	# check for vnstat
 	if ! [ -x "$(command -v vnstat)" ]; then
@@ -456,7 +456,7 @@ main_function() {
 	fi
 
 	# MOTD
-	bash /usr/local/sbin/pistar-motdgen
+	bash /usr/local/sbin/motdgen
 
 	# Add pistar-service bash completion if missing
 	DEST="/usr/share/bash-completion/completions/pistar-services"

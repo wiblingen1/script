@@ -23,8 +23,6 @@ modemSpeed=$(grep -m 1 'UARTSpeed=' /etc/mmdvmhost | awk -F "=" '/UARTSpeed/ {pr
 # Output some feedback to the terminal
 echo "Stopping Services..."
 
-# Make the disk RW
-
 # Stop the services
 systemctl stop pistar-watchdog.timer >/dev/null 2>&1
 systemctl stop pistar-watchdog.service >/dev/null 2>&1
