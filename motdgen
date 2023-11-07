@@ -12,27 +12,7 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-COL_NC='\e[0m' # No Color
-BOLD='\e[1m'
-REVERSE='\e[7m'
-COL_LIGHT_GREEN='\e[1;32m'
-COL_BRIGHT_GREEN='\e[1;92m'
-COL_LIGHT_RED='\e[31m'
-COL_BRIGHT_RED='\e[1;31m'
-COL_LIGHT_CYAN='\e[1;36m'
-COL_REG_CYAN='\e[38;5;30m'
-COL_REG_ORANGE='\e[38;5;173m'
-COL_LIGHT_ORANGE='\e[38;5;208m'
-COL_LIGHT_BLUE='\e[1;34m'
-COL_LIGHT_MAGENTA='\e[1;35m'
-COL_LIGHT_YELLOW='\e[1;93m'
-COL_REG_YELLOW='\e[93m'
-INFO="${BOLD}[i]${COL_NC}"
-NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
-TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
-CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
-DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
-COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
+source /usr/local/sbin/.wpsd-shell-funcs
 
 # WPSD git id
 gitId=$( cat /etc/.W0CHP-PiStar-Dash.remote_version )
@@ -44,11 +24,13 @@ echo -e "${COL_REG_CYAN}
 ██║███╗██║██╔═══╝ ╚════██║██║  ██║
 ╚███╔███╔╝██║     ███████║██████╔╝
  ╚══╝╚══╝ ╚═╝     ╚══════╝╚═════╝${COL_NC}
-${COL_LIGHT_CYAN}
-WPSD${COL_NC} Ver.# ${COL_REG_YELLOW}${gitId}${COL_NC}
+${COL_BRIGHT_CYAN}
+WPSD${COL_NC} Ver.# ${COL_LIGHT_ORANGE}${gitId}${COL_NC}
 
 ${INFO} Your WPSD dashboard can be accesed from:
-${COL_LIGHT_MAGENTA}http://$(hostname)/  http://$(hostname).local  http://$(hostname -I | awk '{print $1}')/${COL_NC}
+    ${BULL} ${COL_REG_MAGENTA}http://$(hostname)/${COL_NC}
+    ${BULL} ${COL_REG_MAGENTA}http://$(hostname).local/${COL_NC}
+    ${BULL} ${COL_REG_MAGENTA}http://$(hostname -I | awk '{print $1}')/${COL_NC}
 
-${INFO} WPSD command-line tools all begin with \"wpsd-\".
+${INFO} WPSD command-line tools are all prefixed with \"wpsd-\".
 " > /etc/motd

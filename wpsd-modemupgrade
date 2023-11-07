@@ -12,6 +12,12 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+#
+# Non interactive mode, pass "NP=1" env. var. E.g. `sudo NP=1 wpsd-modemupdate <foo>`
+#
+
+source /usr/local/sbin/.wpsd-shell-funcs
+
 # Check CLI arguments and determine the modem type and its respective FW file...
 if [ "$1" ]; then
   case $1 in
@@ -77,43 +83,6 @@ if [ "$1" ]; then
   esac
 fi
 
-# set some pretty colors
-COL_NC='\e[0m' # No Color
-BOLD='\e[1m'
-REVERSE='\e[7m'
-COL_LIGHT_GREEN='\e[1;32m'
-COL_BRIGHT_GREEN='\e[1;92m'
-COL_LIGHT_RED='\e[31m'
-COL_BRIGHT_RED='\e[1;31m'
-COL_LIGHT_CYAN='\e[1;36m'
-COL_REG_CYAN='\e[38;5;30m'
-COL_REG_ORANGE='\e[38;5;173m'
-COL_LIGHT_ORANGE='\e[38;5;208m'
-COL_LIGHT_BLUE='\e[1;34m'
-COL_LIGHT_MAGENTA='\e[1;35m'
-COL_LIGHT_YELLOW='\e[1;93m'
-COL_REG_YELLOW='\e[93m'
-BULL="${BOLD}\u2022${COL_NC}"
-INFO="${BOLD}[i]${COL_NC}"
-NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
-TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
-CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
-DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
-COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
-
-# some flashy flashing status while the modem flashes ;)
-SPINNER_PID=
-SPINNER_CHARS="⣾⣽⣻⢿⡿⣟⣯⣷"
-spinner() {
-    local i=0
-    while :; do
-        printf "    [${SPINNER_CHARS:$i:1}] Flashing modem - please wait... \r"
-        i=$(( (i + 1) % 8 ))
-        sleep 0.1
-    done
-}
-
-# put HW types in some vars
 hardware=$(grep -i hardware /etc/pistar-release | awk -F "= " '{print $2}')
 numLogs=$(ls -1rt /var/log/pi-star/MMDVM-*.log | wc -l)
 if [[ ${numLogs} -gt 0 ]]; then
