@@ -1,0 +1,123 @@
+#!/bin/bash
+#
+############################################################
+#                                                          #
+#        WPSD Custom Firmware Modem Flash Utility          #
+#                                                          #
+############################################################
+#
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
+#
+# Output some useful information when no variables are passed
+#
+if [ -z "$1" ]
+then
+  clear
+  echo ""
+  echo "This utility is used to flash custom firmware to your Radio/Modem."
+  echo ""
+  echo "Pre-built and always up-to-date firmware binaries can be downloaded from:"
+  echo ""
+  echo "   <https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled>"
+  echo ""
+  echo "Use this script and the custom firmware at your own risk!"
+  echo ""
+  echo "Usage: $(basename ${0}) <firmware.bin>"
+  echo ""
+  echo "--------------------------------------------------------------------------------------------------"
+  echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
+  echo "We simply provide utilities to update the firmware. For actual firmware support, you will need to"
+  echo "utilize other support resources from the firmware developers/maintainers or the web".
+  echo "--------------------------------------------------------------------------------------------------"
+  echo ""
+  exit 0
+fi
+
+script_name=$(basename "$0")
+UAstr="WPSD Modem FW Update Invocation (client side: $script_name)"
+
+#
+# OK we know what the modem is, let get the firmware string from the log...
+#
+tac $(ls -1rt /var/log/pi-star/MMDVM-*.log | tail -n1 ) | grep "protocol" -m 1 | sed -n 's/description: /&\n/;s/.*\n//p'
+read -n 1 -s -r -p "Press any key to write the ${1} firmware to this modem or Ctrl-C to quit..."
+echo ""
+#
+# Download the correct firmware
+#
+if [ "$1" ]
+then
+  if [ ! -e "$1" ]; then
+     echo "Firmware file $1 not found! Aborting."
+  else
+    # Download STM32F10X_Lib (only for binary tools)
+    if [ ! -d "./STM32F10X_Lib/utils" ]; then
+      env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$UAstr" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/STM32F10X_Lib.git &> /dev/null
+    fi
+
+    # Configure vars depending on OS
+    if [ $(uname -s) == "Linux" ]; then
+	if [ $(uname -m) == "x86_64" ]; then
+		DFU_RST="./STM32F10X_Lib/utils/linux64/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/linux64/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/linux64/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/linux64/stm32flash"
+	elif [ $(uname -m) == "aarch64" ] ; then
+		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
+	elif [ $(uname -m) == "armv7l" ]; then
+		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
+	elif [ $(uname -m) == "armv6l" ]; then
+		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
+	else
+		DFU_RST="./STM32F10X_Lib/utils/linux/upload-reset"
+		DFU_UTIL="./STM32F10X_Lib/utils/linux/dfu-util"
+		ST_FLASH="./STM32F10X_Lib/utils/linux/st-flash"
+		STM32FLASH="./STM32F10X_Lib/utils/linux/stm32flash"
+	fi
+    fi
+    if [ $(uname -s) == "Darwin" ]; then
+	DFU_RST="./STM32F10X_Lib/utils/macosx/upload-reset"
+	DFU_UTIL="./STM32F10X_Lib/utils/macosx/dfu-util"
+	ST_FLASH="./STM32F10X_Lib/utils/macosx/st-flash"
+	STM32FLASH="./STM32F10X_Lib/utils/macosx/stm32flash"
+    fi
+
+    # Arch GPIO handling
+    if [[ ${hardware} == "NanoPi" ]]; then
+      echo 3 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio3/direction
+      echo 1 > /sys/class/gpio/gpio3/value
+      echo 3 > /sys/class/gpio/unexport
+    fi
+
+    # Stop MMDVMHost process to free serial port
+    sudo killall MMDVMHost >/dev/null 2>&1
+
+    # Upload the firmware
+    eval sudo $STM32FLASH -v -w "$1" -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0
+    echo ""
+
+    rm -rf STM32F10X_Lib
+
+    read -n 1 -s -r -p "Flashing ${1} to your modem complete, press any key to reboot your WPSD system..."
+    echo ""
+
+    shutdown -r now
+    exit 0
+
+  fi
+fi
+exit 0

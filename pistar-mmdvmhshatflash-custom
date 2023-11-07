@@ -1,117 +1,43 @@
 #!/bin/bash
-#
-###############################################################################
-#                                                                             #
-#                   Pi-Star Custom Firmware Update Tool                       #
-#                                                                             #
-#    Version 0.1, Code, Design and Development by Florian Wolters (DF2ET).    #
-#                  Based on work by Andy Taylor (MW0MZW)                      #
-#                         and Andy Uribe CA6JAU                               #
-#                                                                             #
-#                 Make it simple to update the Firmware                       #
-#                                                                             #
-###############################################################################
-#
-if [ "$(id -u)" != "0" ]; then
-  echo -e "You need to be root to run this command...\n"
-  exit 1
-fi
-#
-# Output some useful information when no variables are passed
-#
-if [ -z "$1" ]
-then
-  clear
-  echo ""
-  echo "This tool is used to flash a custom made firmware to your MMDVM_HS Hat Modem"
-  echo ""
-  echo "Pre-built nightly firmware configured from the templates can be downloaded from:"
-  echo ""
-  echo "   https://www.df2et.de/mmdvm_hs/"
-  echo ""
-  echo "And there is also a firmware builder tool that can be used to build a fully customizable version of the firmware. It is available at:"
-  echo ""
-  echo "   https://www.df2et.de/mmdvm_hs_builder/"
-  echo ""
-  echo "Use this script and the generated firmware at your own risk!"
-  echo "Usage: $(basename ${0}) <firmware.bin>"
-  echo ""
-  echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
-  echo "We simply provide scripts to update the firmware. For actual firmware support,"
-  echo "you will need to utilize other support resources from the firmware developers/maintainers or the web".
-  echo ""
-  exit 0
-fi
-#
-# OK we know what the modem is, let get the firmware string from the log...
-#
-tac $(ls -1rt /var/log/pi-star/MMDVM-*.log | tail -n1 ) | grep "protocol" -m 1 | sed -n 's/description: /&\n/;s/.*\n//p'
-read -n 1 -s -r -p "Press any key to write the ${1} firmware to this modem or Ctrl-C to quit..."
-echo ""
-#
-# Download the correct firmware
-#
-if [ "$1" ]
-then
-  if [ ! -e "$1" ]; then
-     echo "Firmware file $1 not found! Aborting."
-  else
-    # Download STM32F10X_Lib (only for binary tools)
-    if [ ! -d "./STM32F10X_Lib/utils" ]; then
-      git clone https://github.com/juribeparada/STM32F10X_Lib
+
+COL_NC='\e[0m' # No Color
+BOLD='\e[1m'
+REVERSE='\e[7m'
+COL_LIGHT_GREEN='\e[1;32m'
+COL_BRIGHT_GREEN='\e[1;92m'
+COL_LIGHT_RED='\e[31m'
+COL_BRIGHT_RED='\e[1;31m'
+COL_LIGHT_CYAN='\e[1;36m'
+COL_REG_CYAN='\e[38;5;30m'
+COL_REG_ORANGE='\e[38;5;173m'
+COL_LIGHT_ORANGE='\e[38;5;208m'
+COL_LIGHT_BLUE='\e[1;34m'
+COL_LIGHT_MAGENTA='\e[1;35m'
+COL_LIGHT_YELLOW='\e[1;93m'
+COL_REG_YELLOW='\e[93m'
+INFO="${BOLD}[i]${COL_NC}"
+NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
+TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
+CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
+DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
+COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
+
+script_name=$(basename "$0")
+
+clear
+echo -e "\n${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} The old command '$script_name' is deprecated. Please use 'wpsd-modem-flash_custom' instead."
+
+echo -e "\nI'll run the command for you in 10 seconds, without any options, so you can read the new help syntax...\n"
+
+for ((i=10; i>=1; i--)); do
+  printf "\r${INFO} Starting in $i seconds... Press 'q' to abort "
+  if [[ -t 0 ]]; then
+    read -t 1 -n 1 key
+    if [[ $key == "q" || $key == "Q" ]]; then
+      printf "\nAborted by user\n"
+      exit 1
     fi
-
-    # Configure vars depending on OS
-    if [ $(uname -s) == "Linux" ]; then
-	DEV_USB_SER="/dev/ttyACM0"
-	if [ $(uname -m) == "x86_64" ]; then
-		echo "Linux 64-bit detected"
-		DFU_RST="./STM32F10X_Lib/utils/linux64/upload-reset"
-		DFU_UTIL="./STM32F10X_Lib/utils/linux64/dfu-util"
-		ST_FLASH="./STM32F10X_Lib/utils/linux64/st-flash"
-		STM32FLASH="./STM32F10X_Lib/utils/linux64/stm32flash"
-	elif [ $(uname -m) == "aarch64" ] ; then
-		echo "Linux 64-bit ARM (aarch64) detected"
-		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
-		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
-		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
-		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
-	elif [ $(uname -m) == "armv7l" ]; then
-		echo "Linux ARM (armv7l) detected"
-		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
-		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
-		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
-		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
-	elif [ $(uname -m) == "armv6l" ]; then
-		echo "Linux ARM (armv6l) detected"
-		DFU_RST="./STM32F10X_Lib/utils/rpi32/upload-reset"
-		DFU_UTIL="./STM32F10X_Lib/utils/rpi32/dfu-util"
-		ST_FLASH="./STM32F10X_Lib/utils/rpi32/st-flash"
-		STM32FLASH="./STM32F10X_Lib/utils/rpi32/stm32flash"
-	else
-		echo "Linux 32-bit detected"
-		DFU_RST="./STM32F10X_Lib/utils/linux/upload-reset"
-		DFU_UTIL="./STM32F10X_Lib/utils/linux/dfu-util"
-		ST_FLASH="./STM32F10X_Lib/utils/linux/st-flash"
-		STM32FLASH="./STM32F10X_Lib/utils/linux/stm32flash"
-	fi
-    fi
-
-    # Stop MMDVMHost process to free serial port
-    sudo killall MMDVMHost >/dev/null 2>&1
-
-    # Upload the firmware
-    eval sudo $STM32FLASH -v -w "$1" -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0
-    echo ""
-
-    rm -rf STM32F10X_Lib
-
-    read -n 1 -s -r -p "Flashing ${1} to your modem complete, press any key to reboot your WPSD system..."
-    echo ""
-
-    shutdown -r now
-    exit 0
-
   fi
-fi
-exit 0
+done
+
+exec /usr/local/sbin/wpsd-modem-flash_custom

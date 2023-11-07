@@ -1,91 +1,43 @@
 #!/bin/bash
-#
-##############################################################################
-#                                                                            #
-#                        WPSD MMDVM HS_HAT Reset Tool                        #
-#            Makes it simple to reset an MMDVM board from the CLI            #
-#                                                                            #
-##############################################################################
-#
-if [ "$(id -u)" != "0" ]; then
-  echo -e "You need to be root to run this command...\n"
-  exit 1
-fi
 
-# Special Pi4/5 handling...
-# Detect Pi4/5 Hardware
-if [ "$(/usr/local/sbin/platformDetect.sh | grep "Pi 4 Model" | wc -l)" -ge 1 ]; then
-  model="Pi4"
-elif [ "$(/usr/local/sbin/platformDetect.sh | grep "Pi 5 Model" | wc -l)" -ge 1 ]; then
-  model="Pi5"
-else
-  model=""
-fi
-# Make the "boot" option only work on Pi 4/5 hardware, due to GPIO changes in the boards.
-# The "boot" arg. leaves mmdvmhost services alone since they have not started yet and we
-# need the pi4/5 GPIO pins to init before MMDVMHost. No "boot" option is for when MMDVMhost
-# is started/running after boouo
-if [ "${1}" = "boot" ]; then
-  if [ "${model}" != "Pi4" ] && [ "${model}" != "Pi5" ]; then
-    echo "The 'boot' option only works with Pi 4 and Pi 5 boards. Try again without the 'boot' option."
-    exit 1
+COL_NC='\e[0m' # No Color
+BOLD='\e[1m'
+REVERSE='\e[7m'
+COL_LIGHT_GREEN='\e[1;32m'
+COL_BRIGHT_GREEN='\e[1;92m'
+COL_LIGHT_RED='\e[31m'
+COL_BRIGHT_RED='\e[1;31m'
+COL_LIGHT_CYAN='\e[1;36m'
+COL_REG_CYAN='\e[38;5;30m'
+COL_REG_ORANGE='\e[38;5;173m'
+COL_LIGHT_ORANGE='\e[38;5;208m'
+COL_LIGHT_BLUE='\e[1;34m'
+COL_LIGHT_MAGENTA='\e[1;35m'
+COL_LIGHT_YELLOW='\e[1;93m'
+COL_REG_YELLOW='\e[93m'
+INFO="${BOLD}[i]${COL_NC}"
+NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
+TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
+CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
+DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
+COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
+
+script_name=$(basename "$0")
+
+clear
+echo -e "\n${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} The old command '$script_name' is deprecated. Please use 'wpsd-modemreset' instead."
+
+echo -e "\nI'll run the command for you in 10 seconds, without any options, so you can read the new help syntax...\n"
+
+for ((i=10; i>=1; i--)); do
+  printf "\r${INFO} Starting in $i seconds... Press 'q' to abort "
+  if [[ -t 0 ]]; then
+    read -t 1 -n 1 key
+    if [[ $key == "q" || $key == "Q" ]]; then
+      printf "\nAborted by user\n"
+      exit 1
+    fi
   fi
-fi
+done
 
-if [ -f '/etc/dstar-radio.mmdvmhost' ]; then
-    modemSelected=$(grep 'Hardware=' /etc/dstar-radio.mmdvmhost)
-    modemSelected=${modemSelected#*=}
-
-    # Get the user-friendly version of the selected Modem.
-    modemSelectedHuman=$(grep value=\"${modemSelected}\" /var/www/dashboard/admin/configure.php | head -n 1)
-    modemSelectedHuman=${modemSelectedHuman#*\">}
-    modemSelectedHuman=${modemSelectedHuman::-9}
-
-    # Replace "&amp;" with "&" in modemSelectedHuman
-    modemSelectedHuman=${modemSelectedHuman//&amp;/&}
-fi
-
-# Get the Port the modem is on
-modemPort=$(sed -n '/^\[Modem\]/,/^\[/p' /etc/mmdvmhost | grep ^"UARTPort" | awk -F '=' '{print $2}')
-if [ -z "${modemPort}" ]; then
-  modemPort=$(sed -n '/^\[Modem\]/,/^\[/p' /etc/mmdvmhost | grep ^"Port" | awk -F '=' '{print $2}')
-fi
-if [ -z "${modemPort}" ] || [ "${modemPort}" != "/dev/ttyAMA0" ]; then
-  echo -e "Your Modem is not connected to the GPIO"
-  exit 0
-fi
-
-# If there are no arguments (like "boot") then stop the service...
-if [ -z "${1}" ]; then
-  echo -e "Resetting Modem: ${modemSelectedHuman}"
-  systemctl stop mmdvmhost.timer
-  systemctl stop mmdvmhost.service
-fi
-
-# Reset process for MMDVM HS_HAT Board (20,-21,21:-20,21)
-echo 20 > /sys/class/gpio/export
-echo 21 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio20/direction
-echo out > /sys/class/gpio/gpio21/direction
-sleep 0.5
-echo 0 > /sys/class/gpio/gpio20/value
-echo 0 > /sys/class/gpio/gpio21/value
-echo 1 > /sys/class/gpio/gpio21/value
-sleep 1
-echo 0 > /sys/class/gpio/gpio20/value
-echo 1 > /sys/class/gpio/gpio20/value
-echo 0 > /sys/class/gpio/gpio20/value
-sleep 0.5
-echo 20 > /sys/class/gpio/unexport
-echo 21 > /sys/class/gpio/unexport
-sleep 2
-message="Modem reset complete"
-
-# If there are no arguments (like "boot") then start the service...
-if [ -z "${1}" ]; then
-  systemctl start mmdvmhost.service
-  systemctl start mmdvmhost.timer
-  echo -e ${message}
-fi
-
-exit 0
+exec env EXT_CALL=1 /usr/local/sbin/wpsd-modemreset
