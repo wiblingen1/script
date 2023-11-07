@@ -456,7 +456,7 @@ main_function() {
 	fi
 
 	# MOTD
-	bash /usr/local/sbin/pistar-motdgen
+	bash /usr/local/sbin/motdgen
 
 	# Add pistar-service bash completion if missing
 	DEST="/usr/share/bash-completion/completions/pistar-services"

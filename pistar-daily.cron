@@ -250,7 +250,7 @@ if ! grep -q 'CallLookupProvider =' /etc/pistar-release ; then
 fi
 
 # Generate /etc/motd
-bash /usr/local/sbin/pistar-motdgen
+bash /usr/local/sbin/motdgen
 
 # Purge the logs older than 2 days
 rm -f $(find /var/log/pi-star/ -type f -mtime +1 -print)

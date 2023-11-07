@@ -68,7 +68,7 @@ fi
 sed -i "/cron.hourly/c ${cronMins}  *   * * *   root    cd / && run-parts --report /etc/cron.hourly" /etc/crontab
 
 # Generate /etc/motd
-bash /usr/local/sbin/pistar-motdgen
+bash /usr/local/sbin/motdgen
 
 # run any slipstream tasks
 bash /usr/local/sbin/slipstream-tasks.sh
