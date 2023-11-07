@@ -8,15 +8,9 @@
 #########################################################
 #
 if [ "$(id -u)" != "0" ]; then
-  echo -e "You need to be root to run this command...\n"
+  echo -e "\nYou need to be root to run this command...\n"
   exit 1
 fi
-
-#
-# Note to devs/vendors/etc.:
-# To run as non-interactive, pass the `NP=1` env. var to the script with appprorpate modem type args.
-# E.g.: sudo NP=1 wpsd-modemflash hs_hat
-#
 
 # Check CLI arguments and determine the modem type and its respective FW file...
 if [ "$1" ]; then
@@ -99,6 +93,7 @@ COL_LIGHT_BLUE='\e[1;34m'
 COL_LIGHT_MAGENTA='\e[1;35m'
 COL_LIGHT_YELLOW='\e[1;93m'
 COL_REG_YELLOW='\e[93m'
+BULL="${BOLD}\u2022${COL_NC}"
 INFO="${BOLD}[i]${COL_NC}"
 NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
 TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
@@ -108,13 +103,13 @@ COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
 
 # some flashy flashing status while the modem flashes ;)
 SPINNER_PID=
-SPINNER_CHARS="/-\|"
+SPINNER_CHARS="⣾⣽⣻⢿⡿⣟⣯⣷"
 spinner() {
     local i=0
     while :; do
         printf "    [${SPINNER_CHARS:$i:1}] Flashing modem - please wait... \r"
-        i=$(( (i + 1) % 4 ))
-        sleep 0.2
+        i=$(( (i + 1) % 8 ))
+        sleep 0.1
     done
 }
 
@@ -127,7 +122,7 @@ fi
 
 # setup firmware tmp space
 FW_TMP=/home/pi-star/.wpsd-modem-mgmt
-rm -rf $FW_TMP 2> /dev/null
+rm -rf $FW_TMP >/dev/null 2>&1
 mkdir $FW_TMP 2> /dev/null
 
 #
@@ -143,35 +138,32 @@ then
   echo "This utility is used to flash/upgrade your hotspot modem/radio."
   echo "To use the command, you need to specify your modem type..."
   echo "Please choose from the list below, and run this command again:"
-  echo ""
+  echo "--------------------------------------------------------------------------------------------------"
   echo "  Modem Type						Command"
   echo "--------------------------------------------------------------------------------------------------"
-  echo "  HS_HAT (14.7456MHz TCXO) GPIO:			wpsd-modemflash hs_hat"
-  echo "  HS_HAT (12.2880MHz TCXO) GPIO:			wpsd-modemflash hs_hat-12mhz"
-  echo "  HS_DUAL_HAT (14.7456MHz TCXO) GPIO:			wpsd-modemflash hs_dual_hat"
-  echo "  HS_DUAL_HAT (12.2880MHz TCXO) GPIO:			wpsd-modemflash hs_dual_hat-12mhz"
+  echo "  HS_HAT (14.7456MHz TCXO) GPIO:			wpsd-modemupgrade hs_hat"
+  echo "  HS_HAT (12.2880MHz TCXO) GPIO:			wpsd-modemupgrade hs_hat-12mhz"
+  echo "  HS_DUAL_HAT (14.7456MHz TCXO) GPIO:			wpsd-modemupgrade hs_dual_hat"
+  echo "  HS_DUAL_HAT (12.2880MHz TCXO) GPIO:			wpsd-modemupgrade hs_dual_hat-12mhz"
   echo ""
-  echo "  HS_HAT_AMBE (14.7456MHz TCXO) GPIO:			wpsd-modemflash hs_hat_ambe"
-  echo "  MMDVM_HS_GENERIC (14.7456MHz TCXO) GPIO:		wpsd-modemflash hs_hat_generic"
-  echo "  MMDVM_HS_GENERIC_DUPLEX (14.7456MHz TCXO) GPIO:	wpsd-modemflash hs_hat_generic_duplex"
-  echo "  MMDVM_HS_GENERIC_DUPLEX (14.7456MHz TCXO) USB:	wpsd-modemflash hs_hat_generic_duplex-usb"
-  echo "  Nano_hotSPOT by BI7JTA (14.7456MHz TCXO) GPIO:	wpsd-modemflash hs_hat_nano_hotspot"
+  echo "  HS_HAT_AMBE (14.7456MHz TCXO) GPIO:			wpsd-modemupgrade hs_hat_ambe"
+  echo "  MMDVM_HS_GENERIC (14.7456MHz TCXO) GPIO:		wpsd-modemupgrade hs_hat_generic"
+  echo "  MMDVM_HS_GENERIC_DUPLEX (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade hs_hat_generic_duplex"
+  echo "  MMDVM_HS_GENERIC_DUPLEX (14.7456MHz TCXO) USB:	wpsd-modemupgrade hs_hat_generic_duplex-usb"
+  echo "  Nano_hotSPOT by BI7JTA (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade hs_hat_nano_hotspot"
   echo ""
-  echo "  LoneStar LS MMDVM USB (14.7456MHz TCXO) USB:		wpsd-modemflash hs_hat_lonestar-usb"
-  echo "  SkyBridge board/hotspots (14.7456MHz TCXO) GPIO:	wpsd-modemflash skybridge"
+  echo "  LoneStar LS MMDVM USB (14.7456MHz TCXO) USB:		wpsd-modemupgrade hs_hat_lonestar-usb"
+  echo "  SkyBridge board/hotspots (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade skybridge"
   echo ""
-  echo "  ZUMSpot RPi boards/hotspots GPIO:			wpsd-modemflash zum_rpi"
-  echo "  ZUMspot USB stick:					wpsd-modemflash zum_usb"
-  echo "  ZUMSpot RPi duplex GPIO board/hotspots:		wpsd-modemflash zum_rpi-duplex"
-  echo "  ZUMspot Libre Kit or generic MMDVM_HS board:		wpsd-modemflash zum_libre"
+  echo "  ZUMSpot RPi boards/hotspots GPIO:			wpsd-modemupgrade zum_rpi"
+  echo "  ZUMspot USB stick:					wpsd-modemupgrade zum_usb"
+  echo "  ZUMSpot RPi duplex GPIO board/hotspots:		wpsd-modemupgrade zum_rpi-duplex"
+  echo "  ZUMspot Libre Kit or generic MMDVM_HS board:		wpsd-modemupgrade zum_libre"
   echo ""
-  echo "  NANO_DV NPi GPIO by BG4TGO:				wpsd-modemflash nanodv_npi"
-  echo "  NANO_DV USB by BG4TG:					wpsd-modemflash nanodb_usb"
-  echo ""
+  echo "  NANO_DV NPi GPIO by BG4TGO:				wpsd-modemupgrade nanodv_npi"
+  echo "  NANO_DV USB by BG4TG:					wpsd-modemupgrade nanodb_usb"
   echo "--------------------------------------------------------------------------------------------------"
-  echo "To DOWNGRADE your Modem firmware to an older version..."
-  echo ""
-  echo "  run: wpsd-modemdowngrade"
+  echo "To DOWNGRADE your Modem firmware to an older version, run: wpsd-modemdowngrade"
   echo "--------------------------------------------------------------------------------------------------"
   echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
   echo "We simply provide utilities to update the firmware. For actual firmware support, you will need to"
@@ -220,10 +212,9 @@ echo '    _      _____  _______
    |__/|__/_/  /___/____/'
 echo -e -n "${COL_NC}${COL_LIGHT_ORANGE}${BOLD}Modem Firmware Update Utility${COL_NC}\n\n"
 
-
 if [ -n "$modem_description_line" ]; then
-    echo "Found modem installed:"
-    echo "$modem_description_line"
+    echo -e "${BULL} Found modem installed:"
+    echo "    $modem_description_line"
     echo ""
 fi
 
@@ -237,23 +228,20 @@ then
 
   # get the latest FW version from the git repo API
   API="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/tags"
+  echo -e "${BULL} Retrieving latest available firmware version number from online repository..."
   VERSION=$(curl -L -A "$UAstr" -s ${API} | jq -r 'map(.name | ltrimstr("v") | select(. != "") | split(".") | map(tonumber)) | max_by(.[]) | join(".")') # jq hackery to always return the greatest ver. # from the json "name:" field since the json results are not ordered that way
   # Trim any leading or trailing whitespace from VERSION
   VERSION=$(echo "$VERSION" | tr -d '[:space:]')
-  echo "Retrieving latest available firmmware version number from online repository..."
-  sleep 1
-  echo -e "    ${INFO} Found lastest version: ${COL_LIGHT_BLUE}${BOLD}${VERSION}${COL_NC}"
+  echo -e "    ${INFO} Found latest version: ${COL_LIGHT_BLUE}${BOLD}${VERSION}${COL_NC}"
   echo ""
 
-  if [[ "$NP" != "1" ]] ; then
-    read -n 1 -s -r -p "Press any key to flash the latest '${1}' firmware version (${VERSION}) to this modem, or 'q' to abort..."
-    echo ""
-    echo ""
-  fi
+  read -n 1 -s -r -p "Press any key to flash the latest '${1}' firmware version (${VERSION}) to this modem, or 'q' to abort... "
+  echo ""
+  echo ""
 
   if [[ "$REPLY" =~ [qQ] ]]; then
     echo ""
-    echo "Aborting firmware update."
+    echo "Aborted by user."
     echo ""
     exit 1
   fi
@@ -263,14 +251,21 @@ then
   flash_modem() { # the meat!
     local firmware_file="$2"  # Pass the firmware_file as an argument
 
-    echo "Downloading latest '$1' firmware version ($VERSION)..."
+    echo -e "${BULL} Downloading latest '$1' firmware version ($VERSION)..."
     sleep 1
-    curl -L -s -A "$UAstr" -o "$FW_TMP/$firmware_file" "$BASE_FW_URL"
-    echo -e -n "    ${COL_BRIGHT_GREEN}${TICK} Complete."
-    echo ""
+    # Use curl to download the firmware and capture the HTTP status code
+    http_status_code=$(curl -s -w "%{http_code}" -o "$FW_TMP/$firmware_file" -A "$UAstr" "$BASE_FW_URL")
+
+    if [[ $http_status_code -ge 200 && $http_status_code -le 399 ]]; then
+      echo -e "    ${COL_BRIGHT_GREEN}${TICK} Complete."
+    else
+      echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} HTTP $http_status_code. Firmware file does not exist for selected modem and version. Aborting."
+      rm -rf $FW_TMP >/dev/null 2>&1
+      exit 1
+    fi
     sleep 1
 
-    echo -e "\nDownloading MD5 checksum file..."
+    echo -e "\n${BULL} Downloading MD5 checksum file..."
     sleep 1
     curl -L -s -A "$UAstr" -o "$FW_TMP/MD5SUMS.txt" "$BASE_FW_URL/../MD5SUMS.txt"
     echo -e -n "    ${COL_BRIGHT_GREEN}${TICK} Complete."
@@ -280,10 +275,11 @@ then
     # MD5 checksum validation setup
     calculated_md5=$(md5sum "$FW_TMP/$firmware_file" | awk '{print $1}')
     expected_md5=$(grep "$firmware_file" "$FW_TMP/MD5SUMS.txt" | awk '{print $1}')
-    echo -e "\nValidating firmware file integrity..."
+    echo -e "\n${BULL} Validating firmware file integrity..."
     sleep 1
     if [ -z "$expected_md5" ]; then # not in file!
-        echo -e "\n    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} MD5 checksum value not found for the selected firmware. Aborting."
+        echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} MD5 checksum value not found for the selected firmware. Aborting."
+	rm -rf $FW_TMP >/dev/null 2>&1
         exit 1
     fi
 
@@ -295,10 +291,12 @@ then
         sleep 1
     else
         echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} File integrity validation failed for the downloaded firmware. Aborting."
+	rm -rf $FW_TMP >/dev/null 2>&1
+        exit 1
     fi
 
     # checksum valid; flash!
-    echo -e "\nPreparing to flash '$1' modem with the latest firmware version ($VERSION)..."
+    echo -e "\n${BULL} Preparing to flash '$1' modem with the latest firmware version ($VERSION)..."
     # Stop MMDVMHost process to free up the serial port
     systemctl stop mmdvmhost.timer >/dev/null 2>&1
     systemctl stop mmdvmhost.service >/dev/null 2>&1
@@ -379,18 +377,17 @@ then
       # re-nit!
       systemctl start mmdvmhost.service >/dev/null 2>&1
       systemctl start mmdvmhost.timer >/dev/null 2>&1
-      rm -rf $FW_TMP 2> /dev/null
-      echo -e -n "    ${TICK} ${COMPL} Modem firmware flash complete!\n        Modem reinitialized.\n"
+      rm -rf $FW_TMP >/dev/null 2>&1
+      echo -e -n "    ${TICK} ${COMPL} Modem firmware flash successful!\n        Modem reinitialized.\n"
       echo ""
       echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} You will need to refresh your dashboard to reflect the updated firmware version.\n"
     else
-      echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. The serial port was"
-      echo -e "                either busy, or the modem is possibly locked from the vendor."
-      echo -e "                You can try running this command again, or you can contact the"
-      echo -e "                supplier of your modem for support.\n"
+      echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. The serial port was either busy, or the modem is"
+      echo -e "               possibly locked from the vendor. You can try running this command again,"
+      echo -e "               or you can contact the supplier of your modem/hotspot for support.\n"
       systemctl start mmdvmhost.service >/dev/null 2>&1
       systemctl start mmdvmhost.timer >/dev/null 2>&1
-      rm -rf $FW_TMP 2> /dev/null
+      rm -rf $FW_TMP >/dev/null 2>&1
       echo ""
     fi
     exit 0

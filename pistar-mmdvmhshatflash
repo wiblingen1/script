@@ -25,7 +25,7 @@ COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
 script_name=$(basename "$0")
 
 clear
-echo -e "\n${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} The old command '$script_name' is deprecated. Please use 'wpsd-modemflash' instead."
+echo -e "\n${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} The old command '$script_name' is deprecated. Please use 'wpsd-modemupgrade' instead."
 
 echo -e "\nI'll run the command for you in 10 seconds, without any options, so you can read the new help syntax...\n"
 
@@ -40,4 +40,4 @@ for ((i=10; i>=1; i--)); do
   fi
 done
 
-exec env EXT_CALL=1 /usr/local/sbin/wpsd-modemflash
+exec env EXT_CALL=1 /usr/local/sbin/wpsd-modemupgrade
