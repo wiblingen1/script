@@ -466,14 +466,6 @@ if grep -q 'shuf -i 3-4' /etc/rc.local ; then
   sed -i "s/shuf -i 3-4/shuf -i 2-4/g" /etc/rc.local
 fi
 
-# add hw cache to rc.local and exec
-if ! grep -q 'hwcache' /etc/rc.local ; then
-    sed -i '/^\/usr\/local\/sbin\/pistar-motdgen/a \\n\n# cache hw info\n\/usr\/local\/sbin\/pistar-hwcache' /etc/rc.local 
-    /usr/local/sbin/pistar-hwcache
-else
-    /usr/local/sbin/pistar-hwcache
-fi
-
 # add slipstream to rc.local
 # Define the correct entry
 correct_entry="nohup /usr/local/sbin/slipstream-tasks.sh &"
@@ -485,6 +477,20 @@ else
   sed -i '/nohup nohup.*&/d' /etc/rc.local
   sed -i '/\/usr\/local\/sbin\/slipstream-tasks\.sh/d' /etc/rc.local
   sed -i '/# slipstream tasks/a '"$correct_entry"'' /etc/rc.local
+fi
+
+# cleanup legacy motdgen
+if grep -q 'pistar-motdgen' /etc/rc.local ; then
+   sed -i 's/pistar-motdgen/motdgen/g' /etc/rc.local
+fi
+
+# add sys cache to rc.local and exec
+if grep -q 'pistar-hwcache' /etc/rc.local ; then
+    sed -i '/# cache hw info/,/\/usr\/local\/sbin\/pistar-hwcache/d' /etc/rc.local
+    sed -i '/^\/usr\/local\/sbin\/motdgen/a \\n# cache hw info\n\/usr/local/sbin/.wpsd-sys-cache' /etc/rc.local
+    /usr/local/sbin/.wpsd-sys-cache
+else
+    /usr/local/sbin/.wpsd-sys-cache
 fi
 
 # ensure hostfiles are updated more regularly
