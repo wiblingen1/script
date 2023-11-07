@@ -1,16 +1,12 @@
 #!/bin/bash
 #
-##############################################################################
-#                                                                            #
-#                         Pi-Star MOTD Generator.                            #
-#                                                                            #
-#     Version 0.9, Code, Design and Development by Andy Taylor (MW0MWZ).     #
-#                                                                            #
-#                   Make it simple to update the /etc/motd.                  #
-#                                                                            #
-##############################################################################
+##############################################################
+#                                                            #
+#                    WPSD MOTD Generator                     #
+#                                                            #
+##############################################################
 #
-# Make sure we are root, if we cant stop the services, the results are a bit hit and miss.
+# Make sure we are root
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
   exit 1
@@ -51,5 +47,5 @@ WPSD${COL_NC} Ver.# ${COL_REG_YELLOW}${gitId}${COL_NC}
 ${INFO} Your dashboard can be accesed from:
 ${COL_LIGHT_MAGENTA}http://$(hostname)/  http://$(hostname).local  http://$(hostname -I | awk '{print $1}')/${COL_NC}
 
-${INFO} Pi-star command-line tools all begin with \"pistar-\".
+${INFO} WPSD command-line tools all begin with \"wpsd-\".
 " > /etc/motd
