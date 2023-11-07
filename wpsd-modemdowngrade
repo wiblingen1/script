@@ -279,7 +279,7 @@ else
   CHOICE=$((CHOICE))
 
   if [ "$CHOICE" -ge 1 -a "$CHOICE" -le ${#VERSIONS[@]} ]; then
-    echo "Your choice: ${CHOICE} (${VERSIONS[CHOICE - 1]})"
+    echo -e "Your choice: ${COL_LIGHT_MAGENTA}# ${CHOICE} (${VERSIONS[CHOICE - 1]})${COL_NC}"
     echo ""
     VERSION="${VERSIONS[(CHOICE - 1)]}"
 
