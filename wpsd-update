@@ -1,0 +1,501 @@
+#!/bin/bash
+#
+###############################################################################
+#                                                                             #
+#                           WPSD Update Program                               #
+#                                 by W0CHP                                    #
+#                                                                             #
+###############################################################################
+#
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
+exec 200>/var/lock/wpsd-update.lock || exit 1
+if ! flock -n 200 ; then
+  echo -e "Another instance is already running...\n"
+  exit 1
+fi
+
+gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
+dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
+SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
+CONN_CHECK_URI="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Dash.git"
+CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
+osName=$( /usr/bin/lsb_release -cs )
+uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
+hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
+uaStr="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+uaStrSF="WPSD-SuppFiles (Manual Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+W0CHP_INSTALL_SCRIPT_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
+TICK="[✓]"
+INFO="[i]"
+
+# connectivity check
+conn_check() {
+    echo -e "\nChecking for connectivity to the WPSD Update Server (can take up to 30 seconds; please wait...)"
+    status_code=$(curl -I -m 30 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+    if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
+	echo -e "${TICK} Connection established!\n"
+    else
+	echo -e "[X] Cannot connect to the WPSD Update Server. Try again later. Exiting...\n"
+	exit 1
+    fi
+}
+
+mount -o remount,rw / # for shits and giggles
+
+# ensure repos can be updated
+if ! grep -q 'safe' /root/.gitconfig > /dev/null 2<&1 ; then
+    git config --global --add safe.directory /var/www/dashboard > /dev/null 2<&1
+    git config --global --add safe.directory /usr/local/bin > /dev/null 2<&1
+    git config --global --add safe.directory /usr/local/sbin > /dev/null 2<&1
+fi
+# ensure bullseye uses ff-only for newer git strategy
+if [ "${osName}" = "bullseye" ]; then
+    git config --global pull.ff only
+fi
+
+git_checkUpdateRequired() {
+	# Set the function variables
+	gitFolder=${1}
+	gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
+	# W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, check that branch.
+	gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
+
+	# Git check / update function
+	gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'})
+	gitStatusLocal=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git log ${gitBranch} --pretty=tformat:"%H" -1)
+
+	# Return the output
+	if [[ ${gitStatusRemote} != ${gitStatusLocal} ]]; then
+		echo "1"
+	else
+		echo "0"
+	fi
+}
+
+git_update() {
+	# Set the function variables
+	gitFolder=${1}
+	# get proper W0CHP dash branch user is running...
+	dash_branch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
+
+	# Handle the special case for /usr/local/sbin
+	if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
+		# Assume unchanged for pistar-upnp.service
+		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git update-index --assume-unchanged pistar-upnp.service
+	fi
+
+	if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
+	    echo -e "${INFO} Updates found for ${gitFolder} - Installing..."
+	    # WPSD has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
+	    if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
+		cd ${gitFolder}
+		git stash > /dev/null 2<&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} &> /dev/null
+		git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2<&1 # restore user config files from stash
+		git stash clear > /dev/null 2<&1 # housekeeping
+		echo -e "ChangeLog (last 3 changes):"
+		echo -e "---------------------------"
+		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
+	    else
+		# New updater version - Self-update and re-exec:
+		if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
+		    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch
+		    if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep wpsd-update 2>/dev/null)" = "wpsd-update" ]; then
+			echo -e "\n[!] New version of the Updater available. Performing self-update..."
+			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
+			echo -e "ChangeLog (last 3 changes):"
+			echo -e "---------------------------"
+			git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
+			if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
+			    echo "Forcing update..."
+				if [ -f ${gitFolder}/pistar-upnp.service ]; then
+				    rm -f ${gitFolder}/pistar-upnp.service
+				fi
+				env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
+				env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
+			    fi
+			echo -e "\n[*] Relaunching Updater with the new version..."
+			exec "$0" "$@"
+			exit 1
+		    fi
+		fi
+		if [[ ${gitFolder} == "/usr/local/bin" ]]; then
+		    # Update the Binaries
+                    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
+                    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master &> /dev/null
+		fi
+                echo -e "ChangeLog (last 3 changes):"
+		echo -e "---------------------------"
+                git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
+		fi
+		# Re-check that the updates are now good
+		if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
+		    if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
+			rm -rf ${gitFolder}/pistar-upnp.service
+		    fi
+		    # Updates were not successful, reverting to original files...
+		    # W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
+		    if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
+			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/${dash_branch}
+		    else
+			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
+		    fi
+		fi
+	    else
+		echo -e "${INFO} No updates required for ${gitFolder}."
+	    fi
+}
+
+main_function() {
+    	systemctl stop cron.service > /dev/null 2<&1
+    	pkill pistar-hourly.cron > /dev/null 2>&1
+    	pkill pistar-daily.cron > /dev/null 2>&1
+    	pkill slipstream-tasks.sh > /dev/null 2>&1
+
+	if [ -t 1 ] && [[ ${NO_OS} -ne 1 ]]; then
+	    # This is running from a terminal, so it should be safe to update the OS
+	    echo -e "\nChecking for, and applying any available operating system updates..."
+	    apt-get -q=2 update
+	    if ! apt-get upgrade --dry-run | grep -qo "0 upgraded" ; then
+		echo -e "${INFO} Operating system updates available; installing now..."
+		apt-get upgrade --fix-missing --fix-broken -y
+		apt-get -q=2 autoremove -y
+		apt-get -q=2 clean
+		apt-get -q=2 autoclean
+	    else
+		echo -e "${INFO} No operating system updates required."
+	    fi
+	    # ensure bullseye has proper php extensions
+	    dpkg --configure -a > /dev/null 2>&1
+	    if [ "${osName}" = "bullseye" ]; then
+		if [ ! -f "/usr/share/php7.4-zip/zip/zip.ini" ] ; then
+		    echo -e "Installing required 'php-zip' package..."
+		    apt-get -q=2 install -y php-zip > /dev/null 2>&1
+		    apt-get -q=2 clean > /dev/null 2<&1
+		    apt-get -q=2 autoclean > /dev/null 2<&1
+		fi
+	    fi
+	    echo -e "${TICK} Done!\n"
+
+	    echo "Checking nginx web server configuration..."
+	    if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
+		sed -i '\/PIDFile=\/run\/nginx.pid/a ExecStartPre=\/bin\/mkdir -p \/var\/log\/nginx' /lib/systemd/system/nginx.service
+		systemctl daemon-reload
+		systemctl restart nginx.service
+		echo "nginx configuration has been updated by operating system; restarting update..."
+		exec "$0" "$@"
+		exit 1
+	    fi
+		echo -e "${TICK} Done!"
+	fi
+
+	conn_check
+	echo "Stopping Services..."
+	wpsd-services fullstop > /dev/null 2>&1
+	echo -e "${TICK} Done!\n"
+
+	echo "Updating WPSD Scripts and Support Programs..."
+	git_update /usr/local/sbin
+	#systemctl daemon-reload > /dev/null 2>&1
+	echo -e "${TICK} Done!\n"
+
+	echo "Updating WPSD Digital Voice and Related Binaries..."
+	git_update /usr/local/bin
+	echo -e "${TICK} Done!\n"
+
+	echo "Updating WPSD Web Dashboard Software..."
+	git_update /var/www/dashboard
+	echo -e "${TICK} Done!\n"
+
+	if ! [ -f /root/M17Hosts.txt ]; then
+	    echo -e "# Format: Reflector Name IP Port\n# Example:\n# M17-000    81.231.241.25    17000\n\n" > /root/M17Hosts.txt
+	fi
+	echo "Updating Hostfiles, User ID DB's & Various Talkgroup Lists..."
+	/usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
+	echo -e "${TICK} Done!\n"
+
+	echo "Updating Firewall..."
+	# check if user already has firewall disabled, and if so, ensure it's kept that way.
+	if ! grep -q LOGNDROP /etc/iptables.rules ; then
+	    /usr/local/sbin/wpsd-system-manager -dfw > /dev/null 2>&1
+    	else
+	    /usr/local/sbin/wpsd-system-manager -efw > /dev/null 2>&1
+    	fi
+	echo -e "${TICK} Done!\n"
+
+	echo "Performing maintenance tasks..."
+
+	# Check for gpsd
+	if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
+	    systemctl disable mobilegps.timer > /dev/null 2<&1
+	    systemctl disable mobilegps.service > /dev/null 2<&1
+	    rm -rf /lib/systemd/system/mobilegps*
+	    systemctl daemon-reload > /dev/null 2<&1
+	fi
+	if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
+	    echo "GPSd (required) not installed. Installing now..."
+	    apt-get -qq update > /dev/null 2>&1
+	    apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
+	    # disable by default; enabled in config page on request:
+	    systemctl disable gpsd.service > /dev/null 2>&1
+	    systemctl disable gpsd.socket > /dev/null 2>&1
+	    systemctl mask gpsd.service > /dev/null 2>&1
+	    systemctl mask gpsd.socket > /dev/null 2>&1
+	    apt-get -qq autoclean > /dev/null 2>&1
+	    echo -e "${TICK} Done!\n"
+	fi
+	# now fix upstream gpsd binding bug:
+	if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
+	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket > /dev/null 2>&1
+	    systemctl daemon-reload > /dev/null 2<&1
+	fi
+	# ensure gpsd is only enabled by the user:
+	if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
+	    systemctl stop gpsd.service > /dev/null 2>&1
+	    systemctl stop gpsd.socket > /dev/null 2>&1
+	    systemctl disable gpsd.service > /dev/null 2>&1
+	    systemctl disable gpsd.socket > /dev/null 2>&1
+	    systemctl mask gpsd.service > /dev/null 2>&1
+	    systemctl mask gpsd.socket > /dev/null 2>&1
+	fi
+
+	/usr/local/sbin/.wpsd-backend-maint > /dev/null 2>&1
+
+	# check for vnstat
+	if ! [ -x "$(command -v vnstat)" ]; then
+	    echo "vnstat (required) not installed on hotspot. Installing now..."
+	    # Install vnstat
+	    apt-get -qq update > /dev/null 2>&1
+	    apt-get -qq install -y vnstat > /dev/null 2>&1
+	    systemctl restart vnstat.service > /dev/null
+	    echo -e "${TICK} Done!\n"
+        fi
+	# tmpfs for vnstat
+	if ! grep -q vnstat /etc/fstab ; then
+	    systemctl stop vnstat.service > /dev/null
+	    umount /var/lib/vnstat > /dev/null
+	    rm -rf /var/lib/vnstat > /dev/null
+	    mkdir -p /var/lib/vnstat > /dev/null
+	    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
+	    echo "tmpfs                   /var/lib/vnstat         tmpfs   nodev,noatime,nosuid,mode=0755,size=64m         0       0"  >> /etc/fstab
+	    mount /var/lib/vnstat > /dev/null
+	    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
+	    systemctl restart vnstat.service > /dev/null
+	fi
+
+	# swap ntpd for systemd-timesyncd
+	if [ ! -f "/lib/systemd/system/systemd-timesyncd.service" ] ; then
+	    echo "Updating time synchronization service..."
+	    apt-get -qq remove -y --purge ntp > /dev/null 2>&1
+	    apt-get -qq autoremove -y > /dev/null 2>&1
+	    apt-get -qq install -y systemd-timesyncd > /dev/null 2>&1
+	    echo -e "${TICK} Done!\n"
+	fi
+
+	# mmdvmhost log backup services
+	if [ ! -f "/lib/systemd/system/mmdvm-log-backup.service" ] ; then
+	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/Build-MMDVM-Log-Systemd-Tasks.sh -o /tmp/Build-MMDVM-Log-Systemd-Tasks.sh
+	    bash /tmp/Build-MMDVM-Log-Systemd-Tasks.sh > /dev/null 2<&1
+	    rm /tmp/Build-MMDVM-Log-Systemd-Tasks.sh
+	fi
+
+	# setup our own native NextionDriver service...
+	# Updated 2/23/2023 - W0CHP:
+	# TGIFspots contain really weird hacks/scripts, etc.[1] for their Nextion
+	# screens, and it all collides with WPSD and our native Nextion driver
+	# support.  So lets ignore TGIFspots altogether.
+	# [1] <https://github.com/EA7KDO/Scripts>
+	if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
+	    echo "blah" > /dev/null
+	else # yay no tgifspot hacks!
+            if [ ! -f '/lib/systemd/system/nextiondriver.service' ] ; then # lets get a native service placeholder installed at the very least
+	    	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
+	    	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
+            	# Enable the NextionDriver service
+            	systemctl daemon-reload > /dev/null 2<&1
+            	systemctl stop nextiondriver.service > /dev/null 2<&1
+            	/usr/bin/killall NextionDriver > /dev/null 2<&1
+            	systemctl enable nextiondriver.service > /dev/null 2<&1
+            fi
+            if [ -f '/lib/systemd/system/nextiondriver.service' ] ; then # for non-Nextion instances, ensure existing service is ours vs. ON7LDS'
+	    	if systemctl status nextiondriver.service | grep masked > /dev/null 2<&1 ; then
+            	    systemctl unmask nextiondriver.service > /dev/null 2<&1
+	    	    systemctl daemon-reload > /dev/null 2<&1
+	    	fi
+	    	if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2`" != "Nextion" ]; then
+        	    if grep -qo 'killall' /lib/systemd/system/nextiondriver.service ; then
+		        curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
+		        curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
+            	        systemctl daemon-reload > /dev/null 2<&1
+            	        systemctl stop nextiondriver.service > /dev/null 2<&1
+            	        /usr/bin/killall NextionDriver > /dev/null 2<&1
+		        systemctl enable nextiondriver.service > /dev/null 2<&1
+		    fi
+	    	fi
+            fi
+            # now, disable nextion driver stuff if display != Nextion in mmdvmhost config...
+            if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2`" != "Nextion" ]; then
+            	if grep -qo 'Requires=nextiondriver.service' /lib/systemd/system/mmdvmhost.service ; then # if nextion is re'q, get rid of it
+                    sed -i '/Requires=nextiondriver.service/d' /lib/systemd/system/mmdvmhost.service
+                    systemctl daemon-reload > /dev/null 2<&1
+            	fi
+            	if grep -qo 'RequiredBy=mmdvmhost.service' /lib/systemd/system/nextiondriver.service ; then # if mmdvmhost is re'q, get rid of it
+                    sed -i '/RequiredBy=mmdvmhost.service/d' /lib/systemd/system/nextiondriver.service
+                    systemctl daemon-reload > /dev/null 2<&1
+	    	fi
+	    	# stop and disable
+	    	if ! systemctl status nextiondriver.service | grep 'disabled;' > /dev/null 2<&1 ; then
+            	    systemctl stop nextiondriver.service > /dev/null 2<&1
+            	    /usr/bin/killall NextionDriver > /dev/null 2<&1
+            	    systemctl disable nextiondriver.service > /dev/null 2<&1
+            	    systemctl daemon-reload > /dev/null 2<&1
+	    	fi
+            fi
+            # user has Nextion defined in mmdvmhost, so let's natively support it:
+            if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2`" = "Nextion" ]; then
+            	if grep -qo 'killall' /lib/systemd/system/nextiondriver.service ; then # our native support has not been installed/config'd, user likely using ON7LDS script - init!
+                    systemctl stop nextiondriver.service > /dev/null 2<&1
+                    /usr/bin/killall NextionDriver > /dev/null 2<&1
+                    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
+                    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
+                    systemctl daemon-reload > /dev/null 2<&1
+                    systemctl enable nextiondriver.service > /dev/null 2<&1
+                    systemctl restart nextiondriver.service > /dev/null 2<&1
+                    systemctl restart mmdvmhost.service > /dev/null 2<&1
+            	fi
+            fi
+	fi
+
+	# m17 service installer bugfix:
+	if [ ! -f "/etc/systemd/system/m17gateway.service" ] ; then
+	    /usr/local/sbin/m17gateway.service install > /dev/null 2<&1
+	    systemctl daemon-reload > /dev/null 2<&1
+	fi
+
+	# add CallLookupProvider to /etc/pistar-release if not there...
+	if ! grep -q 'CallLookupProvider =' /etc/pistar-release ; then
+	   sed -i '/ConfUpdReqd/a CallLookupProvider = QRZ' /etc/pistar-release
+	fi
+
+	# if css does not exist, install default one
+	if [ ! -f "/etc/pistar-css.ini" ] ; then
+	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/pistar-css-W0CHP.ini -o /etc/pistar-css.ini
+	fi
+
+	# Fix up new P25Gateway Config Hostfile setup
+	if [ ! -f /root/P25Hosts.txt ]; then
+	    touch /root/P25Hosts.txt
+	fi
+
+	# Fix up new NXDNGateway Config Hostfile setup
+	if [ ! -f /root/NXDNHosts.txt ]; then
+	    touch /root/NXDNHosts.txt
+	fi
+	if [ ! -f /usr/local/etc/NXDNHostsLocal.txt ]; then
+	    touch /usr/local/etc/NXDNHostsLocal.txt
+	fi
+
+	# Download M17 Audio files if missing
+	if [[ ! -d /usr/local/etc/M17_Audio ]]; then
+	    mkdir -p /usr/local/etc/M17_Audio/
+	    curl --fail -o /usr/local/etc/M17_Audio/de_DE.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/de_DE.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/de_DE.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/de_DE.indx
+	    curl --fail -o /usr/local/etc/M17_Audio/dk_DK.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/dk_DK.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/dk_DK.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/dk_DK.indx
+	    curl --fail -o /usr/local/etc/M17_Audio/en_GB.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/en_GB.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/en_GB.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/en_GB.indx
+	    curl --fail -o /usr/local/etc/M17_Audio/en_US.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/en_US.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/en_US.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/en_US.indx
+	    curl --fail -o /usr/local/etc/M17_Audio/es_ES.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/es_ES.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/es_ES.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/es_ES.indx
+	    curl --fail -o /usr/local/etc/M17_Audio/fr_FR.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/fr_FR.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/fr_FR.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/fr_FR.indx
+	    curl --fail -o /usr/local/etc/M17_Audio/it_IT.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/it_IT.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/it_IT.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/it_IT.indx
+	    curl --fail -o /usr/local/etc/M17_Audio/pl_PL.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/pl_PL.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/pl_PL.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/pl_PL.indx
+	    curl --fail -o /usr/local/etc/M17_Audio/se_SE.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/se_SE.m17
+	    curl --fail -o /usr/local/etc/M17_Audio/se_SE.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/se_SE.indx    
+    	fi
+
+	# Add Portuguese voice files for DMRGateway and ircDDBGw if missing
+	if [[ ! -f /usr/local/etc/DMR_Audio/pt_PT.ambe ]]; then
+	    curl --fail -o /usr/local/etc/DMR_Audio/pt_PT.ambe -s https://raw.githubusercontent.com/g4klx/DMRGateway/master/Audio/pt_PT.ambe
+	    curl --fail -o /usr/local/etc/DMR_Audio/pt_PT.indx -s https://raw.githubusercontent.com/g4klx/DMRGateway/master/Audio/pt_PT.indx
+	    chmod 664 /usr/local/etc/DMR_Audio/*.ambe
+	    chmod 664 /usr/local/etc/DMR_Audio/*.indx
+	fi
+	if [[ ! -f /usr/local/etc/ircddbgateway/pt_PT.ambe ]]; then
+	    curl --fail -o /usr/local/etc/ircddbgateway/pt_PT.ambe -s https://raw.githubusercontent.com/g4klx/ircDDBGateway/master/Data/pt_PT.ambe
+	    curl --fail -o /usr/local/etc/ircddbgateway/pt_PT.indx -s https://raw.githubusercontent.com/g4klx/ircDDBGateway/master/Data/pt_PT.indx
+	    curl --fail -o /usr/local/etc/ircddbgateway/TIME_pt_PT.ambe -s https://raw.githubusercontent.com/g4klx/ircDDBGateway/master/Data/TIME_pt_PT.ambe
+	    curl --fail -o /usr/local/etc/ircddbgateway/TIME_pt_PT.indx -s https://raw.githubusercontent.com/g4klx/ircDDBGateway/master/Data/TIME_pt_PT.indx
+	    chmod 664 /usr/local/etc/ircddbgateway/*.ambe
+	    chmod 664 /usr/local/etc/ircddbgateway/*.indx
+	fi
+	
+	if [[ $(grep "\[Voice\]" /etc/p25gateway | wc -l) -eq 0 ]]; then
+	    echo "" >> /etc/p25gateway
+	    sed -i '$a[Voice]\nEnabled=1\nLanguage=en_GB\nDirectory=/usr/local/etc/P25_Audio\n' /etc/p25gateway
+	fi
+
+        if [ -f /usr/local/bin/platformDetect.sh ]; then # remove platformDetect.sh since we have a custom version in /usr/local/sbin
+	    rm -f /usr/local/bin/platformDetect.sh
+        fi
+
+	if ! grep -q TIME_FORMAT /var/www/dashboard/config/config.php ; then # insert req'd constant if not found. WIll be stashed on next update :-)
+	    sed -i "/^date_default_timezone_set.*/i define('TIME_FORMAT', '24');" /var/www/dashboard/config/config.php
+	fi
+
+	if ! grep -q AUTO_UPDATE_CHECK /var/www/dashboard/config/config.php ; then # insert req'd constant if not found. WIll be stashed on next update :-)
+	    sed -i "/^date_default_timezone_set.*/i define('AUTO_UPDATE_CHECK', 'true');" /var/www/dashboard/config/config.php
+	fi
+
+	# MOTD
+	bash /usr/local/sbin/motdgen
+
+	# Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
+	gitFolder="/var/www/dashboard"
+	gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
+	gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
+	gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update Version Cacher (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
+	echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
+
+	# log file perms
+	chown -R mmdvm:mmdvm /var/log/pi-star > /dev/null 2>&1
+	chmod 775 /var/log/pi-star > /dev/null 2>&1
+
+	# run any slipstream tasks
+	bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
+
+	echo -e "${TICK} Done!"
+
+	echo -e "\nStarting Services..."
+	wpsd-services start > /dev/null 2>&1
+	echo -e "${TICK} Done!\n"
+
+	echo "Updates complete, syncing disk cache..."
+	/bin/sync
+	/bin/sync
+	/bin/sync
+	systemctl start cron.service > /dev/null 2<&1
+	echo -e "${TICK} Update Process Finished!\n"
+	if [ ! -t 1 ]; then # only output if not called from tty
+	    echo -e "\n<b><a style='color:white;text-decoration:underline;'' href='/'>Back to Dashboard...</a></b>\n"
+	fi
+}
+
+	if [ -t 1 ]; then
+ 	    # run via terminal, only output to screen
+ 	    main_function
+	else
+ 	    # if not run via terminal, log everything into a log file
+ 	    main_function >> /var/log/pi-star/WPSD-update.log 2>&1
+	fi
+
+exit 0
+

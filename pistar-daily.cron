@@ -62,7 +62,7 @@ fi
 echo -e "\nStopping services..."
 systemctl stop pistar-watchdog.timer > /dev/null 2>&1
 systemctl stop pistar-watchdog.service > /dev/null 2>&1
-pistar-services fullstop > /dev/null 2>&1
+wpsd-services fullstop > /dev/null 2>&1
 
 # connectivity check
 echo -e "\nChecking connectivity to WPSD update server..."
@@ -111,9 +111,9 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 
     echo -e "\nResetting firewall back to user prefs..."
     if [ "$fwState" == "enabled" ]; then
-	/usr/local/sbin/pistar-system-manager -efw
+	/usr/local/sbin/wpsd-system-manager -efw
     else
-	/usr/local/sbin/pistar-system-manager -dfw
+	/usr/local/sbin/wpsd-system-manager -dfw
     fi
 
     echo -e "\nUpdating dash code..."
@@ -388,27 +388,6 @@ fi
         rm -f /usr/local/bin/platformDetect.sh
     fi
 
-    # Add pistar-service bash completion
-    DEST="/usr/share/bash-completion/completions/pistar-services"
-    if [ ! -f $DEST ] ; then
-            echo "#!/bin/bash" > $DEST
-            echo "" >> $DEST
-            echo "_pistar_services()" >> $DEST
-            echo "{" >> $DEST
-            echo "    local cur prev words cword" >> $DEST
-            echo "    _init_completion -n = || return" >> $DEST
-            echo "" >> $DEST
-            echo "    _expand || return 0" >> $DEST
-            echo "" >> $DEST
-            echo "    COMPREPLY=( \$( compgen -W 'start stop restart fullstop status' -- \"\$cur\" ) )" >> $DEST
-            echo "" >> $DEST
-            echo "} &&" >> $DEST
-            echo "complete -F _pistar_services pistar-services" >> $DEST
-            echo "" >> $DEST
-            chown root:root $DEST
-            chmod 0644 $DEST
-    fi
-
 # Fix nginx unit file
 if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
   sed -i '\/PIDFile=\/run\/nginx.pid/a ExecStartPre=\/bin\/mkdir -p \/var\/log\/nginx' /lib/systemd/system/nginx.service
@@ -474,7 +453,7 @@ sed -i "/cron.daily/c ${cronMins} ${cronHours}	* * *	root	cd / && run-parts --re
 # Start all the services...
 #systemctl daemon-reload &> /dev/null # Reload systemd to account for service changes
 echo -e "\nStarting services..."
-pistar-services start > /dev/null 2>&1
+wpsd-services start > /dev/null 2>&1
 
 kernel_release=$(uname -r)
 if [[ $kernel_release == *"sunxi"* ]]; then    # armbian/sunxi!
