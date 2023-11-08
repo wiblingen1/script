@@ -25,12 +25,12 @@ echo -e "${COL_REG_CYAN}
 ╚███╔███╔╝██║     ███████║██████╔╝
  ╚══╝╚══╝ ╚═╝     ╚══════╝╚═════╝${COL_NC}
 ${COL_BRIGHT_CYAN}
-WPSD${COL_NC} Ver.# ${COL_LIGHT_ORANGE}${gitId}${COL_NC}
+(${COL_LIGHT_CYAN}WPSD${COL_NC} Ver.# ${COL_LIGHT_ORANGE}${gitId}${COL_NC})
 
 ${INFO} Your WPSD dashboard can be accesed from:
-    ${BULL} ${COL_REG_MAGENTA}http://$(hostname)/${COL_NC}
-    ${BULL} ${COL_REG_MAGENTA}http://$(hostname).local/${COL_NC}
-    ${BULL} ${COL_REG_MAGENTA}http://$(hostname -I | awk '{print $1}')/${COL_NC}
+    ${BULL} ${COL_LIGHT_MAGENTA}http://$(hostname)/${COL_NC}
+    ${BULL} ${COL_LIGHT_MAGENTA}http://$(hostname).local/${COL_NC}
+    ${BULL} ${COL_LIGHT_MAGENTA}http://$(hostname -I | awk '{print $1}')/${COL_NC}
 
 ${INFO} WPSD command-line tools are all prefixed with \"wpsd-\".
 " > /etc/motd
