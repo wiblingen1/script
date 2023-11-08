@@ -493,5 +493,37 @@ else
     /usr/local/sbin/.wpsd-sys-cache
 fi
 
+# Add wpsd-service bash completion & remove legacy one
+OLD_DEST="/usr/share/bash-completion/completions/pistar-services"
+DEST="/usr/share/bash-completion/completions/wpsd-services"
+COMPLETION_CONFIG="/etc/bash_completion.d/wpsd-services"
+if [ -f "$OLD_DEST" ]; then
+    sudo rm -f "$OLD_DEST"
+    echo "Removed $OLD_DEST"
+fi
+if [ -f "$DEST" ]; then
+    sudo rm -f "$DEST"
+    echo "Removed $DEST"
+fi
+if [ ! -f "$COMPLETION_CONFIG" ]; then
+    echo "#!/bin/bash" | sudo tee "$COMPLETION_CONFIG" >/dev/null
+    echo "" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "_wpsd_services()" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "{" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "    local cur prev words cword" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "    _init_completion -n = || return" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "" | sudo tee -a "$COMPLETION_CONFIG" >/devnull
+    echo "    _expand || return 0" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "    COMPREPLY=( \$( compgen -W 'start stop restart fullstop status' -- \"\$cur\" ) )" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "} &&" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "complete -F _wpsd_services wpsd-services" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    echo "" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
+    sudo chown root:root "$COMPLETION_CONFIG"
+    sudo chmod 0644 "$COMPLETION_CONFIG"
+    echo "New completion file created"
+fi
+
 # ensure hostfiles are updated more regularly
 /usr/local/sbin/HostFilesUpdate.sh &> /dev/null

@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # disable samba - perf. and sec.
-if ! systemctl status smbd.service | grep masked > /dev/null 2<&1 ; then
-    systemctl stop smbd > /dev/null 2<&1
-    LC_ALL=C systemctl disable smbd > /dev/null 2<&1
-    systemctl mask smbd > /dev/null 2<&1
+if ! systemctl status smbd.service | grep masked  ; then
+    systemctl stop smbd 
+    LC_ALL=C systemctl disable smbd 
+    systemctl mask smbd 
 fi
-if ! systemctl status nmbd.service | grep masked > /dev/null 2<&1 ; then
-    systemctl stop nmbd > /dev/null 2<&1
-    LC_ALL=C systemctl disable nmbd > /dev/null 2<&1
-    systemctl mask nmbd > /dev/null 2<&1
+if ! systemctl status nmbd.service | grep masked  ; then
+    systemctl stop nmbd 
+    LC_ALL=C systemctl disable nmbd 
+    systemctl mask nmbd 
 fi
 
 # avahi tweaks
@@ -42,63 +42,38 @@ EOF
 </service-group>
 EOF
 
-    systemctl restart avahi-daemon > /dev/null 2<&1
-    systemctl daemon-reload > /dev/null 2<&1
+    systemctl restart avahi-daemon 
+    systemctl daemon-reload 
 fi
 
 # enable unatt. upgrades now that the file-system is full-time R/W:
-if  systemctl status unattended-upgrades.service | grep masked > /dev/null 2<&1 ; then # previously disabled/masked....reset...
-    systemctl unmask unattended-upgrades.service > /dev/null 2<&1
-    dpkg-reconfigure -pmedium unattended-upgrades > /dev/null 2<&1
+if  systemctl status unattended-upgrades.service | grep masked  ; then # previously disabled/masked....reset...
+    systemctl unmask unattended-upgrades.service 
+    dpkg-reconfigure -pmedium unattended-upgrades 
     # if bullseye, we need to migrate config;
-    /usr/bin/lsb_release -cs | grep 'bullseye' &> /dev/null
+    /usr/bin/lsb_release -cs | grep 'bullseye'
     if [ $? == 0 ]; then
-	if grep 'o=Raspbian,n=buster' /etc/apt/apt.conf.d/50unattended-upgrades > /dev/null 2<&1 ; then # use the new conf if old one is still found
-	    if [ -f /etc/apt/apt.conf.d/50unattended-upgrades.ucf-dist ] ; then
-		cp /etc/apt/apt.conf.d/50unattended-upgrades.ucf-dist /etc/apt/apt.conf.d/50unattended-upgrades
-	    fi
-	fi
+        if grep 'o=Raspbian,n=buster' /etc/apt/apt.conf.d/50unattended-upgrades  ; then # use the new conf if old one is still found
+            if [ -f /etc/apt/apt.conf.d/50unattended-upgrades.ucf-dist ] ; then
+                cp /etc/apt/apt.conf.d/50unattended-upgrades.ucf-dist /etc/apt/apt.conf.d/50unattended-upgrades
+            fi
+        fi
     fi
-    systemctl enable unattended-upgrades.service > /dev/null 2<&1
-    systemctl restart unattended-upgrades.service > /dev/null 2<&1
+    systemctl enable unattended-upgrades.service 
+    systemctl restart unattended-upgrades.service 
 fi
-# enabled, but check if bulleye to migrate config:
-/usr/bin/lsb_release -cs | grep 'bullseye' &> /dev/null
+# enabled, but check if bullseye to migrate config:
+/usr/bin/lsb_release -cs | grep 'bullseye'
 if [ $? == 0 ]; then
-    if grep 'o=Raspbian,n=buster' /etc/apt/apt.conf.d/50unattended-upgrades > /dev/null 2<&1 ; then # use the new conf if old one is still found
-	if [ -f /etc/apt/apt.conf.d/50unattended-upgrades.ucf-dist ] ; then
-	    cp /etc/apt/apt.conf.d/50unattended-upgrades.ucf-dist /etc/apt/apt.conf.d/50unattended-upgrades
-	    systemctl restart unattended-upgrades.service > /dev/null 2<&1
-	fi
+    if grep 'o=Raspbian,n=buster' /etc/apt/apt.conf.d/50unattended-upgrades  ; then # use the new conf if old one is still found
+        if [ -f /etc/apt/apt.conf.d/50unattended-upgrades.ucf-dist ] ; then
+            cp /etc/apt/apt.conf.d/50unattended-upgrades.ucf-dist /etc/apt/apt.conf.d/50unattended-upgrades
+            systemctl restart unattended-upgrades.service 
+        fi
     fi
 fi
-# now remove annyong warning from unattended-upgrade outputs;
-if grep 'Unattended-Upgrade::OnlyOnACPower "true";' //etc/apt/apt.conf.d/50unattended-upgrades > /dev/null 2<&1 ; then 
+# now remove annoying warning from unattended-upgrade outputs;
+if grep 'Unattended-Upgrade::OnlyOnACPower "true";' //etc/apt/apt.conf.d/50unattended-upgrades  ; then 
     sed -i 's/\/\/ Unattended-Upgrade::OnlyOnACPower "true";/Unattended-Upgrade::OnlyOnACPower "false";/g' /etc/apt/apt.conf.d/50unattended-upgrades
-fi
-
-# Add wpsd-service bash completion & remove legacy one
-OLD_DEST="/usr/share/bash-completion/completions/pistar-services"
-if [ ! -f $OLDDEST ] ; then
-    rm -rf $OLD_DEST
-fi
-DEST="/usr/share/bash-completion/completions/wpsd-services"
-if [ ! -f $DEST ] ; then
-    echo "#!/bin/bash" > $DEST
-    echo "" >> $DEST
-    echo "_pistar_services()" >> $DEST
-    echo "{" >> $DEST
-    echo "    local cur prev words cword" >> $DEST
-    echo "    _init_completion -n = || return" >> $DEST
-    echo "" >> $DEST
-    echo "    _expand || return 0" >> $DEST
-    echo "" >> $DEST
-    echo "    COMPREPLY=( \$( compgen -W 'start stop restart fullstop status' -- \"\$cur\" ) )" >> $DEST
-    echo "" >> $DEST
-    echo "} &&" >> $DEST
-    echo "complete -F _wpsd_services wpsd-services" >> $DEST
-    echo "" >> $DEST
-    chown root:root $DEST
-    chmod 0644 $DEST
 fi
 
