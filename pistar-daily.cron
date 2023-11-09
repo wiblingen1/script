@@ -455,33 +455,34 @@ sed -i "/cron.daily/c ${cronMins} ${cronHours}	* * *	root	cd / && run-parts --re
 echo -e "\nStarting services..."
 wpsd-services start > /dev/null 2>&1
 
-kernel_release=$(uname -r)
-if [[ $kernel_release == *"sunxi"* ]]; then    # armbian/sunxi!
-    if [ -e /boot/vmlinuz* ]; then # cleanup redundancies
-	rm -f /boot/vmlinuz*
-    fi
-    if [[ $kernel_release == 6.* ]]; then    # already updated to 6.x
-        :
-    else    # armbian with 5.x kernel
-        if [[ -e /usr/local/bincast* ]]; then    # check if DVMega HW
-            # do nothing and continue
-            :
-        else    # not DVmega HW, proceed with kernel upgrade
-            echo -e "\nChecking /boot free space..."
-            boot_usage=$(df -h /boot | awk '{print $5}' | tail -n 1 | tr -d '%')
-            if [[ $boot_usage -le 85 ]]; then # only upgrade if /boot has less than 85% usage
-                echo -e "\nUpgrading kernel..."
-                apt-get update
-                apt-get -y install linux-image-edge-sunxi && apt-get --purge remove -y linux-image-current-sunxi
-                echo "Kernel upgraded...rebooting in 30 seconds!" | wall
-                sleep 30
-                shutdown -r now
-            else
-                echo "/boot volume is at $boot_usage% capacity, skipping kernel upgrade"
-            fi
-        fi
-    fi
-fi    # not armbian/sunxi
+### disabled the block below as I prepare for new sun8i Armbian images (OPi Zero/NanoPi Neo)
+#kernel_release=$(uname -r)
+#if [[ $kernel_release == *"sunxi"* ]]; then    # armbian/sunxi!
+#    if [ -e /boot/vmlinuz* ]; then # cleanup redundancies
+#	rm -f /boot/vmlinuz*
+#    fi
+#    if [[ $kernel_release == 6.* ]]; then    # already updated to 6.x
+#        :
+#    else    # armbian with 5.x kernel
+#        if [[ -e /usr/local/bincast* ]]; then    # check if DVMega HW
+#            # do nothing and continue
+#            :
+#        else    # not DVmega HW, proceed with kernel upgrade
+#            echo -e "\nChecking /boot free space..."
+#            boot_usage=$(df -h /boot | awk '{print $5}' | tail -n 1 | tr -d '%')
+#            if [[ $boot_usage -le 85 ]]; then # only upgrade if /boot has less than 85% usage
+#                echo -e "\nUpgrading kernel..."
+#                apt-get update
+#                apt-get -y install linux-image-edge-sunxi && apt-get --purge remove -y linux-image-current-sunxi
+#                echo "Kernel upgraded...rebooting in 30 seconds!" | wall
+#                sleep 30
+#                shutdown -r now
+#            else
+#                echo "/boot volume is at $boot_usage% capacity, skipping kernel upgrade"
+#            fi
+#        fi
+#    fi
+#fi    # not armbian/sunxi
 
 echo -e "\nCleaning old apt archives/caches..."
 apt-get -qq clean  > /dev/null 2<&1;

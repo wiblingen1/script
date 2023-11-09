@@ -525,5 +525,10 @@ if [ ! -f "$COMPLETION_CONFIG" ]; then
     echo "New completion file created"
 fi
 
+# More Armbian tweaks:
+if [ -f '/boot/armbianEnv.txt' ] && [[ $(grep "console=serial" /boot/armbianEnv.txt) ]] ; then
+    sed -i '/console=serial/d' /boot/armbianEnv.txt
+fi
+
 # ensure hostfiles are updated more regularly
 /usr/local/sbin/HostFilesUpdate.sh &> /dev/null
