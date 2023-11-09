@@ -49,7 +49,7 @@ function getDVModemFirmware() {
 			$modemFirmware = "MMDVM_HS:".ltrim(strtok(substr($logLine, 76, 12), ' '), 'v');
 		}
 		if (strpos($logLine, 'description: Nano_hotSPOT-')) {
-			$modemFirmware = "MMDVM_HS:".ltrim(strtok(substr($logLine, 80, 12), ' '), 'v');
+			$modemFirmware = "Nano_hotSPOT:".ltrim(strtok(substr($logLine, 80, 12), ' '), 'v');
 		}
 		if (strpos($logLine, 'description: Nano-Spot-')) {
 			$modemFirmware = "NanoSpot:".strtok(substr($logLine, 77, 12), ' ');
