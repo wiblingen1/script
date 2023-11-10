@@ -156,18 +156,22 @@ main_function() {
     	pkill pistar-daily.cron > /dev/null 2>&1
     	pkill slipstream-tasks.sh > /dev/null 2>&1
 
-	if [ -t 1 ] && [[ ${NO_OS} -ne 1 ]]; then
+	if [ -t 1 ] ; then
 	    # This is running from a terminal, so it should be safe to update the OS
-	    echo -e "\nChecking for, and applying any available operating system updates..."
-	    apt-get -q=2 update
-	    if ! apt-get upgrade --dry-run | grep -qo "0 upgraded" ; then
-		echo -e "${INFO} Operating system updates available; installing now..."
-		apt-get upgrade --fix-missing --fix-broken -y
-		apt-get -q=2 autoremove -y
-		apt-get -q=2 clean
-		apt-get -q=2 autoclean
-	    else
-		echo -e "${INFO} No operating system updates required."
+	    if [ -t 1 ] && [[ ${UP_OS} -eq 1 ]]; then
+		echo -e "\nChecking for, and applying any available operating system updates..."
+		apt-get -q=2 update
+		if ! apt-get upgrade --dry-run | grep -qo "0 upgraded" ; then
+		    echo -e "${INFO} Operating system updates available; installing now..."
+		    apt-get upgrade --fix-missing --fix-broken -y
+		    apt-get -q=2 autoremove -y
+		    apt-get -q=2 clean
+		    apt-get -q=2 autoclean
+		    echo -e "${TICK} Done!"
+		else
+		    echo -e "${INFO} No operating system updates required."
+		    echo -e "${TICK} Done!"
+		fi
 	    fi
 	    # ensure bullseye has proper php extensions
 	    dpkg --configure -a > /dev/null 2>&1
@@ -177,16 +181,16 @@ main_function() {
 		    apt-get -q=2 install -y php-zip > /dev/null 2>&1
 		    apt-get -q=2 clean > /dev/null 2<&1
 		    apt-get -q=2 autoclean > /dev/null 2<&1
+		    echo -e "${TICK} Done!"
 		fi
 	    fi
-	    echo -e "${TICK} Done!\n"
 
-	    echo "Checking nginx web server configuration..."
+	    echo -e "\nChecking  web server configuration..."
 	    if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
 		sed -i '\/PIDFile=\/run\/nginx.pid/a ExecStartPre=\/bin\/mkdir -p \/var\/log\/nginx' /lib/systemd/system/nginx.service
 		systemctl daemon-reload
 		systemctl restart nginx.service
-		echo "nginx configuration has been updated by operating system; restarting update..."
+		echo -e "Web server configuration has been updated by operating system; restarting update..."
 		exec "$0" "$@"
 		exit 1
 	    fi
