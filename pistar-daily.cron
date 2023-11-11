@@ -152,13 +152,6 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/pistar-css-W0CHP.ini -o /etc/pistar-css.ini
     fi
 
-    # mmdvmhost log backup services
-    if [ ! -f "/lib/systemd/system/mmdvm-log-backup.service" ] ; then
-    	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/Build-MMDVM-Log-Systemd-Tasks.sh -o /tmp/Build-MMDVM-Log-Systemd-Tasks.sh
-    	bash /tmp/Build-MMDVM-Log-Systemd-Tasks.sh > /dev/null 2<&1
-    	rm /tmp/Build-MMDVM-Log-Systemd-Tasks.sh
-    fi
-
     # setup our own native NextionDriver service...
     # Updated 2/23/2023 - W0CHP:
     # TGIFspots contain really weird hacks/scripts, etc.[1] for their Nextion
@@ -440,9 +433,6 @@ if [ ! -f "/lib/systemd/system/systemd-timesyncd.service" ] ; then
     apt-get -qq install -y systemd-timesyncd > /dev/null 2>&1
     echo -e "Done!\n"
 fi
-
-# age mmdvmhost log backups:
-/usr/local/sbin/pistar-mmdvm-log-backup-age > /dev/null 2>&1
 
 # run any slipstream tasks
 bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1

@@ -300,13 +300,6 @@ main_function() {
 	    echo -e "${TICK} Done!\n"
 	fi
 
-	# mmdvmhost log backup services
-	if [ ! -f "/lib/systemd/system/mmdvm-log-backup.service" ] ; then
-	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/Build-MMDVM-Log-Systemd-Tasks.sh -o /tmp/Build-MMDVM-Log-Systemd-Tasks.sh
-	    bash /tmp/Build-MMDVM-Log-Systemd-Tasks.sh > /dev/null 2<&1
-	    rm /tmp/Build-MMDVM-Log-Systemd-Tasks.sh
-	fi
-
 	# setup our own native NextionDriver service...
 	# Updated 2/23/2023 - W0CHP:
 	# TGIFspots contain really weird hacks/scripts, etc.[1] for their Nextion

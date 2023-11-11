@@ -526,10 +526,10 @@ if [ ! -f "$COMPLETION_CONFIG" ]; then
 fi
 
 # Armbian for NanoPi Neo / OrangePi Zero handling
-if [ -f '/boot/armbianEnv.txt' ] && [[ $(grep "console=serial" /boot/armbianEnv.txt) ]] ; then
-    sed -i '/console=serial/d' /boot/armbianEnv.txt
-fi
 armbian_env_file="/boot/armbianEnv.txt"
+if [ -f "$armbian_env_file" ] && [[ $(grep "console=serial" $armbian_env_file) ]] ; then
+    sed -i '/console=serial/d' $armbian_env_file
+fi
 rc_local_file="/etc/rc.local"
 ttyama0_line="# OPi/NanoPi serial ports:"
 ttyama0_line+="\nmknod \"/dev/ttyAMA0\" c 4 65"
@@ -538,6 +538,21 @@ ttyama0_line+="\nchmod 660 /dev/ttyAMA0\n"
 ssh_keys_line="# AutoGenerate SSH keys if they are missing"
 if [ -f "$armbian_env_file" ] && ! grep -q "ttyAMA0" "$rc_local_file"; then
     sed -i "/$ssh_keys_line/i $ttyama0_line" "$rc_local_file"
+fi
+
+# remove last heard data manager; taxing, inaccurate, unreliable, and; mqtt coming ;-)
+if [ -f /lib/systemd/system/mmdvm-log-backup.service ] ; then
+    systemctl stop mmdvm-log-backup.timer
+    systemctl disable mmdvm-log-backup.timer
+    systemctl stop mmdvm-log-backup.service
+    systemctl disable mmdvm-log-backup.service
+    systemctl stop mmdvm-log-restore.service
+    systemctl disable mmdvm-log-restore.service
+    systemctl stop mmdvm-log-shutdown.service
+    systemctl disable mmdvm-log-shutdown.service
+    rm -rf //lib/systemd/system/mmdvm-log-*
+    systemctl daemon-reload
+    rm -rf /home/pi-star/.backup-mmdvmhost-logs
 fi
 
 # ensure hostfiles are updated more regularly
