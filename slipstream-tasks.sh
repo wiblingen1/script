@@ -525,9 +525,19 @@ if [ ! -f "$COMPLETION_CONFIG" ]; then
     echo "New completion file created"
 fi
 
-# More Armbian tweaks:
+# Armbian for NanoPi Neo / OrangePi Zero handling
 if [ -f '/boot/armbianEnv.txt' ] && [[ $(grep "console=serial" /boot/armbianEnv.txt) ]] ; then
     sed -i '/console=serial/d' /boot/armbianEnv.txt
+fi
+armbian_env_file="/boot/armbianEnv.txt"
+rc_local_file="/etc/rc.local"
+ttyama0_line="# OPi/NanoPi serial ports:"
+ttyama0_line+="\nmknod \"/dev/ttyAMA0\" c 4 65"
+ttyama0_line+="\nchown .dialout /dev/ttyAMA0"
+ttyama0_line+="\nchmod 660 /dev/ttyAMA0\n"
+ssh_keys_line="# AutoGenerate SSH keys if they are missing"
+if [ -f "$armbian_env_file" ] && ! grep -q "ttyAMA0" "$rc_local_file"; then
+    sed -i "/$ssh_keys_line/i $ttyama0_line" "$rc_local_file"
 fi
 
 # ensure hostfiles are updated more regularly
