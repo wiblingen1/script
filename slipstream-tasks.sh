@@ -542,17 +542,17 @@ fi
 
 # remove last heard data manager; taxing, inaccurate, unreliable, and; mqtt coming ;-)
 if [ -f /lib/systemd/system/mmdvm-log-backup.service ] ; then
-    systemctl stop mmdvm-log-backup.timer
-    systemctl disable mmdvm-log-backup.timer
-    systemctl stop mmdvm-log-backup.service
-    systemctl disable mmdvm-log-backup.service
-    systemctl stop mmdvm-log-restore.service
-    systemctl disable mmdvm-log-restore.service
-    systemctl stop mmdvm-log-shutdown.service
-    systemctl disable mmdvm-log-shutdown.service
-    rm -rf //lib/systemd/system/mmdvm-log-*
-    systemctl daemon-reload
-    rm -rf /home/pi-star/.backup-mmdvmhost-logs
+    systemctl stop mmdvm-log-backup.timer > /dev/null 2<&1
+    systemctl disable mmdvm-log-backup.timer > /dev/null 2<&1
+    systemctl stop mmdvm-log-backup.service > /dev/null 2<&1
+    systemctl disable mmdvm-log-backup.service > /dev/null 2<&1
+    systemctl stop mmdvm-log-restore.service > /dev/null 2<&1
+    systemctl disable mmdvm-log-restore.service > /dev/null 2<&1
+    systemctl stop mmdvm-log-shutdown.service > /dev/null 2<&1
+    systemctl disable mmdvm-log-shutdown.service > /dev/null 2<&1
+    rm -rf //lib/systemd/system/mmdvm-log-* > /dev/null 2<&1
+    systemctl daemon-reload > /dev/null 2<&1
+    rm -rf /home/pi-star/.backup-mmdvmhost-logs > /dev/null 2<&1
 fi
 
 # ensure hostfiles are updated more regularly
