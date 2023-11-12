@@ -8,6 +8,7 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+# common vars
 osName=$( /usr/bin/lsb_release -cs )
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 UUID=$( grep "UUID" /etc/pistar-release | awk '{print $3}' )
@@ -17,6 +18,8 @@ dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git 
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+armbian_env_file="/boot/armbianEnv.txt"
+rc_local_file="/etc/rc.local"
 
 # This part fully-disables read-only mode
 #
@@ -36,8 +39,8 @@ if grep -qo 'remount,ro' /usr/local/sbin/pistar-hourly.cron ; then
     sed -i '/# Mount the disk RO/d' /usr/local/sbin/pistar-hourly.cron
     sed -i '/mount -o remount,ro/d' /usr/local/sbin/pistar-hourly.cron
 fi
-if grep -qo 'remount,ro' /etc/rc.local ; then
-    sed -i '/remount,ro/d' /etc/rc.local
+if grep -qo 'remount,ro' $rc_local_file ; then
+    sed -i '/remount,ro/d' $rc_local_file
 fi
 if grep -qo 'remount,ro' /etc/apt/apt.conf.d/100update ; then
     sed -i '/remount,ro/d' /etc/apt/apt.conf.d/100update
@@ -176,8 +179,8 @@ gitURIupdate "/usr/local/sbin"
 #
 # 5/2023 W0CHP
 #
-if grep -q 'Pi-Star_Config_\*\.zip' /etc/rc.local ; then
-    sed -i 's/Pi-Star_Config_\*\.zip/WPSD_Config_\*\.zip/g' /etc/rc.local
+if grep -q 'Pi-Star_Config_\*\.zip' $rc_local_file ; then
+    sed -i 's/Pi-Star_Config_\*\.zip/WPSD_Config_\*\.zip/g' $rc_local_file
 fi
 #
 
@@ -186,9 +189,9 @@ fi
 # 5/2023 W0CHP
 #
 # cleanup legacy naming convention
-if grep -q 'modemcache' /etc/rc.local ; then
-    sed -i 's/modemcache/hwcache/g' /etc/rc.local
-    sed -i 's/# cache modem info/# cache hw info/g' /etc/rc.local 
+if grep -q 'modemcache' $rc_local_file ; then
+    sed -i 's/modemcache/hwcache/g' $rc_local_file
+    sed -i 's/# cache modem info/# cache hw info/g' $rc_local_file 
 fi
 # bullseye; change weird interface names* back to what most are accustomed to;
 # <https://wiki.debian.org/NetworkInterfaceNames#THE_.22PREDICTABLE_NAMES.22_SCHEME>
@@ -462,32 +465,32 @@ if grep -q 'Pi-Star Web Interface' /etc/avahi/services/http.service ; then
 fi
 
 # update daily cron shuffle rules in rc.local
-if grep -q 'shuf -i 3-4' /etc/rc.local ; then
-  sed -i "s/shuf -i 3-4/shuf -i 2-4/g" /etc/rc.local
+if grep -q 'shuf -i 3-4' $rc_local_file ; then
+  sed -i "s/shuf -i 3-4/shuf -i 2-4/g" $rc_local_file
 fi
 
 # add slipstream to rc.local
 # Define the correct entry
 correct_entry="nohup /usr/local/sbin/slipstream-tasks.sh &"
-# Check if the correct entry already exists in /etc/rc.local
-if grep -q -x "$correct_entry" /etc/rc.local; then
+# Check if the correct entry already exists in $rc_local_file
+if grep -q -x "$correct_entry" $rc_local_file; then
   :
 else
   # Remove the legacy entries and add the correct entry
-  sed -i '/nohup nohup.*&/d' /etc/rc.local
-  sed -i '/\/usr\/local\/sbin\/slipstream-tasks\.sh/d' /etc/rc.local
-  sed -i '/# slipstream tasks/a '"$correct_entry"'' /etc/rc.local
+  sed -i '/nohup nohup.*&/d' $rc_local_file
+  sed -i '/\/usr\/local\/sbin\/slipstream-tasks\.sh/d' $rc_local_file
+  sed -i '/# slipstream tasks/a '"$correct_entry"'' $rc_local_file
 fi
 
 # cleanup legacy motdgen
-if grep -q 'pistar-motdgen' /etc/rc.local ; then
-   sed -i 's/pistar-motdgen/motdgen/g' /etc/rc.local
+if grep -q 'pistar-motdgen' $rc_local_file ; then
+   sed -i 's/pistar-motdgen/motdgen/g' $rc_local_file
 fi
 
 # add sys cache to rc.local and exec
-if grep -q 'pistar-hwcache' /etc/rc.local ; then
-    sed -i '/# cache hw info/,/\/usr\/local\/sbin\/pistar-hwcache/d' /etc/rc.local
-    sed -i '/^\/usr\/local\/sbin\/motdgen/a \\n# cache hw info\n\/usr/local/sbin/.wpsd-sys-cache' /etc/rc.local
+if grep -q 'pistar-hwcache' $rc_local_file ; then
+    sed -i '/# cache hw info/,/\/usr\/local\/sbin\/pistar-hwcache/d' $rc_local_file
+    sed -i '/^\/usr\/local\/sbin\/motdgen/a \\n# cache hw info\n\/usr/local/sbin/.wpsd-sys-cache' $rc_local_file
     /usr/local/sbin/.wpsd-sys-cache
 else
     /usr/local/sbin/.wpsd-sys-cache
@@ -526,11 +529,9 @@ if [ ! -f "$COMPLETION_CONFIG" ]; then
 fi
 
 # Armbian for NanoPi Neo / OrangePi Zero handling
-armbian_env_file="/boot/armbianEnv.txt"
 if [ -f "$armbian_env_file" ] && [[ $(grep "console=serial" $armbian_env_file) ]] ; then
     sed -i '/console=serial/d' $armbian_env_file
 fi
-rc_local_file="/etc/rc.local"
 ttyama0_line="# OPi/NanoPi serial ports:"
 ttyama0_line+="\nmknod \"/dev/ttyAMA0\" c 4 65"
 ttyama0_line+="\nchown .dialout /dev/ttyAMA0"
@@ -553,6 +554,12 @@ if [ -f /lib/systemd/system/mmdvm-log-backup.service ] ; then
     rm -rf //lib/systemd/system/mmdvm-log-* > /dev/null 2<&1
     systemctl daemon-reload > /dev/null 2<&1
     rm -rf /home/pi-star/.backup-mmdvmhost-logs > /dev/null 2<&1
+fi
+
+# more rc.local updates...
+if grep -q 'pistar-mmdvmhshatreset' $rc_local_file ; then
+    sed -i 's/pistar-mmdvmhshatreset/wpsd-modemreset/g' $rc_local_file
+    sed -i 's/GPIO Pins on Pi4 Only/GPIO Pins on Pi4, Pi5 etc. only/g' $rc_local_file
 fi
 
 # ensure hostfiles are updated more regularly
