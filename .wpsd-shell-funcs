@@ -1,30 +1,39 @@
 #!/bin/bash
 
-# text styles
-COL_NC='\e[0m' # No Color
-BOLD='\e[1m'
-REVERSE='\e[7m'
-COL_LIGHT_GREEN='\e[1;32m'
-COL_BRIGHT_GREEN='\e[1;92m'
-COL_LIGHT_RED='\e[31m'
-COL_BRIGHT_RED='\e[1;31m'
-COL_LIGHT_CYAN='\e[1;36m'
-COL_BRIGHT_CYAN='\e[0;96m'
-COL_REG_CYAN='\e[38;5;30m'
-COL_REG_ORANGE='\e[38;5;173m'
-COL_LIGHT_ORANGE='\e[38;5;208m'
-COL_LIGHT_BLUE='\e[1;34m'
-COL_LIGHT_MAGENTA='\e[1;35m'
-COL_REG_MAGENTA='\e[0;95m'
-COL_LIGHT_YELLOW='\e[1;93m'
-COL_REG_YELLOW='\e[93m'
-BULL="${BOLD}\u2022${COL_NC}"
-INFO="${BOLD}[i]${COL_NC}"
-NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
-TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
-CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
-DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
-COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
+if [ -t 1 ]; then # term. only!
+    COL_NC='\e[0m' # No Color
+    BOLD='\e[1m'
+    REVERSE='\e[7m'
+    COL_LIGHT_GREEN='\e[1;32m'
+    COL_BRIGHT_GREEN='\e[1;92m'
+    COL_LIGHT_RED='\e[31m'
+    COL_BRIGHT_RED='\e[1;31m'
+    COL_LIGHT_CYAN='\e[1;36m'
+    COL_BRIGHT_CYAN='\e[0;96m'
+    COL_REG_CYAN='\e[38;5;30m'
+    COL_REG_ORANGE='\e[38;5;173m'
+    COL_LIGHT_ORANGE='\e[38;5;208m'
+    COL_LIGHT_BLUE='\e[1;34m'
+    COL_LIGHT_MAGENTA='\e[1;35m'
+    COL_REG_MAGENTA='\e[0;95m'
+    COL_LIGHT_YELLOW='\e[1;93m'
+    COL_REG_YELLOW='\e[93m'
+    BULL="${BOLD}\u2022${COL_NC}"
+    INFO="${BOLD}[i]${COL_NC}"
+    NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
+    TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
+    CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
+    DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
+    COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
+else
+    BULL="*"
+    INFO="[i]"
+    NOTE="[!]"
+    TICK="[✓]"
+    CROSS="[✗]"
+    DONE="Done!"
+    COMPL="Complete!"
+fi
 
 # progress spinner
 SPINNER_PID=

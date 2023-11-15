@@ -93,6 +93,11 @@ if [ "$1" ]; then
       echo "nanodv_usb"
       echo "hs_hat_lonestar-usb"
       echo "euronode"
+      echo "skybridge"
+      echo "zum_rpi"
+      echo "zum_rpi-duplex"
+      echo "zum_usb"
+      echo "zum_libre"
       exit 0
       ;;
     *)
@@ -194,19 +199,21 @@ fi
 #
 # OK we know what the modem is, let get the firmware string from the log...
 #
-clear
+if [ -t 1 ]; then # term. only
+    clear
 
-echo -e -n "${COL_LIGHT_CYAN}${BOLD}"
-echo '    _      _____  _______ 
+    echo -e -n "${COL_LIGHT_CYAN}${BOLD}"
+    echo '    _      _____  _______ 
    | | /| / / _ \/ __/ _ \
    | |/ |/ / ___/\ \/ // /
    |__/|__/_/  /___/____/'
-echo -e -n "${COL_NC}${COL_LIGHT_ORANGE}${BOLD}Modem Firmware Update Utility${COL_NC}\n\n"
+    echo -e -n "${COL_NC}${COL_LIGHT_ORANGE}${BOLD}Modem Firmware Update Utility${COL_NC}\n\n"
 
-if [ -n "$modem_description_line" ]; then
-    echo -e "${BULL} Found modem installed:"
-    echo "    $modem_description_line"
-    echo ""
+    if [ -n "$modem_description_line" ]; then
+	echo -e "${BULL} Found modem installed:"
+	echo "    $modem_description_line"
+	echo ""
+    fi
 fi
 
 #
@@ -226,15 +233,17 @@ then
   echo -e "    ${INFO} Found latest version: ${COL_LIGHT_BLUE}${BOLD}${VERSION}${COL_NC}"
   echo ""
 
-  read -n 1 -s -r -p "Press any key to flash the latest '${1}' firmware version (${VERSION}) to this modem, or 'q' to abort... "
-  echo ""
-  echo ""
+  if [[ "$NP" != "1" ]]; then
+    read -n 1 -s -r -p "Press any key to flash the latest '${1}' firmware version (${VERSION}) to this modem, or 'q' to abort... "
+    echo ""
+    echo ""
 
-  if [[ "$REPLY" =~ [qQ] ]]; then
-    echo ""
-    echo "Aborted by user."
-    echo ""
-    exit 1
+    if [[ "$REPLY" =~ [qQ] ]]; then
+      echo ""
+      echo "Aborted by user."
+      echo ""
+      exit 1
+    fi
   fi
 
   BASE_FW_URL="https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled/raw/tag/v${VERSION}/$firmware_file"
@@ -302,11 +311,13 @@ then
         gpio write 3 1
     fi
 
-    # Start the spinner function in the background
-    spinner &
-
-    # Capture the spinner's PID
-    SPINNER_PID=$!
+    if [ -t 1 ]; then # term. only
+        spinner &
+        # Capture the spinner's PID
+        SPINNER_PID=$!
+    else
+	echo -e "\n    ${NOTE}  Flashing modem - please wait..."
+    fi
 
     cd $FW_TMP
 
@@ -355,8 +366,10 @@ then
     $STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
     output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0 2>&1)
 
-    # Kill the spinner process (make the cursor visible again)
-    kill $SPINNER_PID &>/dev/null
+    if [ -t 1 ]; then # term. only
+	# Kill the spinner process (make the cursor visible again)
+	kill $SPINNER_PID &>/dev/null
+    fi
 
     # did we flash successfully?
     flash_successful=false  # Initialize to false
@@ -373,7 +386,7 @@ then
       rm -rf $FW_TMP >/dev/null 2>&1
       echo -e -n "    ${TICK} ${COMPL} Modem firmware flash successful!\n        Modem reinitialized.\n"
       echo ""
-      echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} You will need to refresh your dashboard to reflect the updated firmware version.\n"
+      echo -e "${INFO} ${COL_LIGHT_YELLOW}Note:${COL_NC} You will need to refresh your dashboard to reflect the updated firmware version.\n"
     else
       echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. The serial port was either busy, or the modem is"
       echo -e "               possibly locked from the vendor. You can try running this command again,"
@@ -386,7 +399,13 @@ then
     exit 0
   }
 
-  flash_modem "${1}" "${firmware_file}"
+  if [ -t 1 ]; then
+      # run via terminal, only output to screen
+      flash_modem "${1}" "${firmware_file}"
+    else
+      # if not run via terminal, log everything into a log file
+      flash_modem "${1}" "${firmware_file}" >> /var/log/pi-star/WPSD-modemflash.log 2>&1
+    fi
 
 fi
 exit 0
