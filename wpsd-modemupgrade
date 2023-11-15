@@ -58,6 +58,9 @@ if [ "$1" ]; then
       firmware_file="nanodv_usb_fw.bin"
       ;;
     # vendor HS's
+    euronode)
+      firmware_file="euronode_pi_fw.bin"
+      ;;
     hs_hat_lonestar-usb)
       firmware_file="lonestar_usb_fw.bin"
       ;;
@@ -75,6 +78,22 @@ if [ "$1" ]; then
       ;;
     zum_libre)
       firmware_file="zumspot_libre_fw.bin"
+      ;;
+    list|-l|--list)
+      echo "hs_hat"
+      echo "hs_hat-12mhz"
+      echo "hs_dual_hat"
+      echo "hs_dual_hat-12mhz"
+      echo "hs_hat_ambe"
+      echo "hs_hat_generic"
+      echo "hs_hat_generic_duplex"
+      echo "hs_hat_generic_duplex-usb"
+      echo "hs_hat_nano_hotspot"
+      echo "nanodv_npi"
+      echo "nanodv_usb"
+      echo "hs_hat_lonestar-usb"
+      echo "euronode"
+      exit 0
       ;;
     *)
       echo "Your choice of the modem, '${1}', is not supported in this program."
@@ -121,6 +140,8 @@ then
   echo "  ZUMspot Libre Kit or generic MMDVM_HS board:          wpsd-modemupgrade zum_libre"
   echo ""
   echo "  SkyBridge board/hotspots (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade skybridge"
+  echo ""
+  echo "  DVMega-EuroNode hotspots (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade euronode"
   echo ""
   echo "  NANO_DV NPi GPIO by BG4TGO:                           wpsd-modemupgrade nanodv_npi"
   echo "  NANO_DV USB by BG4TG:                                 wpsd-modemupgrade nanodb_usb"
@@ -271,6 +292,17 @@ then
     systemctl stop mmdvmhost.timer >/dev/null 2>&1
     systemctl stop mmdvmhost.service >/dev/null 2>&1
 
+    # NanoPI GPIO handling
+    if [[ ${hardware} == "NanoPi" ]]; then
+        sleep1
+        gpio mode 3 out
+        gpio mode 4 out
+        gpio write 4 1
+        gpio write 3 0
+        sleep 1
+        gpio write 3 1
+    fi
+
     # Start the spinner function in the background
     spinner &
 
@@ -318,14 +350,6 @@ then
 	DFU_UTIL="./STM32F10X_Lib/utils/macosx/dfu-util"
 	ST_FLASH="./STM32F10X_Lib/utils/macosx/st-flash"
 	STM32FLASH="./STM32F10X_Lib/utils/macosx/stm32flash"
-    fi
-
-    # Arch GPIO handling
-    if [[ ${hardware} == "NanoPi" ]]; then
-      echo 3 > /sys/class/gpio/export
-      echo out > /sys/class/gpio/gpio3/direction
-      echo 1 > /sys/class/gpio/gpio3/value
-      echo 3 > /sys/class/gpio/unexport
     fi
 
     # Upload the firmware to the modem and place output into buffer for fail/success checking logic

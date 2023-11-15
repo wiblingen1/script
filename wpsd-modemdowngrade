@@ -312,6 +312,17 @@ else
     systemctl stop mmdvmhost.timer >/dev/null 2>&1
     systemctl stop mmdvmhost.service >/dev/null 2>&1
 
+    # NanoPI GPIO handling
+    if [[ ${hardware} == "NanoPi" ]]; then
+        sleep1
+        gpio mode 3 out
+        gpio mode 4 out
+        gpio write 4 1
+        gpio write 3 0
+        sleep 1
+        gpio write 3 1
+    fi
+
     # Start the spinner function in the background
     spinner &
 
