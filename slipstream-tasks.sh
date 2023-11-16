@@ -562,19 +562,20 @@ if grep -q 'pistar-mmdvmhshatreset' $rc_local_file ; then
     sed -i 's/GPIO Pins on Pi4 Only/GPIO Pins on Pi4, Pi5 etc. only/g' $rc_local_file
 fi
 
-# NanPi/Armbian vnstat handling:
+# NanoPi/OPi/Armbian vnstat & late-init wlan handling:
 if [ -f "$armbian_env_file" ] ; then
     if ip link show eth0 | grep -q "state UP" ; then
 	:
-    fi
-    # Check if there's an active network connection on wlan0
-    if ip link show wlan0 | grep -q "state UP" ; then
-	# Check if the error message is present for wlan0
-	if vnstat -i wlan0 2>&1 | grep -q "Error: Interface \"wlan0\" not found in database." ; then
-	    service vnstat stop
-	    rm -f /var/lib/vnstat/*
-	    service vnstat start
-        fi
+    else 
+	# Check if there's an active network connection on wlan0
+	if ip link show wlan0 | grep -q "state UP" ; then
+	    # Check if the error message is present for wlan0
+	    if vnstat -i wlan0 2>&1 | grep -q "Error: Interface \"wlan0\" not found in database." ; then
+		service vnstat stop
+		rm -f /var/lib/vnstat/*
+		service vnstat start
+	    fi
+	fi
     fi
 fi
 
