@@ -17,20 +17,7 @@ USER=root
 GROUP=mmdvm
 LOGDIR=/var/log/pi-star
 
-# Function to check if any network interface has an IP address
-interface_has_ip() {
-  local interfaces=($(ip -o addr show | awk '{print $2}'))
-
-  for interface in "${interfaces[@]}"; do
-    if [[ $interface != "lo" ]]; then
-      if ip addr show dev $interface | grep -q 'inet '; then
-        return 0
-      fi
-    fi
-  done
-
-  return 1
-}
+source /usr/local/sbin/.wpsd-shell-funcs
 
 # Pre-flight checks...
 test -x ${DAEMON_PATH}${DAEMON} || exit 0
@@ -51,11 +38,9 @@ case "$1" in
 			exit 0;
 		else
 			# Wait for an IP address
-			#echo "Waiting for an IP address on any network interface..."
 			while ! interface_has_ip; do
 			    sleep 1
 			done
-			#echo "An IP address has been found. Starting $DAEMON..."
                         chown -R ${GROUP}:${GROUP} $LOGDIR
                         chmod 775 $LOGDIR
 			nice -n -10 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}

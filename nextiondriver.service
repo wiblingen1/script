@@ -18,16 +18,11 @@ USER=root
 GROUP=mmdvm
 LOGDIR=/var/log/pi-star
 
+source /usr/local/sbin/.wpsd-shell-funcs
+
 # Pre-flight checks...
 test -x ${DAEMON_PATH}${DAEMON} || exit 0
 test -r $CONFIG || exit 0
-
-# Function to check if any network interface has an IP address
-interface_has_ip() {
-    local ip_address
-    ip_address=$(ip -o -4 addr show up primary scope global | awk '{print $4}' | cut -d'/' -f1)
-    echo "$ip_address"
-}
 
 # We start very early in the bootprocess, so we
 # verify the logging directory exists,
@@ -50,11 +45,9 @@ case "$1" in
 			exit 0;
 		else
                         # Wait for an IP address
-                        #echo "Waiting for an IP address on any network interface..."
                         while ! interface_has_ip; do
                             sleep 1
                         done
-                        #echo "An IP address has been found. Starting $DAEMON..."
                         chown -R ${GROUP}:${GROUP} $LOGDIR
                         chmod 775 $LOGDIR
 			nice -n -10 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}

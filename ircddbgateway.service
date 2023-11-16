@@ -3,11 +3,6 @@
 #                                                       #
 #            ircDDBGateway Service Handler              #
 #                                                       #
-# Written for Pi-Star (http://www.mw0mwz.co.uk/pi-star) #
-#               By Andy Taylor (MW0MWZ)                 #
-#                                                       #
-#                     Version 1.1                       #
-#                                                       #
 #########################################################
 
 # Service Config
@@ -20,8 +15,9 @@ KILL=/bin/kill
 SLEEP=/bin/sleep
 USER=root
 GROUP=mmdvm
-ipVar=`hostname -I | cut -d' ' -f1`
 LOGDIR=/var/log/pi-star
+
+source /usr/local/sbin/.wpsd-shell-funcs
 
 # Pre-flight checks...
 test -x ${DAEMON_PATH}${DAEMON} || exit 0
@@ -56,10 +52,9 @@ case "$1" in
 			exit 0;
 		else
 			# Wait for an IP address
-			until [ "$ipVar" != " " ]; do
-				sleep 10
-				ipVar=`hostname -I | cut -d' ' -f1`
-			done
+                        while ! interface_has_ip; do
+                            sleep 1
+                        done
 			# Dump the logs
 			/bin/rm -rf /var/log/pi-star/Links.log
 

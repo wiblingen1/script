@@ -12,26 +12,19 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-# Function to check if any network interface has an IP address
-interface_has_ip() {
-  local interfaces=($(ip -o addr show | awk '{print $2}'))
+source /usr/local/sbin/.wpsd-shell-funcs
 
-  for interface in "${interfaces[@]}"; do
-    if [[ $interface != "lo" ]]; then
-      if ip addr show dev $interface | grep -q 'inet '; then
-        return 0
-      fi
-    fi
-  done
-
-  return 1
-}
 # Wait for an IP address
+counter=0
+max_attempts=60
 while ! interface_has_ip; do
     sleep 1
+    ((counter++))
+    
+    if [ $counter -eq $max_attempts ]; then
+        exit 1 # no IP...leave the MOTD alone and bail
+    fi
 done
-
-source /usr/local/sbin/.wpsd-shell-funcs
 
 # WPSD git id
 gitId=$( cat /etc/.W0CHP-PiStar-Dash.remote_version )

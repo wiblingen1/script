@@ -3,11 +3,6 @@
 #                                                       #
 #             DGIdGateway Service Handler               #
 #                                                       #
-# Written for Pi-Star (http://www.mw0mwz.co.uk/pi-star) #
-#               By Andy Taylor (MW0MWZ)                 #
-#                                                       #
-#                     Version 1.0                       #
-#                                                       #
 #########################################################
 
 # Service Config
@@ -21,7 +16,8 @@ SLEEP=/bin/sleep
 USER=root
 GROUP=mmdvm
 LOGDIR=/var/log/pi-star
-ipVar=`hostname -I | cut -d' ' -f1`
+
+source /usr/local/sbin/.wpsd-shell-funcs
 
 case "$1" in
         install)
@@ -97,10 +93,9 @@ case "$1" in
 			exit 1;
 		else
 			# Wait for an IP address
-			until [ "$ipVar" != " " ]; do
-				sleep 10
-				ipVar=`hostname -I | cut -d' ' -f1`
-			done
+                        while ! interface_has_ip; do
+                            sleep 1
+                        done
 			chown ${USER}:${GROUP} $LOGDIR
 			chmod 775 $LOGDIR
 			nice -n -5 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}

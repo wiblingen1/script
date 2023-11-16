@@ -1,12 +1,7 @@
 #!/bin/bash
 #########################################################
 #                                                       #
-#              MMDVMHost Service Handler                #
-#                                                       #
-# Written for Pi-Star (http://www.mw0mwz.co.uk/pi-star) #
-#               By Andy Taylor (MW0MWZ)                 #
-#                                                       #
-#                     Version 1.3                       #
+#              DMRGateway Service Handler               #
 #                                                       #
 #########################################################
 
@@ -21,7 +16,8 @@ SLEEP=/bin/sleep
 USER=root
 GROUP=mmdvm
 LOGDIR=/var/log/pi-star
-ipVar=`hostname -I | cut -d' ' -f1`
+
+source /usr/local/sbin/.wpsd-shell-funcs
 
 # Pre-flight checks...
 test -x ${DAEMON_PATH}${DAEMON} || exit 0
@@ -61,10 +57,9 @@ case "$1" in
 			exit 0;
 		else
 			# Wait for an IP address
-			until [ "$ipVar" != " " ]; do
-				sleep 10
-				ipVar=`hostname -I | cut -d' ' -f1`
-			done
+                        while ! interface_has_ip; do
+                            sleep 1
+                        done
 			nice -n -5 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON started as PID "`$PGREP $DAEMON`
                         if compgen -G "/etc/.dmr-net*" > /dev/null ; then

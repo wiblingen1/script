@@ -1,12 +1,7 @@
 #!/bin/bash
 #########################################################
 #                                                       #
-#            Pi-Star UPNP Service Handler               #
-#                                                       #
-# Written for Pi-Star (http://www.mw0mwz.co.uk/pi-star) #
-#               By Andy Taylor (MW0MWZ)                 #
-#                                                       #
-#                     Version 1.5                       #
+#                 UPNP Service Handler                  #
 #                                                       #
 #########################################################
 
@@ -16,8 +11,11 @@ DAEMON_PATH=/usr/bin/
 PGREP=/usr/bin/pgrep
 KILL=/bin/kill
 SLEEP=/bin/sleep
-ipVar=$(hostname -I | cut -d' ' -f1)
 hostVar=$(hostname | cut -d'.' -f1)
+
+source /usr/local/sbin/.wpsd-shell-funcs
+
+ipVar=$(interface_get_ip)
 
 # Pre-flight checks...
 test -x ${DAEMON_PATH}${DAEMON} || exit 1

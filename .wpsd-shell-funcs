@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Pretty term stuffs ;-)
 if [ -t 1 ]; then # term. only!
     COL_NC='\e[0m' # No Color
     BOLD='\e[1m'
@@ -45,5 +46,37 @@ spinner() {
         i=$(( (i + 1) % 8 ))
         sleep 0.1
     done
+}
+
+# Function to check if any network interface has an IP address
+interface_has_ip() {
+  local interfaces=($(ip -o addr show | awk '{print $2}'))
+
+  for interface in "${interfaces[@]}"; do
+    if [[ $interface != "lo" ]]; then
+      if ip addr show dev $interface | grep -q 'inet '; then
+        return 0
+      fi
+    fi
+  done
+
+  return 1
+}
+
+# function to return routable IP:
+interface_get_ip() {
+  local interfaces=($(ip -o addr show | awk '{print $2}'))
+
+  for interface in "${interfaces[@]}"; do
+    if [[ $interface != "lo" ]]; then
+      local ip_address=$(ip addr show dev $interface | awk '/inet / {print $2}' | cut -d'/' -f1)
+      if [ -n "$ip_address" ]; then
+        INTERFACE_IP=$ip_address
+        return 0
+      fi
+    fi
+  done
+
+  return 1
 }
 
