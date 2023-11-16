@@ -515,7 +515,7 @@ if [ ! -f "$COMPLETION_CONFIG" ]; then
     echo "{" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
     echo "    local cur prev words cword" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
     echo "    _init_completion -n = || return" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
-    echo "" | sudo tee -a "$COMPLETION_CONFIG" >/devnull
+    echo "" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
     echo "    _expand || return 0" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
     echo "" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
     echo "    COMPREPLY=( \$( compgen -W 'start stop restart fullstop status' -- \"\$cur\" ) )" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
@@ -526,6 +526,9 @@ if [ ! -f "$COMPLETION_CONFIG" ]; then
     sudo chown root:root "$COMPLETION_CONFIG"
     sudo chmod 0644 "$COMPLETION_CONFIG"
     echo "New completion file created"
+fi
+if [ -f /devnull ] ; then # ugh - cleanup prev. typo.
+    rm -f /devnull
 fi
 
 # Armbian for NanoPi Neo / OrangePi Zero handling
