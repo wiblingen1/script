@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Pretty term stuffs ;-)
-if [ -t 1 ]; then # term. only!
+if [ -t 1 ] || [ -n "$PS1" ]; then # terminal and bash call only...
     COL_NC='\e[0m' # No Color
     BOLD='\e[1m'
     REVERSE='\e[7m'
@@ -26,7 +26,7 @@ if [ -t 1 ]; then # term. only!
     CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
     DONE="${BOLD}${COL_LIGHT_GREEN}Done!${COL_NC}"
     COMPL="${BOLD}${COL_LIGHT_GREEN}Complete!${COL_NC}"
-else
+else # for web interfaces
     BULL="*"
     INFO="[i]"
     NOTE="[!]"
