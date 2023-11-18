@@ -222,16 +222,14 @@ main_function() {
 	/usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
 	echo -e "${TICK} Done!\n"
 
-	echo "Updating Firewall..."
-	# check if user already has firewall disabled, and if so, ensure it's kept that way.
-	if ! grep -q LOGNDROP /etc/iptables.rules ; then
-	    /usr/local/sbin/wpsd-system-manager -dfw > /dev/null 2>&1
-    	else
-	    /usr/local/sbin/wpsd-system-manager -efw > /dev/null 2>&1
-    	fi
-	echo -e "${TICK} Done!\n"
-
 	echo "Performing maintenance tasks..."
+
+        # check if user already has firewall disabled, and if so, ensure it's kept that way.
+        if ! grep -q LOGNDROP /etc/iptables.rules ; then
+            /usr/local/sbin/wpsd-system-manager -dfw > /dev/null 2>&1
+        else
+            /usr/local/sbin/wpsd-system-manager -efw > /dev/null 2>&1
+        fi
 
 	# Check for gpsd
 	if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
