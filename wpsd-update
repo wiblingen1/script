@@ -34,7 +34,7 @@ source /usr/local/sbin/.wpsd-shell-funcs
 
 # connectivity check
 conn_check() {
-    echo -e "\n${BULL} Checking for connectivity to the WPSD Update Server..."
+    echo -e "\n${BULL} Checking connectivity to the WPSD Update Server..."
     status_code=$(curl -I -m 30 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
     if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 	echo -e "  ${COL_BRIGHT_GREEN}${TICK} Connection established!\n"
@@ -146,7 +146,7 @@ git_update() {
 		    fi
 		fi
 	    else
-		echo -e "  ${INFO} No updates required for ${gitFolder}."
+		echo -e "  ${INFO} No updates required."
 	    fi
 }
 
@@ -183,8 +183,9 @@ main_function() {
 		    echo -e "  ${TICK} Done!"
 		fi
 	    elif [ -t 1 ] && [[ ${UP_OS} -ne 1 ]]; then
-		echo -e "\n${INFO} ${BOLD}Note:${COL_NC} Operating system are ${BOLD}not${COL_NC} updated by default..."
-		echo -e "    To check for and install OS updates, run this program again as: '${COL_LIGHT_MAGENTA}sudo UP_OS=1 $script_name${COL_NC}'"
+		echo -e "\n${COL_LIGHT_BLUE}${INFO} Operating system is ${BOLD}not${COL_NC} updated by default..."
+		echo -e "    To check for and install OS updates, run this"
+		echo -e "    program again as: '${COL_LIGHT_BLUE}${BOLD}sudo UP_OS=1 $script_name${COL_NC}'"
 	    fi
 	    # ensure bullseye has proper php extensions
 	    dpkg --configure -a > /dev/null 2>&1
@@ -220,18 +221,18 @@ main_function() {
 	#systemctl daemon-reload > /dev/null 2>&1
 	echo -e "  ${TICK} Done!\n"
 
-	echo -e "${BULL} Updating WPSD Digital Voice and Related Binaries..."
-	git_update /usr/local/bin
-	echo -e "  ${TICK} Done!\n"
-
 	echo -e "${BULL} Updating WPSD Web Dashboard Software..."
 	git_update /var/www/dashboard
+	echo -e "  ${TICK} Done!\n"
+
+	echo -e "${BULL} Updating WPSD Digital Voice-Related Binaries..."
+	git_update /usr/local/bin
 	echo -e "  ${TICK} Done!\n"
 
 	if ! [ -f /root/M17Hosts.txt ]; then
 	    echo -e "# Format: Reflector Name IP Port\n# Example:\n# M17-000    81.231.241.25    17000\n\n" > /root/M17Hosts.txt
 	fi
-	echo -e "${BULL} Updating Hostfiles, User ID DB's & Various Talkgroup Lists..."
+	echo -e "${BULL} Updating Hostfiles, User ID DB's & Talkgroup Lists..."
 	/usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
 	echo -e "  ${TICK} Done!\n"
 
@@ -282,7 +283,7 @@ main_function() {
 
 	# check for vnstat
 	if ! [ -x "$(command -v vnstat)" ]; then
-	    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} vnstat (required) not installed on hotspot. Installing now..."
+	    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} vnstat (required) not installed. Installing now..."
 	    # Install vnstat
 	    apt-get -qq update > /dev/null 2>&1
 	    apt-get -qq install -y vnstat > /dev/null 2>&1
@@ -487,26 +488,30 @@ main_function() {
 	wpsd-services start > /dev/null 2>&1
 	echo -e "  ${TICK} Done!\n"
 
-	echo -e "${COL_LIGHT_BLUE}${INFO} Almost done! Syncing disk cache..."
 	/bin/sync
 	/bin/sync
 	/bin/sync
-	systemctl start cron.service > /dev/null 2<&1
-	echo -e "\n${TICK} ${COMPL} Update Process Finished!\n"
+
+	echo -e "${COL_LIGHT_MAGENTA}+-------------------------------------------+${COL_NC}"
+	echo -e "${COL_LIGHT_MAGENTA}|                                           |${COL_NC}"
+	echo -e "${COL_LIGHT_MAGENTA}|  ${TICK} ${COMPL} Update Process Finished!   ${COL_LIGHT_MAGENTA}|${COL_NC}"
+	echo -e "${COL_LIGHT_MAGENTA}|                                           |${COL_NC}"
+	echo -e "${COL_LIGHT_MAGENTA}+-------------------------------------------+${COL_NC}"
 	if [ ! -t 1 ]; then # web update only
 	    echo -e "\n<b><a style='color:white;text-decoration:underline;'' href='/'>Back to Dashboard...</a></b>\n"
 	fi
 }
 
-	if [ -t 1 ]; then
- 	    # run via terminal, only output to screen
-	    export FORCE_COLOR=1
-	    term_banner
- 	    main_function
-	else
- 	    # if not run via terminal, log everything into a log file
- 	    main_function >> /var/log/pi-star/WPSD-update.log 2>&1
-	fi
+# Do the deeds
+if [ -t 1 ]; then
+    # run via terminal, only output to screen
+    export FORCE_COLOR=1
+    term_banner
+    main_function
+else
+    # if not run via terminal, log everything into a log file
+     main_function >> /var/log/pi-star/WPSD-update.log 2>&1
+fi
 
 exit 0
 
