@@ -29,17 +29,17 @@ hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 uaStrSF="WPSD-SuppFiles (Manual Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 W0CHP_INSTALL_SCRIPT_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
-TICK="[✓]"
-INFO="[i]"
+
+source /usr/local/sbin/.wpsd-shell-funcs
 
 # connectivity check
 conn_check() {
-    echo -e "\nChecking for connectivity to the WPSD Update Server (can take up to 30 seconds; please wait...)"
+    echo -e "\n${BULL} Checking for connectivity to the WPSD Update Server..."
     status_code=$(curl -I -m 30 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
     if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-	echo -e "${TICK} Connection established!\n"
+	echo -e "  ${COL_BRIGHT_GREEN}${TICK} Connection established!\n"
     else
-	echo -e "[X] Cannot connect to the WPSD Update Server. Try again later. Exiting...\n"
+	echo -e "  ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Cannot connect to the WPSD Update Server. Try again later. Exiting...\n"
 	exit 1
     fi
 }
@@ -89,7 +89,7 @@ git_update() {
 	fi
 
 	if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
-	    echo -e "${INFO} Updates found for ${gitFolder} - Installing..."
+	    echo -e "  ${COL_LIGHT_BLUE}${INFO} Updates found for ${gitFolder} - Installing..."
 	    # WPSD has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
 	    if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
 		cd ${gitFolder}
@@ -105,20 +105,20 @@ git_update() {
 		if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
 		    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch
 		    if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep wpsd-update 2>/dev/null)" = "wpsd-update" ]; then
-			echo -e "\n[!] New version of the Updater available. Performing self-update..."
+			echo -e "\n  ${COL_LIGHT_BLUE}${INFO} New version of the Updater available. Performing self-update..."
 			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
 			echo -e "ChangeLog (last 3 changes):"
 			echo -e "---------------------------"
 			git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
 			if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
-			    echo "Forcing update..."
+			    echo -e "  ${NOTE} Forcing update..."
 				if [ -f ${gitFolder}/pistar-upnp.service ]; then
 				    rm -f ${gitFolder}/pistar-upnp.service
 				fi
 				env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
 				env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
 			    fi
-			echo -e "\n[*] Relaunching Updater with the new version..."
+			echo -e "\n${COL_LIGHT_BLUE}${INFO} Relaunching Updater with the new version..."
 			exec "$0" "$@"
 			exit 1
 		    fi
@@ -146,7 +146,7 @@ git_update() {
 		    fi
 		fi
 	    else
-		echo -e "${INFO} No updates required for ${gitFolder}."
+		echo -e "  ${INFO} No updates required for ${gitFolder}."
 	    fi
 }
 
@@ -159,70 +159,70 @@ main_function() {
 	if [ -t 1 ] ; then
 	    # This is running from a terminal, so it should be safe to update the OS
 	    if [ -t 1 ] && [[ ${UP_OS} -eq 1 ]]; then
-		echo -e "\nChecking for, and applying any available operating system updates..."
+		echo -e "\n${BULL} Checking for any available operating system updates. Please wait..."
 		apt-get -q=2 update
 		if ! apt-get upgrade --dry-run | grep -qo "0 upgraded" ; then
-		    echo -e "${INFO} Operating system updates available; installing now..."
+		    echo -e "  ${INFO} Operating system updates available; installing now..."
 		    apt-get upgrade --fix-missing --fix-broken -y
 		    apt-get -q=2 autoremove -y
 		    apt-get -q=2 clean
 		    apt-get -q=2 autoclean
-		    echo -e "${TICK} Done!"
+		    echo -e "  ${TICK} Done!"
 		else
-		    echo -e "${INFO} No operating system updates required."
-		    echo -e "${TICK} Done!"
+		    echo -e "  ${INFO} No operating system updates required."
+		    echo -e "  ${TICK} Done!"
 		fi
 	    fi
 	    # ensure bullseye has proper php extensions
 	    dpkg --configure -a > /dev/null 2>&1
 	    if [ "${osName}" = "bullseye" ]; then
 		if [ ! -f "/usr/share/php7.4-zip/zip/zip.ini" ] ; then
-		    echo -e "Installing required 'php-zip' package..."
+		    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} Installing required 'php-zip' package..."
 		    apt-get -q=2 install -y php-zip > /dev/null 2>&1
 		    apt-get -q=2 clean > /dev/null 2<&1
 		    apt-get -q=2 autoclean > /dev/null 2<&1
-		    echo -e "${TICK} Done!"
+		    echo -e "  ${TICK} Done!"
 		fi
 	    fi
 
-	    echo -e "\nChecking web server configuration..."
+	    echo -e "\n${BULL} Checking web server configuration..."
 	    if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
 		sed -i '\/PIDFile=\/run\/nginx.pid/a ExecStartPre=\/bin\/mkdir -p \/var\/log\/nginx' /lib/systemd/system/nginx.service
 		systemctl daemon-reload
 		systemctl restart nginx.service
-		echo -e "Web server configuration has been updated by operating system; restarting update..."
+		echo -e "  ${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} Web server configuration has been updated by operating system; restarting update..."
 		exec "$0" "$@"
 		exit 1
 	    fi
-		echo -e "${TICK} Done!"
+		echo -e "  ${COL_BRIGHT_GREEN}${TICK} Done!"
 	fi
 
 	conn_check
-	echo "Stopping Services..."
+	echo -e "${BULL} Stopping WPSD Services. Please wait..."
 	wpsd-services fullstop > /dev/null 2>&1
-	echo -e "${TICK} Done!\n"
+	echo -e "  ${TICK} Done!\n"
 
-	echo "Updating WPSD Scripts and Support Programs..."
+	echo -e "${BULL} Updating WPSD Scripts and Support Programs..."
 	git_update /usr/local/sbin
 	#systemctl daemon-reload > /dev/null 2>&1
-	echo -e "${TICK} Done!\n"
+	echo -e "  ${TICK} Done!\n"
 
-	echo "Updating WPSD Digital Voice and Related Binaries..."
+	echo -e "${BULL} Updating WPSD Digital Voice and Related Binaries..."
 	git_update /usr/local/bin
-	echo -e "${TICK} Done!\n"
+	echo -e "  ${TICK} Done!\n"
 
-	echo "Updating WPSD Web Dashboard Software..."
+	echo -e "${BULL} Updating WPSD Web Dashboard Software..."
 	git_update /var/www/dashboard
-	echo -e "${TICK} Done!\n"
+	echo -e "  ${TICK} Done!\n"
 
 	if ! [ -f /root/M17Hosts.txt ]; then
 	    echo -e "# Format: Reflector Name IP Port\n# Example:\n# M17-000    81.231.241.25    17000\n\n" > /root/M17Hosts.txt
 	fi
-	echo "Updating Hostfiles, User ID DB's & Various Talkgroup Lists..."
+	echo -e "${BULL} Updating Hostfiles, User ID DB's & Various Talkgroup Lists..."
 	/usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
-	echo -e "${TICK} Done!\n"
+	echo -e "  ${TICK} Done!\n"
 
-	echo "Performing maintenance tasks..."
+	echo -e "${BULL} Performing maintenance tasks..."
 
         # check if user already has firewall disabled, and if so, ensure it's kept that way.
         if ! grep -q LOGNDROP /etc/iptables.rules ; then
@@ -239,7 +239,7 @@ main_function() {
 	    systemctl daemon-reload > /dev/null 2<&1
 	fi
 	if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
-	    echo "GPSd (required) not installed. Installing now..."
+	    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} GPSd (required) not installed. Installing now..."
 	    apt-get -qq update > /dev/null 2>&1
 	    apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
 	    # disable by default; enabled in config page on request:
@@ -248,7 +248,7 @@ main_function() {
 	    systemctl mask gpsd.service > /dev/null 2>&1
 	    systemctl mask gpsd.socket > /dev/null 2>&1
 	    apt-get -qq autoclean > /dev/null 2>&1
-	    echo -e "${TICK} Done!\n"
+	    echo -e "  ${TICK} Done!\n"
 	fi
 	# now fix upstream gpsd binding bug:
 	if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
@@ -269,12 +269,12 @@ main_function() {
 
 	# check for vnstat
 	if ! [ -x "$(command -v vnstat)" ]; then
-	    echo "vnstat (required) not installed on hotspot. Installing now..."
+	    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} vnstat (required) not installed on hotspot. Installing now..."
 	    # Install vnstat
 	    apt-get -qq update > /dev/null 2>&1
 	    apt-get -qq install -y vnstat > /dev/null 2>&1
 	    systemctl restart vnstat.service > /dev/null
-	    echo -e "${TICK} Done!\n"
+	    echo -e "  ${TICK} Done!\n"
         fi
 	# tmpfs for vnstat
 	if ! grep -q vnstat /etc/fstab ; then
@@ -291,11 +291,11 @@ main_function() {
 
 	# swap ntpd for systemd-timesyncd
 	if [ ! -f "/lib/systemd/system/systemd-timesyncd.service" ] ; then
-	    echo "Updating time synchronization service..."
+	    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} Updating time synchronization service..."
 	    apt-get -qq remove -y --purge ntp > /dev/null 2>&1
 	    apt-get -qq autoremove -y > /dev/null 2>&1
 	    apt-get -qq install -y systemd-timesyncd > /dev/null 2>&1
-	    echo -e "${TICK} Done!\n"
+	    echo -e "  ${TICK} Done!\n"
 	fi
 
 	# setup our own native NextionDriver service...
@@ -468,25 +468,26 @@ main_function() {
 	# run any slipstream tasks
 	bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
 
-	echo -e "${TICK} Done!"
+	echo -e "  ${TICK} Done!"
 
-	echo -e "\nStarting Services..."
+	echo -e "\n${BULL} Starting Services. Please wait..."
 	wpsd-services start > /dev/null 2>&1
-	echo -e "${TICK} Done!\n"
+	echo -e "  ${TICK} Done!\n"
 
-	echo "Updates complete, syncing disk cache..."
+	echo -e "${COL_LIGHT_BLUE}${INFO} Almost done! Syncing disk cache..."
 	/bin/sync
 	/bin/sync
 	/bin/sync
 	systemctl start cron.service > /dev/null 2<&1
-	echo -e "${TICK} Update Process Finished!\n"
-	if [ ! -t 1 ]; then # only output if not called from tty
+	echo -e "\n${TICK} ${COMPL} Update Process Finished!\n"
+	if [ ! -t 1 ]; then # web update only
 	    echo -e "\n<b><a style='color:white;text-decoration:underline;'' href='/'>Back to Dashboard...</a></b>\n"
 	fi
 }
 
 	if [ -t 1 ]; then
  	    # run via terminal, only output to screen
+	    export FORCE_COLOR=1
  	    main_function
 	else
  	    # if not run via terminal, log everything into a log file
