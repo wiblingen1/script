@@ -41,7 +41,6 @@ function stop_services()
     systemctl stop pistar-remote.timer > /dev/null 2>&1
     systemctl stop pistar-remote.service > /dev/null 2>&1
     systemctl stop mmdvmhost.service > /dev/null 2>&1
-    sleep 2
     systemctl stop ircddbgateway.service > /dev/null 2>&1
     systemctl stop dapnetgateway.service > /dev/null 2>&1
     systemctl stop p25gateway.service > /dev/null 2>&1
@@ -108,8 +107,6 @@ function start_services()
     
     # Restart cron service if fullstop was used before
     systemctl is-active --quiet cron.service || systemctl start cron.service
-
-    sleep 5
 
     if [ -t 1 ] ; then
 	echo -e "\b\b\b: DONE.\b"

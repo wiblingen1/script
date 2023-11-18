@@ -17,7 +17,7 @@ if ! flock -n 200 ; then
   echo -e "Another instance is already running...\n"
   exit 1
 fi
-
+script_name=$(basename "$0")
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
@@ -150,6 +150,16 @@ git_update() {
 	    fi
 }
 
+term_banner() {
+    clear
+    echo -e -n "${COL_LIGHT_CYAN}${BOLD}"
+    echo '    _      _____  _______ 
+   | | /| / / _ \/ __/ _ \
+   | |/ |/ / ___/\ \/ // /
+   |__/|__/_/  /___/____/'
+    echo -e -n "${COL_NC}${COL_LIGHT_ORANGE}${BOLD}WPSD Software Update Utility${COL_NC}\n"
+}
+
 main_function() {
     	systemctl stop cron.service > /dev/null 2<&1
     	pkill pistar-hourly.cron > /dev/null 2>&1
@@ -172,6 +182,9 @@ main_function() {
 		    echo -e "  ${INFO} No operating system updates required."
 		    echo -e "  ${TICK} Done!"
 		fi
+	    elif [ -t 1 ] && [[ ${UP_OS} -ne 1 ]]; then
+		echo -e "\n${INFO} ${BOLD}Note:${COL_NC} Operating system are ${BOLD}not${COL_NC} updated by default..."
+		echo -e "    To check for and install OS updates, run this program again as: '${COL_LIGHT_MAGENTA}sudo UP_OS=1 $script_name${COL_NC}'"
 	    fi
 	    # ensure bullseye has proper php extensions
 	    dpkg --configure -a > /dev/null 2>&1
@@ -470,7 +483,7 @@ main_function() {
 
 	echo -e "  ${TICK} Done!"
 
-	echo -e "\n${BULL} Starting Services. Please wait..."
+	echo -e "\n${BULL} Starting WPSD Services. Please wait..."
 	wpsd-services start > /dev/null 2>&1
 	echo -e "  ${TICK} Done!\n"
 
@@ -488,6 +501,7 @@ main_function() {
 	if [ -t 1 ]; then
  	    # run via terminal, only output to screen
 	    export FORCE_COLOR=1
+	    term_banner
  	    main_function
 	else
  	    # if not run via terminal, log everything into a log file

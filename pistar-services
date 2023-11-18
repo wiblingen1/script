@@ -7,7 +7,7 @@ script_name=$(basename "$0")
 clear
 echo -e "\n${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} The old command '$script_name' is deprecated. Please use 'wpsd-services' instead."
 
-echo -e "\nI'll run the command for you in 10 seconds, without any options, so you can read the new help syntax...\n"
+echo -e "\nI'll run the command for you in 10 seconds.\n"
 
 for ((i=10; i>=1; i--)); do
   printf "\r${INFO} Starting in $i seconds... Press 'q' to abort "
@@ -20,4 +20,6 @@ for ((i=10; i>=1; i--)); do
   fi
 done
 
-exec env /usr/local/sbin/wpsd-services
+echo ""
+
+exec /usr/local/sbin/wpsd-services "$1"
