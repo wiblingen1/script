@@ -38,6 +38,7 @@ function stop_services()
     systemctl stop pistar-watchdog.timer > /dev/null 2>&1
     systemctl stop pistar-watchdog.service > /dev/null 2>&1
     /usr/local/sbin/nextion-driver-term > /dev/null 2>&1
+    sleep 3
     systemctl stop pistar-remote.timer > /dev/null 2>&1
     systemctl stop pistar-remote.service > /dev/null 2>&1
     systemctl stop mmdvmhost.service > /dev/null 2>&1
