@@ -28,7 +28,6 @@ uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | 
 hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
 uaStr="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 uaStrSF="WPSD-SuppFiles (Manual Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
-W0CHP_INSTALL_SCRIPT_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
 
 source /usr/local/sbin/.wpsd-shell-funcs
 
@@ -319,8 +318,7 @@ main_function() {
 	# support.  So lets ignore TGIFspots altogether.
 	# [1] <https://github.com/EA7KDO/Scripts>
 	if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
-	    curl -A "F-O ${uaStr}" -Ls https://w0chp.radio/WPSD-Uninstaller | sudo NO_SELF_UPDATE=1 bash -s -- -rd  > /dev/null 2<&1
-	    exit 0
+	    :
 	else # yay no tgifspot hacks!
             if [ ! -f '/lib/systemd/system/nextiondriver.service' ] ; then # lets get a native service placeholder installed at the very least
 	    	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service

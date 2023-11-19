@@ -37,7 +37,6 @@ else
     fi
 fi
 
-W0CHP_INSTALL_SCRIPT_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/pasture/WPSD-Installer"
 SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
