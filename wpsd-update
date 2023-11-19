@@ -492,12 +492,14 @@ main_function() {
 	/bin/sync
 	/bin/sync
 
-	echo -e "${COL_LIGHT_MAGENTA}+-------------------------------------------+${COL_NC}"
-	echo -e "${COL_LIGHT_MAGENTA}|                                           |${COL_NC}"
-	echo -e "${COL_LIGHT_MAGENTA}|  ${TICK} ${COMPL} Update Process Finished!   ${COL_LIGHT_MAGENTA}|${COL_NC}"
-	echo -e "${COL_LIGHT_MAGENTA}|                                           |${COL_NC}"
-	echo -e "${COL_LIGHT_MAGENTA}+-------------------------------------------+${COL_NC}"
-	if [ ! -t 1 ]; then # web update only
+	if [ -t 1 ]; then
+	    echo -e "${COL_LIGHT_MAGENTA}+-------------------------------------------+${COL_NC}"
+	    echo -e "${COL_LIGHT_MAGENTA}|                                           |${COL_NC}"
+	    echo -e "${COL_LIGHT_MAGENTA}|  ${TICK} ${COMPL} Update Process Finished!   ${COL_LIGHT_MAGENTA}|${COL_NC}"
+	    echo -e "${COL_LIGHT_MAGENTA}|                                           |${COL_NC}"
+	    echo -e "${COL_LIGHT_MAGENTA}+-------------------------------------------+${COL_NC}"
+	else
+	    echo -e "${TICK} ${COMPL} Update Process Finished!"
 	    echo -e "\n<b><a style='color:white;text-decoration:underline;'' href='/'>Back to Dashboard...</a></b>\n"
 	fi
 }
