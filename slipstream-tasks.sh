@@ -654,6 +654,11 @@ if [ "${osName}" = "bullseye" ]; then
      fi
 fi
 
+# m0ar leg. cleanups; already called from rc.local
+if [ -f '/etc/network/if-up.d/pistar-motdgen' ] ; then
+    rm -rf /etc/network/if-up.d/pistar-motdgen
+fi
+
 # cleanup
 apt-get -qq clean > /dev/null 2>&1
 apt-get -qq autoclean > /dev/null 2>&1
