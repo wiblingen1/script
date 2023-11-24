@@ -59,8 +59,6 @@ else
 fi
 
 echo -e "\nStopping services..."
-systemctl stop pistar-watchdog.timer > /dev/null 2>&1
-systemctl stop pistar-watchdog.service > /dev/null 2>&1
 wpsd-services fullstop > /dev/null 2>&1
 
 # connectivity check

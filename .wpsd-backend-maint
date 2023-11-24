@@ -45,6 +45,12 @@ EOF
     systemctl restart avahi-daemon 
     systemctl daemon-reload 
 fi
+if grep -q 'Pi-Star' /etc/avahi/services/http.service ; then
+    sed -i 's/Pi-Star/WPSD/g' /etc/avahi/services/http.service
+fi
+if grep -q 'Pi-Star' /etc/avahi/services/ssh.service ; then
+    sed -i 's/Pi-Star/WPSD/g' /etc/avahi/services/ssh.service
+fi
 
 # enable unatt. upgrades now that the file-system is full-time R/W:
 if  systemctl status unattended-upgrades.service | grep masked  ; then # previously disabled/masked....reset...
