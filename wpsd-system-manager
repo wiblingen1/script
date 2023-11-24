@@ -6,72 +6,107 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-if grep -q W0CHP /var/www/dashboard/config/version.php ; then
-    RUNNING_W0CHP=1
-fi
-
-function _rw() {
-    mount -o remount,rw /
-}
+CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 
 function DisableFirewall() {
-    if [[ $RUNNING_W0CHP ]]; then
-        _rw
-        rm /usr/local/sbin/pistar-firewall
-        ln -s /usr/local/sbin/pistar-firewall.disabled /usr/local/sbin/pistar-firewall
-        bash /usr/local/sbin/pistar-firewall > /dev/null 2<&1
-        if [ -t 1 ]; then
-            echo "Firewall Disabled"
-        fi
-    else
-        echo "ERROR: You must perform the full W0CHP-PiStar-Dash installation before disabling the firewall!"
-        exit 1
+    rm /usr/local/sbin/pistar-firewall
+    ln -s /usr/local/sbin/pistar-firewall.disabled /usr/local/sbin/pistar-firewall
+    bash /usr/local/sbin/pistar-firewall > /dev/null 2<&1
+    if [ -t 1 ]; then
+        echo "Firewall Disabled"
     fi
 }
 
 function EnableFirewall() {
-    if [[ $RUNNING_W0CHP ]]; then
-        _rw
-        rm /usr/local/sbin/pistar-firewall
-        ln -s /usr/local/sbin/pistar-firewall.enabled /usr/local/sbin/pistar-firewall
-        bash /usr/local/sbin/pistar-firewall > /dev/null 2<&1
-        if [ -t 1 ]; then
-            echo "Firewall Enabled"
-        fi
-    else
-        echo "ERROR: You must perform the full W0CHP-PiStar-Dash installation before (re-)enabling the firewall!"
-        exit 1
+    rm /usr/local/sbin/pistar-firewall
+    ln -s /usr/local/sbin/pistar-firewall.enabled /usr/local/sbin/pistar-firewall
+    bash /usr/local/sbin/pistar-firewall > /dev/null 2<&1
+    if [ -t 1 ]; then
+        echo "Firewall Enabled"
     fi
 }
 
 function DisableCron() {
-    _rw
     systemctl stop cron.service > /dev/null 2<&1
     systemctl disable cron.service > /dev/null 2<&1
     systemctl mask cron.service > /dev/null 2<&1
-        if [ -t 1 ]; then
-            echo "Cron Disabled"
-        fi
+    if [ -t 1 ]; then
+        echo "Cron Disabled"
+    fi
 }
 
 function EnableCron() {
-    _rw
     systemctl unmask cron.service > /dev/null 2<&1
     systemctl enable cron.service > /dev/null 2<&1
     systemctl start cron.service > /dev/null 2<&1
-        if [ -t 1 ]; then
-            echo "Cron Enabled"
-        fi
+    if [ -t 1 ]; then
+        echo "Cron Enabled"
+    fi
+}
+
+function DisableRemoteRF() {
+    sed -i '/enabled=/c enabled=false' /etc/pistar-remote
+    systemctl stop pistar-remote.timer > /dev/null 2<&1
+    systemctl stop pistar-remote.service > /dev/null 2<&1
+    systemctl disable pistar-remote.service > /dev/null 2<&1
+    systemctl disable pistar-remote.timer > /dev/null 2<&1
+    systemctl mask pistar-remote.service > /dev/null 2<&1
+    systemctl mask pistar-remote.timer > /dev/null 2<&1
+    if [ -t 1 ]; then
+        echo "RF Remote Commands Disabled"
+    fi
+}
+
+function EnableRemoteRF() {
+    sed -i "/callsign=/c callsign=${CALL}" /etc/pistar-remote
+    sed -i '/enabled=/c enabled=true' /etc/pistar-remote
+    systemctl unmask pistar-remote.service > /dev/null 2<&1
+    systemctl unmask pistar-remote.timer > /dev/null 2<&1
+    systemctl enable pistar-remote.service > /dev/null 2<&1
+    systemctl start pistar-remote.service > /dev/null 2<&1
+    systemctl start pistar-remote.timer > /dev/null 2<&1
+    if [ -t 1 ]; then
+        echo "RF Remote Commands Enabled"
+    fi
+}
+
+function DisableServiceWatchdog() {
+    systemctl disable pistar-watchdog.timer > /dev/null 2<&1
+    systemctl mask pistar-watchdog.timer > /dev/null 2<&1
+    systemctl disable pistar-watchdog.service > /dev/null 2<&1
+    systemctl mask pistar-watchdog.service > /dev/null 2<&1
+    systemctl stop pistar-watchdog.timer > /dev/null 2<&1
+    systemctl stop pistar-watchdog.service > /dev/null 2<&1
+    if [ -t 1 ]; then
+        echo "WPSD Services Watchdog Disabled"
+    fi
+}
+
+function EnableServiceWatchdog() {
+    systemctl unmask pistar-watchdog.service > /dev/null 2<&1
+    systemctl enable pistar-watchdog.service > /dev/null 2<&1
+    systemctl unmask pistar-watchdog.timer > /dev/null 2<&1
+    systemctl enable pistar-watchdog.timer > /dev/null 2<&1
+    systemctl start pistar-watchdog.service > /dev/null 2<&1
+    systemctl start pistar-watchdog.timer > /dev/null 2<&1
+    if [ -t 1 ]; then
+        echo "WPSD Services Watchdog Enabled"
+    fi
+
 }
 
 function DisplayHelp() {
     echo "`basename $0` usage:"
     echo ""
-    echo "  -h,   --help                     Display this help text."
-    echo "  -dfw  --disable-firewall         Disable Pi-Star firewall rules and allow all traffic"
-    echo "  -efw  --enable-firewall          Enable Pi-Star firewall rules to defaults and only allow required traffic"
-    echo "  -dc,  --disable-cron             Stop the Cron daemon"
-    echo "  -ec,  --enable-cron              Start the Cron daemon"
+    echo "  -h,   --help                       Display this help text."
+    echo "  -dfw  --disable-firewall           Disable OS firewall and allow all traffic"
+    echo "  -efw  --enable-firewall            Enable OS firewall &  allow only digital voice traffic"
+    echo "  -dc,  --disable-cron               Stop & disable the Cron daemon"
+    echo "  -ec,  --enable-cron                Start & enable the Cron daemon"
+    echo "  -drf  --disable-rf-commands        Disable Remote RF Commands"
+    echo "  -erf  --enable-rf-commands         Enable Remote RF Commands"
+    echo "  -dsw  --disable-services-watchdog  Disable WPSD Services Watchdog"
+    echo "  -esw  --enable-services-watchdog   Ensable WPSD Services Watchdog"
     echo ""
 }
 
@@ -103,6 +138,26 @@ while [[ $# -gt 0 ]]; do
 
     "-ec" | "--enable-cron")
         EnableCron
+        shift
+        ;;
+
+    "-drf" | "--disable-rf-commands")
+        DisableRemoteRF
+        shift
+        ;;
+
+    "-erf" | "--enable-rf-commands")
+        EnableRemoteRF
+        shift
+        ;;
+
+    "-dsw" | "--disable-services-watchdog")
+        DisableServiceWatchdog
+        shift
+        ;;
+
+    "-esw" | "--enable-services-watchdog")
+        EnableServiceWatchdog
         shift
         ;;
 
