@@ -6,6 +6,8 @@ fi
 
 source /usr/local/sbin/.wpsd-shell-funcs
 
+UUID=$( grep UUID /etc/pistar-release | awk '{print $3}' )
+
 function DisplayRepoStatus() {
     dir="$1"
 
@@ -45,9 +47,12 @@ function DisplayStatus() {
 	DisplayRepoStatus "/var/www/dashboard"
 	DisplayRepoStatus "/usr/local/sbin"
 	DisplayRepoStatus "/usr/local/bin"
+	echo -e "------------------------------------------"
     else
 	echo -e "\n${COL_BRIGHT_RED}WPSD not installed!${COL_NC}\n"
+	echo -e "------------------------------------------"
     fi
+    echo -e "\n  ${BULL} WPSD Instance ID:\n      ${BOLD}${UUID}${COL_NC}\n"
 }
 
 DisplayStatus
