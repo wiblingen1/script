@@ -21,6 +21,12 @@ uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}]
 armbian_env_file="/boot/armbianEnv.txt"
 rc_local_file="/etc/rc.local"
 
+# ensure bullseye uses ff-only for newer git strategy
+dpkg --configure -a > /dev/null 2>&1
+if [ "${osName}" = "bullseye" ]; then
+    git config --global pull.ff only
+fi
+
 # This part fully-disables read-only mode
 #
 # 1/2023 - W0CHP (updated on 2/23/2023)
@@ -559,6 +565,63 @@ if [ -f /lib/systemd/system/mmdvm-log-backup.service ] ; then
     rm -rf /home/pi-star/.backup-mmdvmhost-logs > /dev/null 2<&1
 fi
 
+# Check for gpsd
+if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
+    systemctl disable mobilegps.timer > /dev/null 2<&1
+    systemctl disable mobilegps.service > /dev/null 2<&1
+    rm -rf /lib/systemd/system/mobilegps*
+    systemctl daemon-reload > /dev/null 2<&1
+fi
+if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
+    apt-get -qq update > /dev/null 2>&1
+    apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
+    # disable by default; enabled in config page on request:
+    systemctl disable gpsd.service > /dev/null 2>&1
+    systemctl disable gpsd.socket > /dev/null 2>&1
+    systemctl mask gpsd.service > /dev/null 2>&1
+    systemctl mask gpsd.socket > /dev/null 2>&1
+    apt-get -qq autoclean > /dev/null 2>&1
+fi
+# now fix upstream gpsd binding bug:
+if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
+    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket > /dev/null 2>&1
+    systemctl daemon-reload > /dev/null 2<&1
+fi
+# ensure gpsd is only enabled by the user:
+if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
+    systemctl stop gpsd.service > /dev/null 2>&1
+    systemctl stop gpsd.socket > /dev/null 2>&1
+    systemctl disable gpsd.service > /dev/null 2>&1
+    systemctl disable gpsd.socket > /dev/null 2>&1
+    systemctl mask gpsd.service > /dev/null 2>&1
+    systemctl mask gpsd.socket > /dev/null 2>&1
+fi
+
+# check for vnstat
+if ! [ -x "$(command -v vnstat)" ]; then
+    # Install vnstat
+    apt-get -qq update > /dev/null 2>&1
+    apt-get -qq install -y vnstat > /dev/null 2>&1
+fi
+# tmpfs for vnstat
+if ! grep -q vnstat /etc/fstab ; then
+    systemctl stop vnstat.service > /dev/null
+    rm -rf /var/lib/vnstat > /dev/null
+    mkdir -p /var/lib/vnstat > /dev/null
+    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
+    echo "tmpfs                   /var/lib/vnstat         tmpfs   nodev,noatime,nosuid,mode=0755,size=64m         0       0"  >> /etc/fstab
+    mount /var/lib/vnstat > /dev/null
+    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
+    systemctl restart vnstat.service > /dev/null
+fi
+
+# swap ntpd for systemd-timesyncd
+if [ ! -f "/lib/systemd/system/systemd-timesyncd.service" ] ; then
+    apt-get -qq remove -y --purge ntp > /dev/null 2>&1
+    apt-get -qq autoremove -y > /dev/null 2>&1
+    apt-get -qq install -y systemd-timesyncd > /dev/null 2>&1
+fi
+
 # more rc.local updates...
 if grep -q 'pistar-mmdvmhshatreset' $rc_local_file ; then
     sed -i 's/pistar-mmdvmhshatreset/wpsd-modemreset/g' $rc_local_file
@@ -581,6 +644,19 @@ if [ -f "$armbian_env_file" ] ; then
 	fi
     fi
 fi
+
+# ensure bullseye has proper php extensions
+if [ "${osName}" = "bullseye" ]; then
+    if [ ! -f "/usr/share/php7.4-zip/zip/zip.ini" ] ; then
+	apt-get -q=2 install -y php-zip > /dev/null 2>&1
+	apt-get -q=2 clean > /dev/null 2<&1
+	apt-get -q=2 autoclean > /dev/null 2<&1
+     fi
+fi
+
+# cleanup
+apt-get -qq clean > /dev/null 2>&1
+apt-get -qq autoclean > /dev/null 2>&1
 
 # ensure hostfiles are updated more regularly
 /usr/local/sbin/HostFilesUpdate.sh &> /dev/null

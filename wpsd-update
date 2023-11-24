@@ -186,17 +186,6 @@ main_function() {
 		echo -e "    To check for and install OS updates, run this"
 		echo -e "    program again as: '${COL_LIGHT_BLUE}${BOLD}sudo UP_OS=1 $script_name${COL_NC}'"
 	    fi
-	    # ensure bullseye has proper php extensions
-	    dpkg --configure -a > /dev/null 2>&1
-	    if [ "${osName}" = "bullseye" ]; then
-		if [ ! -f "/usr/share/php7.4-zip/zip/zip.ini" ] ; then
-		    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} Installing required 'php-zip' package..."
-		    apt-get -q=2 install -y php-zip > /dev/null 2>&1
-		    apt-get -q=2 clean > /dev/null 2<&1
-		    apt-get -q=2 autoclean > /dev/null 2<&1
-		    echo -e "  ${TICK} Done!"
-		fi
-	    fi
 
 	    echo -e "\n${BULL} Checking web server configuration..."
 	    if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
@@ -244,72 +233,7 @@ main_function() {
             /usr/local/sbin/wpsd-system-manager -efw > /dev/null 2>&1
         fi
 
-	# Check for gpsd
-	if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
-	    systemctl disable mobilegps.timer > /dev/null 2<&1
-	    systemctl disable mobilegps.service > /dev/null 2<&1
-	    rm -rf /lib/systemd/system/mobilegps*
-	    systemctl daemon-reload > /dev/null 2<&1
-	fi
-	if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
-	    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} GPSd (required) not installed. Installing now..."
-	    apt-get -qq update > /dev/null 2>&1
-	    apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
-	    # disable by default; enabled in config page on request:
-	    systemctl disable gpsd.service > /dev/null 2>&1
-	    systemctl disable gpsd.socket > /dev/null 2>&1
-	    systemctl mask gpsd.service > /dev/null 2>&1
-	    systemctl mask gpsd.socket > /dev/null 2>&1
-	    apt-get -qq autoclean > /dev/null 2>&1
-	    echo -e "  ${TICK} Done!\n"
-	fi
-	# now fix upstream gpsd binding bug:
-	if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
-	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket > /dev/null 2>&1
-	    systemctl daemon-reload > /dev/null 2<&1
-	fi
-	# ensure gpsd is only enabled by the user:
-	if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
-	    systemctl stop gpsd.service > /dev/null 2>&1
-	    systemctl stop gpsd.socket > /dev/null 2>&1
-	    systemctl disable gpsd.service > /dev/null 2>&1
-	    systemctl disable gpsd.socket > /dev/null 2>&1
-	    systemctl mask gpsd.service > /dev/null 2>&1
-	    systemctl mask gpsd.socket > /dev/null 2>&1
-	fi
-
 	/usr/local/sbin/.wpsd-backend-maint > /dev/null 2>&1
-
-	# check for vnstat
-	if ! [ -x "$(command -v vnstat)" ]; then
-	    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} vnstat (required) not installed. Installing now..."
-	    # Install vnstat
-	    apt-get -qq update > /dev/null 2>&1
-	    apt-get -qq install -y vnstat > /dev/null 2>&1
-	    systemctl restart vnstat.service > /dev/null
-	    echo -e "  ${TICK} Done!\n"
-        fi
-	# tmpfs for vnstat
-	if ! grep -q vnstat /etc/fstab ; then
-	    systemctl stop vnstat.service > /dev/null
-	    umount /var/lib/vnstat > /dev/null
-	    rm -rf /var/lib/vnstat > /dev/null
-	    mkdir -p /var/lib/vnstat > /dev/null
-	    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
-	    echo "tmpfs                   /var/lib/vnstat         tmpfs   nodev,noatime,nosuid,mode=0755,size=64m         0       0"  >> /etc/fstab
-	    mount /var/lib/vnstat > /dev/null
-	    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
-	    systemctl restart vnstat.service > /dev/null
-	fi
-
-	# swap ntpd for systemd-timesyncd
-	if [ ! -f "/lib/systemd/system/systemd-timesyncd.service" ] ; then
-	    echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} Updating time synchronization service..."
-	    apt-get -qq remove -y --purge ntp > /dev/null 2>&1
-	    apt-get -qq autoremove -y > /dev/null 2>&1
-	    apt-get -qq install -y systemd-timesyncd > /dev/null 2>&1
-	    echo -e "  ${TICK} Done!\n"
-	fi
 
 	# setup our own native NextionDriver service...
 	# Updated 2/23/2023 - W0CHP:

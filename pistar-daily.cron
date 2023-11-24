@@ -69,41 +69,6 @@ status_code=$(curl -I -m 6 -A "ConnCheck ${uaStr}" --write-out %{http_code} --si
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo -e "WPSD Update Server connection ok!"
 
-    echo -e "\nPerforming maint..."
-    # Check for gpsd
-    if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
-        systemctl disable mobilegps.timer > /dev/null 2<&1
-        systemctl disable mobilegps.service > /dev/null 2<&1
-        rm -rf /lib/systemd/system/mobilegps*
-	systemctl daemon-reload > /dev/null 2<&1
-    fi
-    if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
-        echo "GPSd (required) not installed. Installing now..."
-        apt-get -qq update > /dev/null 2>&1
-        apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
-        # disable by default; enabled in config page on request:
-        systemctl disable gpsd.service > /dev/null 2>&1
-        systemctl disable gpsd.socket > /dev/null 2>&1
-        systemctl mask gpsd.service > /dev/null 2>&1
-        systemctl mask gpsd.socket > /dev/null 2>&1
-        apt-get -qq autoclean > /dev/null 2>&1
-        echo -e "Done\n"
-    fi
-    # now fix upstream gpsd binding bug:
-    if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
-        curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket > /dev/null 2>&1
-	systemctl daemon-reload > /dev/null 2<&1
-    fi
-    # ensure gpsd is only enabled by the user:
-    if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
-        systemctl stop gpsd.service > /dev/null 2>&1
-        systemctl stop gpsd.socket > /dev/null 2>&1
-        systemctl disable gpsd.service > /dev/null 2>&1
-        systemctl disable gpsd.socket > /dev/null 2>&1
-        systemctl mask gpsd.service > /dev/null 2>&1
-        systemctl mask gpsd.socket > /dev/null 2>&1
-    fi
-
     echo -e "\nUpdating sbins..."
     # Update sbin
     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
@@ -285,18 +250,6 @@ if [ ! -f "/etc/systemd/system/m17gateway.service" ] ; then
     systemctl daemon-reload > /dev/null 2<&1
 fi
 
-# ensure bullseye has proper php extensions and use ff-only for newer git strategy
-dpkg --configure -a > /dev/null 2>&1
-if [ "${osName}" = "bullseye" ]; then
-    git config --global pull.ff only
-    if [ ! -f "/usr/share/php7.4-zip/zip/zip.ini" ] ; then
-	apt-get update > /dev/null
-	apt-get install -y php-zip > /dev/null 2>&1
-	apt-get clean > /dev/null 2<&1
-	apt-get autoclean > /dev/null 2<&1
-    fi
-fi
-
 # If we are ready to use the new DMRGateway
 if [[ $(/usr/local/bin/DMRGateway --version | awk '{print $3}' | cut -c -8) -gt "20170924" ]] && [[ $(grep -c "\[DMR Network 3\]" /etc/dmrgateway) -eq "1" ]] && [[ ! -f /usr/local/etc/DMR_Audio/no_NO.indx ]]; then
 	curl --fail -o /usr/local/etc/DMR_Audio/de_DE.ambe -s https://raw.githubusercontent.com/g4klx/DMRGateway/master/Audio/de_DE.ambe
@@ -404,35 +357,6 @@ fi
 chown -R mmdvm:mmdvm /var/log/pi-star > /dev/null 2>&1
 chmod 775 /var/log/pi-star > /dev/null 2>&1
 
-# check for vnstat
-if ! [ -x "$(command -v vnstat)" ]; then
-    echo "vnstat (required) not installed on hotspot. Installing now..."
-    # Install vnstat
-    apt-get -qq update > /dev/null 2>&1
-    apt-get -qq install -y vnstat > /dev/null 2>&1
-    echo -e "Done!\n"
-fi
-# tmpfs for vnstat
-if ! grep -q vnstat /etc/fstab ; then
-    systemctl stop vnstat.service > /dev/null
-    rm -rf /var/lib/vnstat > /dev/null
-    mkdir -p /var/lib/vnstat > /dev/null
-    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
-    echo "tmpfs                   /var/lib/vnstat         tmpfs   nodev,noatime,nosuid,mode=0755,size=64m         0       0"  >> /etc/fstab
-    mount /var/lib/vnstat > /dev/null
-    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
-fi
-    systemctl restart vnstat.service > /dev/null
-
-# swap ntpd for systemd-timesyncd
-if [ ! -f "/lib/systemd/system/systemd-timesyncd.service" ] ; then
-    echo "Updating time synchronization service..."
-    apt-get -qq remove -y --purge ntp > /dev/null 2>&1
-    apt-get -qq autoremove -y > /dev/null 2>&1
-    apt-get -qq install -y systemd-timesyncd > /dev/null 2>&1
-    echo -e "Done!\n"
-fi
-
 # run any slipstream tasks
 bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
 
@@ -472,10 +396,6 @@ wpsd-services start > /dev/null 2>&1
 #        fi
 #    fi
 #fi    # not armbian/sunxi
-
-echo -e "\nCleaning old apt archives/caches..."
-apt-get -qq clean  > /dev/null 2<&1;
-apt-get -qq autoclean  > /dev/null 2<&1;
 
 # Shuffle the time for the next daily crontab jobs
 cronMins=$(shuf -i 0-59 -n 1)
