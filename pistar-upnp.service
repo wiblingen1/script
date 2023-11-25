@@ -64,6 +64,7 @@ case "$1" in
                         $DAEMON -u ${igdURL} -e ${hostVar}_DCS6 -a $ipVar 30056 30056 UDP > /dev/null 2>&1
                         $DAEMON -u ${igdURL} -e ${hostVar}_DCS7 -a $ipVar 30057 30057 UDP > /dev/null 2>&1
                         $DAEMON -u ${igdURL} -e ${hostVar}_Icom_G2 -a $ipVar 40000 40000 UDP > /dev/null 2>&1
+                        $DAEMON -u ${igdURL} -e ${hostVar}_M17 -a $ipVar 17000 17000 UDP > /dev/null 2>&1
 		fi
 		)& ;;
 
@@ -93,6 +94,7 @@ case "$1" in
 		$DAEMON -u ${igdURL} -d 30056 UDP > /dev/null 2>&1
 		$DAEMON -u ${igdURL} -d 30057 UDP > /dev/null 2>&1
 		$DAEMON -u ${igdURL} -d 40000 UDP > /dev/null 2>&1
+		$DAEMON -u ${igdURL} -d 17000 UDP > /dev/null 2>&1
 		) ;;
 	*)
 		echo $"Usage: $0 {start|stop}"
