@@ -87,7 +87,7 @@ git_update() {
     fi
 
     if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
-        echo -e "    ${COL_LIGHT_MAGENTA}${INFO} Updates found - Installing now..."
+        echo -e "  ${COL_LIGHT_MAGENTA}${INFO} Updates found - Installing now..."
         # WPSD has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
         if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
 	    cd ${gitFolder}
@@ -98,7 +98,7 @@ git_update() {
 	    #echo -e "ChangeLog (last 3 changes):"
 	    #echo -e "---------------------------"
 	    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
-	    echo -e "    ${TICK} Updates installed!"
+	    echo -e "  ${TICK} Updates installed!"
 	else
 	    if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
 		cd ${gitFolder}
@@ -115,7 +115,7 @@ git_update() {
 		    #echo -e "ChangeLog (last 3 changes):"
 		    #echo -e "---------------------------"
 		    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
-		    echo -e "    ${TICK} Updates installed!"
+		    echo -e "  ${TICK} Updates installed!"
 		    if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
 			echo -e "  ${NOTE} Forcing update..."
 			if [ -f ${gitFolder}/pistar-upnp.service ]; then
@@ -137,7 +137,7 @@ git_update() {
 	    #echo -e "ChangeLog (last 3 changes):"
 	    #echo -e "---------------------------"
 	    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
-	    echo -e "    ${TICK} Updates installed!"
+	    echo -e "  ${TICK} Updates installed!"
         fi
 	# Re-check that the updates are now good
 	if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
