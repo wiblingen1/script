@@ -101,7 +101,7 @@ git_update() {
 	else
 	    if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
 		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git stash > /dev/null 2<&1
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch > /dev/null 2<&1
 		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git checkout stash@{0} -- pistar-upnp.service > /dev/null 2<&1
 		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git stash clear > /dev/null 2<&1 # housekeeping
 		if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep wpsd-update 2>/dev/null)" = "wpsd-update" ]; then
