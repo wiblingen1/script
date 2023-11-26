@@ -90,20 +90,22 @@ git_update() {
         echo -e "    ${COL_LIGHT_MAGENTA}${INFO} Updates found - Installing now..."
         # WPSD has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
         if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
-	    git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git stash > /dev/null 2<&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
+	    cd ${gitFolder}
+	    git stash > /dev/null 2<&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
 	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} &> /dev/null
-	    git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2<&1 # restore user config files from stash
-	    git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git stash clear > /dev/null 2<&1 # housekeeping
+	    git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2<&1 # restore user config files from stash
+	    git stash clear > /dev/null 2<&1 # housekeeping
 	    #echo -e "ChangeLog (last 3 changes):"
 	    #echo -e "---------------------------"
 	    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
 	    echo -e "    ${TICK} Updates installed!"
 	else
 	    if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
-		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git stash > /dev/null 2<&1
+		cd ${gitFolder}
+		git stash > /dev/null 2<&1
 		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch > /dev/null 2<&1
-		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git checkout stash@{0} -- pistar-upnp.service > /dev/null 2<&1
-		git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git stash clear > /dev/null 2<&1 # housekeeping
+		git checkout stash@{0} -- pistar-upnp.service > /dev/null 2<&1
+		git stash clear > /dev/null 2<&1 
 		if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep wpsd-update 2>/dev/null)" = "wpsd-update" ]; then
 		    # New updater version - Self-update and re-exec:
 		    echo -e "\n  ${COL_LIGHT_BLUE}${INFO} New version of the Updater available. Performing self-update..."
