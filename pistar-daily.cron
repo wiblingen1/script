@@ -68,8 +68,12 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo -e "WPSD Update Server connection ok!"
 
     echo -e "\nUpdating sbins..."
-    # Update sbin
+    git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git update-index --no-assume-unchanged pistar-upnp.service
+    git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git stash
     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
+    git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git checkout stash@{0} -- pistar-upnp.service > /dev/null 2<&1 
+    git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git stash clear
+
 
     echo -e "\nResetting firewall back to user prefs..."
     if [ "$fwState" == "enabled" ]; then

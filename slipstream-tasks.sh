@@ -281,10 +281,14 @@ conn_check() {
 repo_path="/usr/local/sbin"
 cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
 if conn_check; then
+    git update-index --no-assume-unchanged pistar-upnp.service
     if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin check ${gitUaStr}" git fetch origin; then
         commits_behind=$(git rev-list --count HEAD..origin/master)
         if [[ $commits_behind -gt 0 ]]; then
+	    git stash
             if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
+		git checkout stash@{0} -- pistar-upnp.service 
+		git stash clear
                 echo "Local sbin repository updated successfully. Restarting script..."
                 exec bash "$0" "$@" # Re-execute the script with the same arguments
             else
