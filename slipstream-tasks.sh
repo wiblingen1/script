@@ -21,11 +21,7 @@ uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}]
 armbian_env_file="/boot/armbianEnv.txt"
 rc_local_file="/etc/rc.local"
 
-# ensure bullseye uses ff-only for newer git strategy
-dpkg --configure -a > /dev/null 2>&1
-if [ "${osName}" = "bullseye" ]; then
-    git config --global pull.ff only
-fi
+git config --global pull.ff only
 
 # This part fully-disables read-only mode
 #
@@ -650,6 +646,7 @@ if [ -f "$armbian_env_file" ] ; then
 fi
 
 # ensure bullseye has proper php extensions
+dpkg --configure -a > /dev/null 2>&1
 if [ "${osName}" = "bullseye" ]; then
     if [ ! -f "/usr/share/php7.4-zip/zip/zip.ini" ] ; then
 	apt-get -q=2 install -y php-zip > /dev/null 2>&1
