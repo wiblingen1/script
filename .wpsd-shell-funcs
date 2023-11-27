@@ -71,7 +71,7 @@ interface_get_ip() {
     if [[ $interface != "lo" ]]; then
       local ip_address=$(ip addr show dev $interface | awk '/inet / {print $2}' | cut -d'/' -f1)
       if [ -n "$ip_address" ]; then
-        INTERFACE_IP=$ip_address
+        echo $ip_address
         return 0
       fi
     fi
