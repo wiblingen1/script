@@ -166,7 +166,7 @@ main_function() {
     systemctl stop cron.service > /dev/null 2<&1
     pkill pistar-hourly.cron > /dev/null 2>&1
     pkill pistar-daily.cron > /dev/null 2>&1
-    pkill slipstream-tasks.sh > /dev/null 2>&1
+    pkill .wpsd-slipstream-tasks > /dev/null 2>&1
 
     if [ -t 1 ] ; then
 	#echo -e "\n${BULL} Checking web server configuration..."
@@ -206,7 +206,7 @@ main_function() {
 	echo -e "# Format: Reflector Name IP Port\n# Example:\n# M17-000    81.231.241.25    17000\n\n" > /root/M17Hosts.txt
     fi
     echo -e "${BULL} Updating Hostfiles, User ID DB's & Talkgroup Lists..."
-    /usr/local/sbin/HostFilesUpdate.sh > /dev/null 2>&1
+    /usr/local/sbin/wpsd-hostfile-update > /dev/null 2>&1
     echo -e "  ${TICK} Done!\n"
 
     echo -e "${BULL} Performing maintenance tasks..."
@@ -387,7 +387,7 @@ main_function() {
     chmod 775 /var/log/pi-star > /dev/null 2>&1
 
     # run any slipstream tasks
-    bash /usr/local/sbin/slipstream-tasks.sh > /dev/null 2>&1
+    bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
 
     echo -e "  ${TICK} Done!" # maint. complete
 

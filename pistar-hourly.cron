@@ -71,7 +71,7 @@ sed -i "/cron.hourly/c ${cronMins}  *   * * *   root    cd / && run-parts --repo
 bash /usr/local/sbin/motdgen
 
 # run any slipstream tasks
-bash /usr/local/sbin/slipstream-tasks.sh
+bash /usr/local/sbin/.wpsd-slipstream-tasks
 
 # connectivity check
 echo -e "\nChecking connectivity to WPSD update server..."

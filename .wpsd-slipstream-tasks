@@ -484,7 +484,7 @@ fi
 
 # add slipstream to rc.local
 # Define the correct entry
-correct_entry="nohup /usr/local/sbin/slipstream-tasks.sh &"
+correct_entry="nohup /usr/local/sbin/.wpsd-slipstream-tasks &"
 # Check if the correct entry already exists in $rc_local_file
 if grep -q -x "$correct_entry" $rc_local_file; then
   :
@@ -668,4 +668,4 @@ if [ -f '/etc/network/if-up.d/pistar-motdgen' ] ; then
 fi
 
 # ensure hostfiles are updated more regularly
-/usr/local/sbin/HostFilesUpdate.sh &> /dev/null
+/usr/local/sbin/wpsd-hostfile-update &> /dev/null
