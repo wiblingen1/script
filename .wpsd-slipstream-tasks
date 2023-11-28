@@ -667,5 +667,18 @@ if [ -f '/etc/network/if-up.d/pistar-motdgen' ] ; then
     rm -rf /etc/network/if-up.d/pistar-motdgen
 fi
 
+# mobileGPS is gone...we can remove from ircddbgw:
+if grep -q "mobileGPS" "/etc/ircddbgateway"; then
+    sed -i '/mobileGPS/d' "/etc/ircddbgateway"
+fi
+
+# aaaaand more legacy cleanups
+if grep -q "Pi-Star_Build_Date" "/etc/pistar-release"; then
+    sed -i '/Pi-Star_Build_Date/d' "/etc/pistar-release"
+fi
+if grep -q "Version =" "/etc/pistar-release"; then
+    sed -i '/Version =/d' "/etc/pistar-release"
+fi
+
 # ensure hostfiles are updated more regularly
 /usr/local/sbin/wpsd-hostfile-update &> /dev/null
