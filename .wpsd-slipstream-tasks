@@ -542,10 +542,11 @@ if [ -f /devnull ] ; then # ugh - cleanup prev. typo.
     rm -f /devnull
 fi
 
-# Armbian for NanoPi Neo / OrangePi Zero handling
+# Armbian for NanoPi Neo / OrangePi Zero handling..
 if [ -f "$armbian_env_file" ] && [[ $(grep "console=serial" $armbian_env_file) ]] ; then
     sed -i '/console=serial/d' $armbian_env_file
 fi
+# ensure serial port exists by creating it during booup in rc.local...
 ttyama0_line="# OPi/NanoPi serial ports:"
 ttyama0_line+="\nmknod \"/dev/ttyAMA0\" c 4 65"
 ttyama0_line+="\nchown .dialout /dev/ttyAMA0"
@@ -554,6 +555,23 @@ ssh_keys_line="# AutoGenerate SSH keys if they are missing"
 if [ -f "$armbian_env_file" ] && ! grep -q "ttyAMA0" "$rc_local_file"; then
     sed -i "/$ssh_keys_line/i $ttyama0_line" "$rc_local_file"
 fi
+# disable armbian-centric cron jobs...
+cronfiles=(
+    "/etc/cron.d/armbian-truncate-logs"
+    "/etc/cron.d/armbian-check-battery"
+    "/etc/cron.d/armbian-updates"
+    "/etc/cron.weekly/armbian-quotes"
+    "/etc/cron.daily/armbian-ram-logging"
+)
+backup_destination="/root/armbian/cron/"
+for file in "${cronfiles[@]}"; do
+    if [ -e "$file" ]; then
+        original_path=$(dirname "$file")
+        file_name=$(basename "$file")
+        mkdir -p "$backup_destination$original_path"
+        mv "$file" "$backup_destination$original_path/$file_name"
+    fi
+done
 
 # remove last heard data manager; taxing, inaccurate, unreliable, and; mqtt coming ;-)
 if [ -f /lib/systemd/system/mmdvm-log-backup.service ] ; then
