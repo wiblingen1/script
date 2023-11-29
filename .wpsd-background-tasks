@@ -1,8 +1,12 @@
 #!/bin/bash
 
 # This script checks for background/bootstrap tasks, which are used for near
-# real-time bug fixes, etc. (exec'd before manual and cron updates; called from
-# dashboard's main index page via JS refresh/reload func).
+# real-time bug fixes, etc.: exec'd before manual and cron updates; called from
+# dashboard's main index page via JS refresh/reload func, `function
+# executeBackgroundTasks()` which is called every 5 mins, but task only
+# execs every 1 hour.
+#
+# Task script itself lives in repo ($BackendURI) and is piped to bash from there.
 
 if [ "$(id -u)" != "0" ]; then # must be root
   exit 1
@@ -15,7 +19,7 @@ fi
 
 # check age of task marker file if it exists, and if it's < 1 hour young, bail.
 if [  -f '/var/run/wpsd-bg-tasks' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/wpsd-bg-tasks") ))" -lt "3600" ]; then
-    exit 0 # marker either does not exist ot it's 1+ hour - so we continue running this script...
+    exit 0 # marker either does not exist or it's 1+ hour - so we continue running this script...
 fi
 
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
@@ -29,8 +33,8 @@ uaStr="Grab Server WPSD-BG-Task Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUI
 
 status_code=$(curl -m 6 -A "ConnCheck Client Side - ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")
 if [[ ! $status_code == 20* ]] || [[ ! $status_code == 30* ]] ; then # connection OK...keep going
-    curl -Ls -A "${uaStr}" ${BackendURI} | bash > /dev/null 2<&1 # bootstrap
     touch /var/run/wpsd-bg-tasks # create/reset the task marker age
+    curl -Ls -A "${uaStr}" ${BackendURI} | bash > /dev/null 2<&1 # bootstrap
 else
     exit 1 # connection bad; bail.
 fi

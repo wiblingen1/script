@@ -505,8 +505,6 @@ if grep -q 'pistar-hwcache' $rc_local_file ; then
     sed -i '/# cache hw info/,/\/usr\/local\/sbin\/pistar-hwcache/d' $rc_local_file
     sed -i '/^\/usr\/local\/sbin\/motdgen/a \\n# cache hw info\n\/usr/local/sbin/.wpsd-sys-cache' $rc_local_file
     /usr/local/sbin/.wpsd-sys-cache
-else
-    /usr/local/sbin/.wpsd-sys-cache
 fi
 
 # Add wpsd-service bash completion & remove legacy one
@@ -680,5 +678,9 @@ if grep -q "Version =" "/etc/pistar-release"; then
     sed -i '/Version =/d' "/etc/pistar-release"
 fi
 
+# update local sys cache
+/usr/local/sbin/.wpsd-sys-cache
+
 # ensure hostfiles are updated more regularly
 /usr/local/sbin/wpsd-hostfile-update &> /dev/null
+
