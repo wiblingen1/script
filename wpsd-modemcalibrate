@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+#############################################################################
+#                                                                           #
+#                          WPSD MMDVMCal Wrapper                            #
+#                                                                           #
+#############################################################################
+#
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
+# Get the modem port from /etc/mmdvmhost
+mmdvmModem=$(grep -m 1 'Port=' /etc/mmdvmhost | awk -F "=" '/Port/ {print $2}')
+modemSpeed=$(grep -m 1 'UARTSpeed=' /etc/mmdvmhost | awk -F "=" '/UARTSpeed/ {print $2}')
+
+# Output some feedback to the terminal
+echo "Stopping WPSD Services..."
+
+# Stop the services
+wpsd-services fullstop
+
+# Force Kill any remaining MMDVMHost processes
+echo "Stopping any remaining MMDVMHost processes..."
+killall MMDVMHost >/dev/null 2>&1
+killall MMDVMHost_NoOLED >/dev/null 2>&1
+killall MMDVMHost_Adafruit >/dev/null 2>&1
+
+# Output some feedback to the terminal
+echo "Starting Calibration..."
+
+/usr/local/bin/MMDVMCal ${modemSpeed} ${mmdvmModem}
+
+# Output some feedback to the terminal
+echo "Starting Services..."
+
+# Start the services
+wpsd-services start
+
+# Complete
+echo "Finished..."
