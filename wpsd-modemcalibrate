@@ -15,9 +15,6 @@ fi
 mmdvmModem=$(grep -m 1 'Port=' /etc/mmdvmhost | awk -F "=" '/Port/ {print $2}')
 modemSpeed=$(grep -m 1 'UARTSpeed=' /etc/mmdvmhost | awk -F "=" '/UARTSpeed/ {print $2}')
 
-# Output some feedback to the terminal
-echo "Stopping WPSD Services..."
-
 # Stop the services
 wpsd-services fullstop
 
@@ -31,9 +28,6 @@ killall MMDVMHost_Adafruit >/dev/null 2>&1
 echo "Starting Calibration..."
 
 /usr/local/bin/MMDVMCal ${modemSpeed} ${mmdvmModem}
-
-# Output some feedback to the terminal
-echo "Starting Services..."
 
 # Start the services
 wpsd-services start
