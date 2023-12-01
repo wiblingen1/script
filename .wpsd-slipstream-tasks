@@ -574,7 +574,7 @@ for file in "${cronfiles[@]}"; do
 done
 # disable armbian zram
 if [ -f "$armbian_env_file" ] ; then
-    if ! `systemctl armbian-zram-config.service | grep -q masked` ; then
+    if ! `systemctl status armbian-zram-config.service | grep -q masked` ; then
 	systemctl stop armbian-zram-config.service
 	systemctl disable armbian-zram-config.service
 	systemctl mask armbian-zram-config.service
