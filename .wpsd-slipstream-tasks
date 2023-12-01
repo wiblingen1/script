@@ -577,6 +577,9 @@ if grep -q 'armbian-ramlog' /etc/systemd/system/logrotate.service ; then
     sed -i '/armbian-ramlog/d' /etc/systemd/system/logrotate.service
     rm -rf /var/log.hdd
     systemctl daemon-reload
+    systemctl stop armbian-zram-config.service
+    systemctl disable armbian-zram-config.service
+    systemctl mask armbian-zram-config.service
     systemctl restart logrotate.service
 fi
 
