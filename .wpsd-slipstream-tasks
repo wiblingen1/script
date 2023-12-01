@@ -572,6 +572,13 @@ for file in "${cronfiles[@]}"; do
         mv "$file" "$backup_destination$original_path/$file_name"
     fi
 done
+# diable armbian-ramlog
+if grep -q 'armbian-ramlog' /etc/systemd/system/logrotate.service ; then
+    sed -i '/armbian-ramlog/d' /etc/systemd/system/logrotate.service
+    rm -rf /var/log.hdd
+    systemctl daemon-reload
+    systemctl restart logrotate.service
+fi
 
 # remove last heard data manager; taxing, inaccurate, unreliable, and; mqtt coming ;-)
 if [ -f /lib/systemd/system/mmdvm-log-backup.service ] ; then
