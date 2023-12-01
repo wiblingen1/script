@@ -572,14 +572,18 @@ for file in "${cronfiles[@]}"; do
         mv "$file" "$backup_destination$original_path/$file_name"
     fi
 done
-# diable armbian-ramlog
-if grep -q 'armbian-ramlog' /etc/systemd/system/logrotate.service ; then
+# disable armbian zram
+if [ -f "$armbian_env_file" ] ; then
+    if ! `systemctl armbian-zram-config.service | grep -q masked` ; then
+	systemctl stop armbian-zram-config.service
+	systemctl disable armbian-zram-config.service
+	systemctl mask armbian-zram-config.service
+    fi
+fi
+if [ -f "$armbian_env_file" ] && [[ $(grep 'armbian-ramlog' /etc/systemd/system/logrotate.service) ]] ; then
     sed -i '/armbian-ramlog/d' /etc/systemd/system/logrotate.service
     rm -rf /var/log.hdd
     systemctl daemon-reload
-    systemctl stop armbian-zram-config.service
-    systemctl disable armbian-zram-config.service
-    systemctl mask armbian-zram-config.service
     systemctl restart logrotate.service
 fi
 
