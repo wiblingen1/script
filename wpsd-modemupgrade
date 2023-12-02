@@ -107,6 +107,10 @@ if [ "$1" ]; then
   esac
 fi
 
+if [[ $1 == *usb* ]]; then
+  USB_MODEM=true
+fi
+
 hardware=$(grep -i hardware /etc/pistar-release | awk -F "= " '{print $2}')
 numLogs=$(ls -1rt /var/log/pi-star/MMDVM-*.log | wc -l)
 if [[ ${numLogs} -gt 0 ]]; then
@@ -328,6 +332,7 @@ then
 
     # Configure vars depending on OS
     if [ $(uname -s) == "Linux" ]; then
+	DEV_USB_SER="/dev/ttyACM0"
 	if [ $(uname -m) == "x86_64" ]; then
 		DFU_RST="./STM32F10X_Lib/utils/linux64/upload-reset"
 		DFU_UTIL="./STM32F10X_Lib/utils/linux64/dfu-util"
@@ -356,15 +361,23 @@ then
 	fi
     fi
     if [ $(uname -s) == "Darwin" ]; then
+	DEV_USB_SER="/dev/cu.usbmodem14401"
 	DFU_RST="./STM32F10X_Lib/utils/macosx/upload-reset"
 	DFU_UTIL="./STM32F10X_Lib/utils/macosx/dfu-util"
 	ST_FLASH="./STM32F10X_Lib/utils/macosx/st-flash"
 	STM32FLASH="./STM32F10X_Lib/utils/macosx/stm32flash"
     fi
 
-    # Upload the firmware to the modem and place output into buffer for fail/success checking logic
-    $STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
-    output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0 2>&1)
+    # flash handling for USB modems...
+    if [ "$USB_MODEM" = true ]; then
+	$DFU_RST $DEV_USB_SER 750 2>&1
+	output=$(eval $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R 2>&1)
+	#$DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R
+    else  # flash handling for GPIO modems...
+	# Upload the firmware to the modem and place output into buffer for fail/success checking logic
+	$STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
+	output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0 2>&1)
+    fi
 
     if [ -t 1 ]; then # term. only
 	# Kill the spinner process (make the cursor visible again)
@@ -373,8 +386,14 @@ then
 
     # did we flash successfully?
     flash_successful=false  # Initialize to false
-    if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
-      flash_successful=true
+    if [ "$USB_MODEM" = true ]; then # usb dfu successful output
+	if [[ $output == *"state(8) = dfuMANIFEST-WAIT-RESET, status(0) = No error condition is present"* && $output == *"Done!"* ]]; then
+	    flash_successful=true
+	fi
+    else # gpio stm32flash successful output
+	if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
+	    flash_successful=true
+	fi
     fi
 
     if $flash_successful; then
