@@ -400,10 +400,10 @@ then
 	    if [[ $output == *"state(8) = dfuMANIFEST-WAIT-RESET, status(0) = No error condition is present"* && $output == *"Done!"* ]]; then
 		flash_successful=true
 	    fi
-	fi
-    else # gpio stm32flash successful output
-	if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
-	    flash_successful=true
+	else # gpio stm32flash successful output
+	    if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
+		flash_successful=true
+	    fi
 	fi
     fi
 
