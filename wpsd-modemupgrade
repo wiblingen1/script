@@ -315,7 +315,7 @@ then
         gpio write 3 1
     fi
 
-    if [ -t 1 ]; then # term. only
+    if [ -t 1 ] && [ "$VERBOSE" != 1 ]; then # term. only
         spinner &
         # Capture the spinner's PID
         SPINNER_PID=$!
@@ -370,25 +370,36 @@ then
 
     # flash handling for USB modems...
     if [ "$USB_MODEM" = true ]; then
-	$DFU_RST $DEV_USB_SER 750 2>&1
-	output=$(eval $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R 2>&1)
-	#$DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R
+	if [ "$VERBOSE" = 1 ] ; then
+	    $DFU_RST $DEV_USB_SER 750
+	    $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R
+	else
+	    $DFU_RST $DEV_USB_SER 750 2>&1
+	    output=$(eval $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R 2>&1)
+	fi
     else  # flash handling for GPIO modems...
 	# Upload the firmware to the modem and place output into buffer for fail/success checking logic
-	$STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
-	output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0 2>&1)
+	if [ "$VERBOSE" = 1 ] ; then
+	    $STM32FLASH -k /dev/ttyAMA0 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
+	    $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0
+	else
+	    $STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
+	    output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0 2>&1)
+	fi
     fi
 
-    if [ -t 1 ]; then # term. only
+    if [ -t 1 ] && [ "$VERBOSE" != 1 ]; then # term. only
 	# Kill the spinner process (make the cursor visible again)
 	kill $SPINNER_PID &>/dev/null
     fi
 
     # did we flash successfully?
-    flash_successful=false  # Initialize to false
-    if [ "$USB_MODEM" = true ]; then # usb dfu successful output
-	if [[ $output == *"state(8) = dfuMANIFEST-WAIT-RESET, status(0) = No error condition is present"* && $output == *"Done!"* ]]; then
-	    flash_successful=true
+    if [ "$VERBOSE" != 1 ] ; then
+	flash_successful=false  # Initialize to false
+	if [ "$USB_MODEM" = true ]; then # usb dfu successful output
+	    if [[ $output == *"state(8) = dfuMANIFEST-WAIT-RESET, status(0) = No error condition is present"* && $output == *"Done!"* ]]; then
+		flash_successful=true
+	    fi
 	fi
     else # gpio stm32flash successful output
 	if [[ $output == *"(100.00%) Done"* && $output == *"0x08000000... done"* ]]; then
@@ -396,24 +407,33 @@ then
 	fi
     fi
 
-    if $flash_successful; then
-      # reset the fw version # in the mmdvmhost logs
-      sed -i '/MMDVM protocol version: 1, description:/d; /MMDVM protocol version: 2, description:/d' /var/log/pi-star/MMDVM-*.log  >/dev/null 2>&1
-      # re-nit!
-      systemctl start mmdvmhost.service >/dev/null 2>&1
-      systemctl start mmdvmhost.timer >/dev/null 2>&1
-      rm -rf $FW_TMP >/dev/null 2>&1
-      echo -e -n "    ${TICK} ${COMPL} Modem firmware flash successful!\n        Modem reinitialized.\n"
-      echo ""
-      echo -e "${INFO} ${COL_LIGHT_YELLOW}Note:${COL_NC} You will need to refresh your dashboard to reflect the updated firmware version.\n"
+    if [ "$VERBOSE" != 1 ] ; then
+	if $flash_successful; then
+  	    # reset the fw version # in the mmdvmhost logs
+  	    sed -i '/MMDVM protocol version: 1, description:/d; /MMDVM protocol version: 2, description:/d' /var/log/pi-star/MMDVM-*.log  >/dev/null 2>&1
+  	    # re-nit!
+  	    systemctl start mmdvmhost.service >/dev/null 2>&1
+  	    systemctl start mmdvmhost.timer >/dev/null 2>&1
+  	    rm -rf $FW_TMP >/dev/null 2>&1
+  	    echo -e -n "    ${TICK} ${COMPL} Modem firmware flash successful!\n        Modem reinitialized.\n"
+  	    echo ""
+            echo -e "${INFO} ${COL_LIGHT_YELLOW}Note:${COL_NC} You will need to refresh your dashboard to reflect the updated firmware version.\n"
+	else
+	    echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. The serial port was either busy, or the modem is"
+	    echo -e "               possibly locked from the vendor. You can try running this command again,"
+	    echo -e "               or you can contact the supplier of your modem/hotspot for support.\n"
+	    systemctl start mmdvmhost.service >/dev/null 2>&1
+	    systemctl start mmdvmhost.timer >/dev/null 2>&1
+	    rm -rf $FW_TMP >/dev/null 2>&1
+	    echo ""
+	fi
     else
-      echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} Modem flashing failed. The serial port was either busy, or the modem is"
-      echo -e "               possibly locked from the vendor. You can try running this command again,"
-      echo -e "               or you can contact the supplier of your modem/hotspot for support.\n"
-      systemctl start mmdvmhost.service >/dev/null 2>&1
-      systemctl start mmdvmhost.timer >/dev/null 2>&1
-      rm -rf $FW_TMP >/dev/null 2>&1
-      echo ""
+ 	# reset the fw version # in the mmdvmhost logs
+	sed -i '/MMDVM protocol version: 1, description:/d; /MMDVM protocol version: 2, description:/d' /var/log/pi-star/MMDVM-*.log  >/dev/null 2>&1
+	# re-nit!
+	systemctl start mmdvmhost.service >/dev/null 2>&1
+	systemctl start mmdvmhost.timer >/dev/null 2>&1
+ 	rm -rf $FW_TMP >/dev/null 2>&1
     fi
     exit 0
   }
