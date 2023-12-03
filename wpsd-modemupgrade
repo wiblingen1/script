@@ -304,6 +304,8 @@ then
     # Stop MMDVMHost process to free up the serial port
     systemctl stop mmdvmhost.timer >/dev/null 2>&1
     systemctl stop mmdvmhost.service >/dev/null 2>&1
+    sleep 2
+    killall MMDVMHost >/dev/null 2>&1
 
     # NanoPI GPIO handling
     if [[ ${hardware} == "NanoPi" ]]; then
