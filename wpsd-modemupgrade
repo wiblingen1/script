@@ -373,10 +373,12 @@ then
     # flash handling for USB modems...
     if [ "$USB_MODEM" = true ]; then
 	if [ "$VERBOSE" = 1 ] ; then
-	    $DFU_RST $DEV_USB_SER 750
+	    $DFU_RST $DEV_USB_SER 1000
+	    sleep 1
 	    $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R
 	else
-	    $DFU_RST $DEV_USB_SER 750 2>&1
+	    $DFU_RST $DEV_USB_SER 1000 2>&1
+	    sleep 1
 	    output=$(eval $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R 2>&1)
 	fi
     else  # flash handling for GPIO modems...
