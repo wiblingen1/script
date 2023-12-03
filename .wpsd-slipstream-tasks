@@ -611,7 +611,7 @@ if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
 fi
 if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
     apt-get -qq update > /dev/null 2>&1
-    apt-get -qq install --reinstall -y gpsd libgps28 > /dev/null 2>&1
+    apt-get -qq install --reinstall -y gpsd libgps28 gpsd-tools > /dev/null 2>&1
     # disable by default; enabled in config page on request:
     systemctl disable gpsd.service > /dev/null 2>&1
     systemctl disable gpsd.socket > /dev/null 2>&1
