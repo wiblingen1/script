@@ -270,54 +270,6 @@ if [ "$gateway_callsign" = "M1ABC" ]; then
 fi
 #
 
-# 5/27/23: Bootstrapping backend scripts
-CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
-gitUaStr="Slipstream Task $uaStr"
-conn_check() {
-    local status=$(curl -L -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
-
-    if [[ $status -ge 200 && $status -lt 400 ]]; then
-  	echo "ConnCheck OK: $status"
-        return 0  # Status code between 200 and 399, continue
-    else
-        echo "ConnCheck status code is not in the expected range: $status"
-        exit 1
-    fi
-}
-repo_path="/usr/local/sbin"
-cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
-if conn_check; then
-    git update-index --no-assume-unchanged pistar-upnp.service # get rid of legacy index not that upnp rules are in /etc/wpsd-upnp-rules
-    if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin check ${gitUaStr}" git fetch origin; then
-        commits_behind=$(git rev-list --count HEAD..origin/master)
-        if [[ $commits_behind -gt 0 ]]; then
-            if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
-                echo "Local sbin repository updated successfully. Restarting script..."
-                exec bash "$0" "$@" # Re-execute the script with the same arguments
-            else
-                echo "Failed to update the local sbin repository."
-                exit 1
-            fi
-        else
-            echo "Local sbin repository is up to date."
-	    ## temp stuck dash hash fix
-	    #gitFolder="/var/www/dashboard"
-	    #cd ${gitFolder}
-	    #git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
-	    #env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="dashcode update bootstrap ${gitUaStr}" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
-	    #git reset --hard
-	    #git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
-	    #git stash clear # housekeeping
-        fi
-    else
-        echo "Failed to fetch from the remote repository."
-        exit 1
-    fi
-else
-    echo "Failed to check the HTTP status of the repository URL: $url"
-    exit 1
-fi
-
 # 5/30/23: ensure www perms are correct:
 cd /var/www/dashboard && chmod 755 `find  -type d`
 #
@@ -417,44 +369,6 @@ sed -i 's|^tmpfs[[:blank:]]*/run[[:blank:]]*tmpfs[[:blank:]]*nodev,noatime,nosui
 
 # incr. php session storage to 128k  - thanks KC1AWV!
 sed -i 's|^tmpfs[[:blank:]]*/var/lib/php/sessions[[:blank:]]*tmpfs[[:blank:]]*nodev,noatime,nosuid,mode=0777,size=64k[[:blank:]]*0[[:blank:]]*0$|tmpfs                   /var/lib/php/sessions   tmpfs   nodev,noatime,nosuid,mode=0777,size=128k        0       0|' /etc/fstab
-
-# Update OLED C-lib to new version that supports RPI4:
-# 8/2023 - W0CHP
-#
-lib_path="/usr/local/lib/libArduiPi_OLED.so.1.0"
-target_timestamp=$(date -d "2023-08-20" +%s)
-timestamp=$(stat -c %Y "$lib_path" 2>/dev/null)
-size=$(stat -c %s "$lib_path" 2>/dev/null)
-threshold_size=63896
-if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
-    if [ -n "$timestamp" ] && [ -n "$size" ]; then
-	if [ "$timestamp" -lt "$target_timestamp" ] && [ "$size" -lt "$threshold_size" ]; then
-	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
-	    rm -f /usr/local/lib/libArduiPi_OLED.so.1
- 	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater $uaStr")
-	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
-	    ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
-	    systemctl restart mmdvmhost.service
-        else
-	    :
-        fi
-    else
-	echo "$lib_path not found or unable to get its information."
-    fi
-fi
-# fix for weird symlink issue
-libOLEDlibsymlink="libArduiPi_OLED.so.1"
-libOLEDoldTarget="libArduiPi_OLED.so.1.0.bak"
-libOLEDfull_path="/usr/local/lib/$libOLEDlibsymlink"
-if [ -L "$libOLEDfull_path" ]; then
-    actual_target=$(readlink -f "$libOLEDfull_path")
-    if [ "$actual_target" == "/usr/local/lib/$libOLEDoldTarget" ]; then
-	rm -f $libOLEDfull_path
-	ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
-        systemctl restart mmdvmhost.service
-    fi
-fi
-#
 
 # Update /etc/issue - 9/2023 W0CHP
 #
@@ -710,9 +624,102 @@ if grep -q "Version =" "/etc/pistar-release"; then
     sed -i '/Version =/d' "/etc/pistar-release"
 fi
 
+# retro. m17hateway ini malformed callsign fix:
+file_path="/etc/m17gateway"
+invalid_lines=$(awk -F'=' '/Callsign=.*-($| )|Callsign=.* / {print NR, $0}' "$file_path")
+if [ -n "$invalid_lines" ]; then
+    sed -i 's/\(Callsign=.*\)-$/\1/; s/\(Callsign=.*\)- /\1/; s/\(Callsign=.*\) $/\1/' "$file_path"
+fi
+
 # update local sys cache
 /usr/local/sbin/.wpsd-sys-cache
 
 # ensure hostfiles are updated more regularly
 /usr/local/sbin/wpsd-hostfile-update &> /dev/null
+
+# 5/27/23: Bootstrapping backend scripts
+CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
+gitUaStr="Slipstream Task $uaStr"
+conn_check() {
+    local status=$(curl -L -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+
+    if [[ $status -ge 200 && $status -lt 400 ]]; then
+  	echo "ConnCheck OK: $status"
+        return 0  # Status code between 200 and 399, continue
+    else
+        echo "ConnCheck status code is not in the expected range: $status"
+        exit 1
+    fi
+}
+repo_path="/usr/local/sbin"
+cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
+if conn_check; then
+    git update-index --no-assume-unchanged pistar-upnp.service # get rid of legacy index not that upnp rules are in /etc/wpsd-upnp-rules
+    if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin check ${gitUaStr}" git fetch origin; then
+        commits_behind=$(git rev-list --count HEAD..origin/master)
+        if [[ $commits_behind -gt 0 ]]; then
+            if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
+                echo "Local sbin repository updated successfully. Restarting script..."
+                exec bash "$0" "$@" # Re-execute the script with the same arguments
+            else
+                echo "Failed to update the local sbin repository."
+                exit 1
+            fi
+        else
+            echo "Local sbin repository is up to date."
+	    ## temp stuck dash hash fix
+	    #gitFolder="/var/www/dashboard"
+	    #cd ${gitFolder}
+	    #git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
+	    #env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="dashcode update bootstrap ${gitUaStr}" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
+	    #git reset --hard
+	    #git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
+	    #git stash clear # housekeeping
+        fi
+    else
+        echo "Failed to fetch from the remote repository."
+        exit 1
+    fi
+else
+    echo "Failed to check the HTTP status of the repository URL: $url"
+    exit 1
+fi
+
+# Update OLED C-lib to new version that supports RPI4:
+# 8/2023 - W0CHP
+#
+lib_path="/usr/local/lib/libArduiPi_OLED.so.1.0"
+target_timestamp=$(date -d "2023-08-20" +%s)
+timestamp=$(stat -c %Y "$lib_path" 2>/dev/null)
+size=$(stat -c %s "$lib_path" 2>/dev/null)
+threshold_size=63896
+if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
+    if [ -n "$timestamp" ] && [ -n "$size" ]; then
+	if [ "$timestamp" -lt "$target_timestamp" ] && [ "$size" -lt "$threshold_size" ]; then
+	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
+	    rm -f /usr/local/lib/libArduiPi_OLED.so.1
+ 	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater $uaStr")
+	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
+	    ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
+	    systemctl restart mmdvmhost.service
+        else
+	    :
+        fi
+    else
+	echo "$lib_path not found or unable to get its information."
+    fi
+fi
+# fix for weird symlink issue
+libOLEDlibsymlink="libArduiPi_OLED.so.1"
+libOLEDoldTarget="libArduiPi_OLED.so.1.0.bak"
+libOLEDfull_path="/usr/local/lib/$libOLEDlibsymlink"
+if [ -L "$libOLEDfull_path" ]; then
+    actual_target=$(readlink -f "$libOLEDfull_path")
+    if [ "$actual_target" == "/usr/local/lib/$libOLEDoldTarget" ]; then
+	rm -f $libOLEDfull_path
+	ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
+        systemctl restart mmdvmhost.service
+    fi
+fi
+#
 
