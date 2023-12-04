@@ -14,9 +14,9 @@ fi
 
 # Special Pi4/5 handling...
 # Detect Pi4/5 Hardware
-if [ "$(/usr/local/sbin/platformDetect.sh | grep "Pi 4 Model" | wc -l)" -ge 1 ]; then
+if [ "$(/usr/local/sbin/.wpsd-platform-detect | grep "Pi 4 Model" | wc -l)" -ge 1 ]; then
   model="Pi4"
-elif [ "$(/usr/local/sbin/platformDetect.sh | grep "Pi 5 Model" | wc -l)" -ge 1 ]; then
+elif [ "$(/usr/local/sbin/.wpsd-platform-detect | grep "Pi 5 Model" | wc -l)" -ge 1 ]; then
   model="Pi5"
 else
   model=""

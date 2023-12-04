@@ -16,7 +16,7 @@ OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
-hwDeetz="$(/usr/local/sbin/platformDetect.sh) ( $(uname -r) )"
+hwDeetz="$(/usr/local/sbin/.wpsd-platform-detect) ( $(uname -r) )"
 uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 armbian_env_file="/boot/armbianEnv.txt"
 rc_local_file="/etc/rc.local"
@@ -643,7 +643,7 @@ target_timestamp=$(date -d "2023-08-20" +%s)
 timestamp=$(stat -c %Y "$lib_path" 2>/dev/null)
 size=$(stat -c %s "$lib_path" 2>/dev/null)
 threshold_size=63896
-if [[ $(platformDetect.sh) != *"sun8i"* ]]; then
+if [[ $(.wpsd-platform-detect) != *"sun8i"* ]]; then
     if [ -n "$timestamp" ] && [ -n "$size" ]; then
 	if [ "$timestamp" -lt "$target_timestamp" ] && [ "$size" -lt "$threshold_size" ]; then
 	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak

@@ -4,7 +4,7 @@
 
 # release/config init:
 INI_FILE="/etc/pistar-release"
-PlatDet="/usr/local/sbin/platformDetect.sh"
+PlatDet="/usr/local/sbin/.wpsd-platform-detect"
 # Function to perform the mappings
 map_hardware() {
     output=$(eval "$PlatDet") 
