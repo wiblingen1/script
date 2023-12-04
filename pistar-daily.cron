@@ -318,10 +318,6 @@ if [[ ! -f /usr/local/etc/M17_Audio/se_SE.indx ]]; then
     curl --fail -o /usr/local/etc/M17_Audio/se_SE.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/se_SE.indx    
 fi
 
-if [ -f /usr/local/bin/platformDetect.sh ]; then # remove platformDetect.sh since we have a custom version in /usr/local/sbin
-    rm -f /usr/local/bin/platformDetect.sh
-fi
-
 # Fix nginx unit file
 if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
   sed -i '\/PIDFile=\/run\/nginx.pid/a ExecStartPre=\/bin\/mkdir -p \/var\/log\/nginx' /lib/systemd/system/nginx.service

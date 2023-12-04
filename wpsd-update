@@ -360,10 +360,6 @@ main_function() {
 	sed -i '$a[Voice]\nEnabled=1\nLanguage=en_GB\nDirectory=/usr/local/etc/P25_Audio\n' /etc/p25gateway
     fi
 
-    if [ -f /usr/local/bin/platformDetect.sh ]; then # remove platformDetect.sh since we have a custom version in /usr/local/sbin
-	rm -f /usr/local/bin/platformDetect.sh
-     fi
-
     if ! grep -q TIME_FORMAT /var/www/dashboard/config/config.php ; then # insert req'd constant if not found. WIll be stashed on next update :-)
 	sed -i "/^date_default_timezone_set.*/i define('TIME_FORMAT', '24');" /var/www/dashboard/config/config.php
     fi
