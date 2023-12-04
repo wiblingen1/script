@@ -67,6 +67,12 @@ fi
 # Shuffle the time for the next hourly crontab job
 sed -i "/cron.hourly/c ${cronMins}  *   * * *   root    cd / && run-parts --report /etc/cron.hourly" /etc/crontab
 
+# update local sys cache
+/usr/local/sbin/.wpsd-sys-cache
+
+# ensure hostfiles are updated more regularly
+/usr/local/sbin/wpsd-hostfile-update &> /dev/null
+
 # Generate /etc/motd
 bash /usr/local/sbin/motdgen
 
