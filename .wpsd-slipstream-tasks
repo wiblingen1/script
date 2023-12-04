@@ -643,7 +643,7 @@ target_timestamp=$(date -d "2023-08-20" +%s)
 timestamp=$(stat -c %Y "$lib_path" 2>/dev/null)
 size=$(stat -c %s "$lib_path" 2>/dev/null)
 threshold_size=63896
-if [[ $(.wpsd-platform-detect) != *"sun8i"* ]]; then
+if [[ $(/usr/local/sbin/.wpsd-platform-detect) != *"sun8i"* ]]; then
     if [ -n "$timestamp" ] && [ -n "$size" ]; then
 	if [ "$timestamp" -lt "$target_timestamp" ] && [ "$size" -lt "$threshold_size" ]; then
 	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak

@@ -234,12 +234,12 @@ function checkNEXTIONoutput {
 # Find all the possible devices (only looking at /dev/ttyAMA* /dev/ttyACM* /dev/ttyS* and /dev/ttyUSB*)
 for modemDevice in $(find /dev/tty* ! -type l | grep -E "tty(AMA|ACM|USB|S)."); do
         # Ignore the /dev/ttyS[0-3] ports on the Odroid Platform.
-        if [[ $(.wpsd-platform-detect) == *"Odroid"* && ${modemDevice} == *"ttyS"* && ${modemDevice} != *"ttySAC"* ]]; then
+        if [[ $(/usr/local/sbin/.wpsd-platform-detect) == *"Odroid"* && ${modemDevice} == *"ttyS"* && ${modemDevice} != *"ttySAC"* ]]; then
                 continue
         fi
 
         # Ignore /dev/ttyS0 on the NanoPi Platform
-        if [[ $(.wpsd-platform-detect) == *"sun8i"* && ${modemDevice} == *"ttyS0"* ]]; then
+        if [[ $(/usr/local/sbin/.wpsd-platform-detect) == *"sun8i"* && ${modemDevice} == *"ttyS0"* ]]; then
                 continue
         fi
 
