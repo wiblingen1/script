@@ -71,7 +71,7 @@ sed -i "/cron.hourly/c ${cronMins}  *   * * *   root    cd / && run-parts --repo
 /usr/local/sbin/.wpsd-sys-cache
 
 # ensure hostfiles are updated more regularly
-/usr/local/sbin/wpsd-hostfile-update &> /dev/null
+/usr/local/sbin/wpsd-hostfile-update
 
 # Generate /etc/motd
 bash /usr/local/sbin/motdgen
