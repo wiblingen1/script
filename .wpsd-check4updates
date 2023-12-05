@@ -21,13 +21,13 @@ if [[ $FILESIZE -lt 5 ]]; then
 else
     if [[ $(checkDashUpdate ${gitFolder}) -gt 0 ]]; then
         if [ -t 1 ]; then # running from term?
-            echo -e "W0CHP-PiStar-Dash Update Available!"
+            echo -e "WPSD Update Available!"
         else # text for dashboard:
             echo ' <a class="lookatme" lookatme-text="Update available!" href="/admin/update.php">Update available!</a>'
         fi
 else
         if [ -t 1 ]; then # running from term?
-            echo -e "W0CHP-PiStar-Dash is Up-to-Date."
+            echo -e "WPSD is Up-to-Date."
         fi
     fi
 fi
