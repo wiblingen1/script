@@ -21,6 +21,7 @@ if [ -t 1 ] || [ -n "$PS1" ] || [ -n "$FORCE_COLOR" ] ; then # terminal and bash
     COL_REG_YELLOW='\e[93m'
     BULL="${BOLD}\u2022${COL_NC}"
     INFO="${BOLD}[i]${COL_NC}"
+    QUES="${BOLD}[?]${COL_NC}"
     NOTE="${BOLD}${COL_LIGHT_YELLOW}[!]${COL_NC}"
     TICK="${BOLD}${COL_LIGHT_GREEN}[✓]${COL_NC}"
     CROSS="${BOLD}${COL_BRIGHT_RED}[✗]${COL_NC}"
@@ -29,6 +30,7 @@ if [ -t 1 ] || [ -n "$PS1" ] || [ -n "$FORCE_COLOR" ] ; then # terminal and bash
 else # for web interfaces
     BULL="*"
     INFO="[i]"
+    QUES="[?]"
     NOTE="[!]"
     TICK="[✓]"
     CROSS="[✗]"

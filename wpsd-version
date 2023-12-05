@@ -1,12 +1,9 @@
 #!/bin/bash
 
-if grep W0CHP /var/www/dashboard/config/version.php > /dev/null 2>/dev/null ; then
-    RUNNING_WPSD=1
-fi
-
 source /usr/local/sbin/.wpsd-shell-funcs
 
 UUID=$( grep UUID /etc/pistar-release | awk '{print $3}' )
+platInfo=$( /usr/local/sbin/.wpsd-platform-detect )
 
 function DisplayRepoStatus() {
     dir="$1"
@@ -27,32 +24,31 @@ function DisplayRepoStatus() {
     branch=$(git --work-tree=${dir} --git-dir=${dir}/.git symbolic-ref --short HEAD)
     ver_cmd=$( git --work-tree=${dir} --git-dir=${dir}/.git rev-parse HEAD | tail -1 | awk '{ print substr($1,1,10) }' ) # last pipe to awk: converts long hash to 10 chars.
     if [ "${branch}" != "master" ] ; then
-        echo -e "  ${BULL} $TARGET:\n      On the '${BOLD}${branch}${COL_NC}' branch; Ver. # ${COL_LIGHT_ORANGE}${ver_cmd}${COL_NC}\n"
+        echo -e "  ${BULL} $TARGET:\n      On the '${BOLD}${branch}${COL_NC}' branch; Ver. # ${COL_LIGHT_ORANGE}${ver_cmd}${COL_NC}"
     else
-        echo -e "  ${BULL} $TARGET:\n      Ver. # ${COL_LIGHT_ORANGE}${ver_cmd}${COL_NC}\n"
+        echo -e "  ${BULL} $TARGET:\n      Ver. # ${COL_LIGHT_ORANGE}${ver_cmd}${COL_NC}"
     fi
 }
 
 function DisplayStatus() {
-    if [[ $RUNNING_WPSD ]] ; then 
-        clear
-        echo -e -n "${COL_LIGHT_CYAN}${BOLD}"
-	echo '
- _      _____  _______ 
+    clear
+    echo -e -n "${COL_LIGHT_CYAN}${BOLD}"
+echo ' _      _____  _______ 
 | | /| / / _ \/ __/ _ \
 | |/ |/ / ___/\ \/ // /
 |__/|__/_/  /___/____/'
-	echo -e "\n${COL_NC}Version Status"
-	echo -e "------------------------------------------\n"
-	DisplayRepoStatus "/var/www/dashboard"
-	DisplayRepoStatus "/usr/local/sbin"
-	DisplayRepoStatus "/usr/local/bin"
-	echo -e "------------------------------------------"
-    else
-	echo -e "\n${COL_BRIGHT_RED}WPSD not installed!${COL_NC}\n"
-	echo -e "------------------------------------------"
+    echo -e "\n${COL_NC}Version Status"
+    echo -e "---------------"
+    DisplayRepoStatus "/var/www/dashboard"
+    DisplayRepoStatus "/usr/local/sbin"
+    DisplayRepoStatus "/usr/local/bin"
+    if [ -t 1 ] || [ -n "$PS1" ] ; then # since this is called by `motdgen`, omit the following for the motd...
+	echo -e "\n${COL_NC}Environment Status"
+	echo -e "------------------"
+	echo -e "  ${BULL} WPSD Instance ID:\n      ${COL_LIGHT_MAGENTA}${UUID}${COL_NC}"
+ 	echo -e "  ${BULL} Platform Info:\n      ${COL_LIGHT_MAGENTA}${platInfo}${COL_NC}"
+	echo -e ""
     fi
-    echo -e "\n  ${BULL} WPSD Instance ID:\n      ${BOLD}${UUID}${COL_NC}\n"
 }
 
 DisplayStatus
