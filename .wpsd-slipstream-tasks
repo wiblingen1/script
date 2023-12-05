@@ -618,13 +618,13 @@ if conn_check; then
         else
             echo "Local sbin repository is up to date."
 	    ## temp stuck dash hash fix
-	    gitFolder="/var/www/dashboard"
-	    cd ${gitFolder}
-	    git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
-	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="dashcode update bootstrap ${gitUaStr}" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
-	    git reset --hard
-	    git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
-	    git stash clear # housekeeping
+	    #gitFolder="/var/www/dashboard"
+	    #cd ${gitFolder}
+	    #git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
+	    #env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="dashcode update bootstrap ${gitUaStr}" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
+	    #git reset --hard
+	    #git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
+	    #git stash clear # housekeeping
         fi
     else
         echo "Failed to fetch from the remote repository."
