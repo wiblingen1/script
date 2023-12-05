@@ -368,9 +368,6 @@ main_function() {
 	sed -i "/^date_default_timezone_set.*/i define('AUTO_UPDATE_CHECK', 'true');" /var/www/dashboard/config/config.php
     fi
 
-    # gen. our 1337 MOTD
-    bash /usr/local/sbin/motdgen
-
     # Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
     gitFolder="/var/www/dashboard"
     gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
