@@ -410,7 +410,7 @@ fi
 if [ -f "$armbian_env_file" ] && [[ $(grep "console=serial" $armbian_env_file) ]] ; then
     sed -i '/console=serial/d' $armbian_env_file
 fi
-# ensure serial port exists by creating it during booup in rc.local...
+# ensure serial port exists by creating it during bootup in rc.local...
 ttyama0_line="# OPi/NanoPi serial ports:"
 ttyama0_line+="\nmknod \"/dev/ttyAMA0\" c 4 65"
 ttyama0_line+="\nchown .dialout /dev/ttyAMA0"
@@ -449,6 +449,10 @@ if [ -f "$armbian_env_file" ] && [[ $(grep 'armbian-ramlog' /etc/systemd/system/
     rm -rf /var/log.hdd
     systemctl daemon-reload
     systemctl restart logrotate.service
+fi
+# setup armbian holds for unattended ups...
+if [ -f "$armbian_env_file" ] ; then
+    apt-mark hold armbian-bsp-cli-orangepizero linux-dtb-edge-sunxi linux-image-edge-sunxi linux-u-boot-orangepizero-edge armbian-firmware-full armbian-firmware
 fi
 
 # remove last heard data manager; taxing, inaccurate, unreliable, and; mqtt coming ;-)
@@ -574,7 +578,7 @@ if grep -q "Version =" "/etc/pistar-release"; then
     sed -i '/Version =/d' "/etc/pistar-release"
 fi
 
-# retro. m17hateway ini malformed callsign fix:
+# retro. m17gateway ini malformed callsign fix:
 file_path="/etc/m17gateway"
 invalid_lines=$(awk -F'=' '/Callsign=.*-($| )|Callsign=.* / {print NR, $0}' "$file_path")
 if [ -n "$invalid_lines" ]; then

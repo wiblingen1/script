@@ -12,6 +12,7 @@ MMDVMCONFIG="/etc/mmdvmhost"
 APRSGWCONFIG="/etc/aprsgateway"
 SYSCTL_MMDVMHOST="mmdvmhost"
 SYSCTL_APRSGW="aprsgateway"
+
 #
 # Check to make sure we are root, and bail out if we are not
 #
@@ -19,6 +20,7 @@ if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
   exit 1
 fi
+
 #
 # Output some useful information when no variables are passed
 #
@@ -36,6 +38,7 @@ if [ -z "$1" ]; then
   echo ""
   exit 0
 fi
+
 #
 # Check the first Argument
 #
@@ -91,6 +94,7 @@ if [ "$1" ]; then
   ;;
   esac
 fi
+
 #
 # Check the second Argument
 #
@@ -115,6 +119,24 @@ else
   exit 1
 fi
 
+# clean up the MMDVM log when modes are paused mid-TX. This eliminaes the
+# "infinite TX status" when the radio really isn't TXing.
+function process_log_file() {
+  current_date=$(date -u "+%Y-%m-%d")
+  file_name="/var/log/pi-star/MMDVM-${current_date}.log"
+
+  if [ -e "$file_name" ]; then
+    # Find the last line with "received network end of" in the file
+    last_line_end_of=$(grep -n "received network end of" "$file_name" | tail -n 1 | cut -d: -f1)
+    # If "received network end of" is found, delete lines with "received network voice header" after that line
+    if [ -n "$last_line_end_of" ]; then
+      sed -i "${last_line_end_of},\$ {/received network voice header/d;}" "$file_name"
+    fi
+  else
+    :
+  fi
+}
+
 if [ "${CUR_STATUS}" == "${NEW_STATUS}" ]; then
   # Nothing to do
   echo "${MODULE} is already set to ${STATUS_TEXT}, nothing to do."
@@ -127,7 +149,7 @@ else
       sed -i "/\[Enabled\]/{n;s/${CUR_STATUS}/${NEW_STATUS}/}" ${APRSGWCONFIG}
       systemctl restart ${SYSCTL_APRSGW}
   else
-      sed -i "/\[${MODULE}\]/{n; s/Enable=[[:digit:]]/Enable=${NEW_STATUS}/}" ${MMDVMCONFIG}
+      sed -i "/^\[${MODULE}\]$/,/^$/ s/Enable=[[:digit:]]/Enable=${NEW_STATUS}/" ${MMDVMCONFIG}
       systemctl restart ${GW}
       systemctl restart ${SYSCTL_MMDVMHOST}
   fi
@@ -135,6 +157,7 @@ else
     rm -rf /etc/${1}_paused
   fi
   if [ "${2}" == "Disable" ] && [ ! -f "/etc/${1}_paused" ]; then
+    process_log_file
     touch /etc/${1}_paused
   fi
   sync && sync && sync
