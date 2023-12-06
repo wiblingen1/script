@@ -127,7 +127,7 @@ else
       sed -i "/\[Enabled\]/{n;s/${CUR_STATUS}/${NEW_STATUS}/}" ${APRSGWCONFIG}
       systemctl restart ${SYSCTL_APRSGW}
   else
-      sed -i "/\[${MODULE}\]/{n;s/${CUR_STATUS}/${NEW_STATUS}/}" ${MMDVMCONFIG}
+      sed -i "/\[${MODULE}\]/{n; s/Enable=[[:digit:]]/Enable=${NEW_STATUS}/}" ${MMDVMCONFIG}
       systemctl restart ${GW}
       systemctl restart ${SYSCTL_MMDVMHOST}
   fi
