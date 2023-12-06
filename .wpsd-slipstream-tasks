@@ -452,7 +452,7 @@ if [ -f "$armbian_env_file" ] && [[ $(grep 'armbian-ramlog' /etc/systemd/system/
 fi
 # setup armbian holds for unattended ups...
 if [ -f "$armbian_env_file" ] ; then
-    apt-mark hold armbian-bsp-cli-orangepizero linux-dtb-edge-sunxi linux-image-edge-sunxi linux-u-boot-orangepizero-edge armbian-firmware-full armbian-firmware
+    apt-mark hold armbian-bsp-cli-orangepizero linux-dtb-edge-sunxi linux-image-edge-sunxi linux-u-boot-orangepizero-edge armbian-firmware-full armbian-firmware > /dev/null 2<&1
 fi
 
 # remove last heard data manager; taxing, inaccurate, unreliable, and; mqtt coming ;-)
