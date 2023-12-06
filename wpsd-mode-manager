@@ -139,6 +139,7 @@ else
     process_log_file
     touch /etc/${1}_paused
   fi
+  systemctl restart ${SYSCTL_MMDVMHOST}
   sync && sync && sync
   systemctl start cron.service > /dev/null 2>/dev/null &
 fi
