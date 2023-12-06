@@ -2,12 +2,7 @@
 #
 ###############################################################################
 #                                                                             #
-#                      Pi-Star MMDVMHost Module Tool                          #
-#                                                                             #
-#     Version 1.4, Code, Design and Development by Andy Taylor (MW0MWZ).      #
-#                            Enhanced by W0CHP                                #
-#                                                                             #
-#    Make it simple to turn on/off modes from the CLI or Cron.                #
+#  WPSD Mode Manager - used by Dash IMM. Can be called from cron and cli      #
 #                                                                             #
 ###############################################################################
 #
@@ -29,13 +24,12 @@ fi
 #
 if [ -z "$1" ]; then
   THIS_SCRIPT=$(basename "$0")
-  echo "This script needs arguments, the first should be the"
-  echo "mode you want to turn on/off, and the second"
-  echo "should be what you want to do with it, either enable or"
-  echo "dissable."
+  echo "This script needs arguments; the first should be the"
+  echo "mode you want to Disable/Enable, and the second"
+  echo "should be the 'action', either Enable or Disable."
   echo ""
-  echo "Ex: ${THIS_SCRIPT} D-Star Enable     - enable D-Star mode and restart appropriate daemon"
-  echo "Ex: ${THIS_SCRIPT} D-Star Disable    - disable D-Star mode and restart appropriate daemon"
+  echo "Eg: \`${THIS_SCRIPT} D-Star Enable\`    -    Enable D-Star mode, and restart appropriate daemon"
+  echo "Eg: \`${THIS_SCRIPT} D-Star Disable\`   -    Disable D-Star mode, and restart appropriate daemon"
   echo ""
   echo "Valid module names are: D-Star, DMR, YSF, P25, NXDN,"
   echo "                        M17, AX25, POCSAG and APRS"
@@ -48,36 +42,43 @@ fi
 if [ "$1" ]; then
   case ${1} in
   ([Dd]-[Ss][Tt][Aa][Rr])
-    CUR_STATUS=$(sed -n "/\[D-Star\]/{n;p;}" ${MMDVMCONFIG} | awk -F '=' '{print $2}')
+    CUR_STATUS=$(awk -F'=' '/\[D-Star\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="D-Star"
+    GW="ircddbgateway.service"
   ;;
   ([Dd][Mm][Rr])
-    CUR_STATUS=$(sed -n "/\[DMR\]/{n;p;}" ${MMDVMCONFIG} | awk -F '=' '{print $2}')
+    CUR_STATUS=$(awk -F'=' '/\[DMR\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="DMR"
+    GW="dmrgateway.service"
   ;;
   ([Yy][Ss][Ff])
-    CUR_STATUS=$(sed -n "/\[System Fusion\]/{n;p;}" ${MMDVMCONFIG} | awk -F '=' '{print $2}')
+    CUR_STATUS=$(awk -F'=' '/\[System Fusion\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="System Fusion"
+    GW="ysfgateway.service"
   ;;
   ([Nn][Xx][Dd][Nn])
-    CUR_STATUS=$(sed -n "/\[NXDN\]/{n;p;}" ${MMDVMCONFIG} | awk -F '=' '{print $2}')
+    CUR_STATUS=$(awk -F'=' '/\[NXDN\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="NXDN"
+    GW="nxdngateway.service"
   ;;
   ([Mm][1][7])
-    CUR_STATUS=$(sed -n "/\[M17\]/{n;p;}" ${MMDVMCONFIG} | awk -F '=' '{print $2}')
+    CUR_STATUS=$(awk -F'=' '/\[M17\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="M17"
+    GW="m17gateway.service"
   ;;
   ([Pp]25)
-    CUR_STATUS=$(sed -n "/\[P25\]/{n;p;}" ${MMDVMCONFIG} | awk -F '=' '{print $2}')
+    CUR_STATUS=$(awk -F'=' '/\[P25\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="P25"
+    GW="p25gateway.service"
   ;;
   ([Aa][Xx][2][5])
-    CUR_STATUS=$(sed -n "/\[AX.25\]/{n;p;}" ${MMDVMCONFIG} | awk -F '=' '{print $2}')
+    CUR_STATUS=$(awk -F'=' '/\[AX.25\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="AX25"
   ;;
   ([Pp][Oo][Cc][Ss][Aa][Gg])
-    CUR_STATUS=$(sed -n "/\[POCSAG\]/{n;p;}" ${MMDVMCONFIG} | awk -F '=' '{print $2}')
+    CUR_STATUS=$(awk -F'=' '/\[POCSAG\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="POCSAG"
+    GW="dapnetgateway.service"
   ;;
   ([Aa][Pp][Rr][Ss])
     CUR_STATUS=$(sed -n "/\[Enabled\]/{n;p;}" ${APRSGWCONFIG} | awk -F '=' '{print $2}')
@@ -97,9 +98,11 @@ if [ "$2" ]; then
   case ${2} in
   (Enable)
     NEW_STATUS="1"
+    STATUS_TEXT="Enabled"
   ;;
   (Disable)
     NEW_STATUS="0"
+    STATUS_TEXT="Disabled"
   ;;
   *)
     # Catch All
@@ -114,17 +117,18 @@ fi
 
 if [ "${CUR_STATUS}" == "${NEW_STATUS}" ]; then
   # Nothing to do
-  echo "${MODULE} is already set to ${NEW_STATUS}, nothing to do."
+  echo "${MODULE} is already set to ${STATUS_TEXT}, nothing to do."
   exit 0
 else
   # Change required, so lets change it...
-  echo "Setting ${MODULE} to ${NEW_STATUS} and reloading..."
+  echo "Setting ${MODULE} to ${STATUS_TEXT} and reloading..."
   systemctl stop cron.service > /dev/null 2>/dev/null &
   if [ "${MODULE}" == "APRS" ]; then
       sed -i "/\[Enabled\]/{n;s/${CUR_STATUS}/${NEW_STATUS}/}" ${APRSGWCONFIG}
       systemctl restart ${SYSCTL_APRSGW}
   else
       sed -i "/\[${MODULE}\]/{n;s/${CUR_STATUS}/${NEW_STATUS}/}" ${MMDVMCONFIG}
+      systemctl restart ${GW}
       systemctl restart ${SYSCTL_MMDVMHOST}
   fi
   if [ "${2}" == "Enable" ] && [ -f "/etc/${1}_paused" ]; then
