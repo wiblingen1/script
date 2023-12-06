@@ -9,9 +9,7 @@
 # Specify some Variables
 #
 MMDVMCONFIG="/etc/mmdvmhost"
-APRSGWCONFIG="/etc/aprsgateway"
 SYSCTL_MMDVMHOST="mmdvmhost"
-SYSCTL_APRSGW="aprsgateway"
 
 #
 # Check to make sure we are root, and bail out if we are not
@@ -33,8 +31,7 @@ if [ -z "$1" ]; then
   echo "Eg: \`${THIS_SCRIPT} D-Star Enable\`    -    Enable D-Star mode, and restart appropriate daemon"
   echo "Eg: \`${THIS_SCRIPT} D-Star Disable\`   -    Disable D-Star mode, and restart appropriate daemon"
   echo ""
-  echo "Valid module names are: D-Star, DMR, YSF, P25, NXDN,"
-  echo "                        M17, AX25, POCSAG and APRS"
+  echo "Valid module names are: D-Star, DMR, YSF, P25, NXDN, M17, AX25 & POCSAG"
   echo ""
   exit 0
 fi
@@ -47,32 +44,26 @@ if [ "$1" ]; then
   ([Dd]-[Ss][Tt][Aa][Rr])
     CUR_STATUS=$(awk -F'=' '/\[D-Star\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="D-Star"
-    GW="ircddbgateway.service"
   ;;
   ([Dd][Mm][Rr])
     CUR_STATUS=$(awk -F'=' '/\[DMR\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="DMR"
-    GW="dmrgateway.service"
   ;;
   ([Yy][Ss][Ff])
     CUR_STATUS=$(awk -F'=' '/\[System Fusion\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="System Fusion"
-    GW="ysfgateway.service"
   ;;
   ([Nn][Xx][Dd][Nn])
     CUR_STATUS=$(awk -F'=' '/\[NXDN\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="NXDN"
-    GW="nxdngateway.service"
   ;;
   ([Mm][1][7])
     CUR_STATUS=$(awk -F'=' '/\[M17\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="M17"
-    GW="m17gateway.service"
   ;;
   ([Pp]25)
     CUR_STATUS=$(awk -F'=' '/\[P25\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="P25"
-    GW="p25gateway.service"
   ;;
   ([Aa][Xx][2][5])
     CUR_STATUS=$(awk -F'=' '/\[AX.25\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
@@ -81,11 +72,6 @@ if [ "$1" ]; then
   ([Pp][Oo][Cc][Ss][Aa][Gg])
     CUR_STATUS=$(awk -F'=' '/\[POCSAG\]/{flag=1; next} flag && /Enable/{gsub(/[[:space:]]/, "", $2); print $2; flag=0}' ${MMDVMCONFIG})
     MODULE="POCSAG"
-    GW="dapnetgateway.service"
-  ;;
-  ([Aa][Pp][Rr][Ss])
-    CUR_STATUS=$(sed -n "/\[Enabled\]/{n;p;}" ${APRSGWCONFIG} | awk -F '=' '{print $2}')
-    MODULE="APRS"
   ;;
   *)
     # Catch All
@@ -145,14 +131,7 @@ else
   # Change required, so lets change it...
   echo "Setting ${MODULE} to ${STATUS_TEXT} and reloading..."
   systemctl stop cron.service > /dev/null 2>/dev/null &
-  if [ "${MODULE}" == "APRS" ]; then
-      sed -i "/\[Enabled\]/{n;s/${CUR_STATUS}/${NEW_STATUS}/}" ${APRSGWCONFIG}
-      systemctl restart ${SYSCTL_APRSGW}
-  else
-      sed -i "/^\[${MODULE}\]$/,/^$/ s/Enable=[[:digit:]]/Enable=${NEW_STATUS}/" ${MMDVMCONFIG}
-      systemctl restart ${GW}
-      systemctl restart ${SYSCTL_MMDVMHOST}
-  fi
+  sed -i "/^\[${MODULE}\]$/,/^$/ s/Enable=[[:digit:]]/Enable=${NEW_STATUS}/" ${MMDVMCONFIG}
   if [ "${2}" == "Enable" ] && [ -f "/etc/${1}_paused" ]; then
     rm -rf /etc/${1}_paused
   fi
