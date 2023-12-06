@@ -114,9 +114,10 @@ function process_log_file() {
   if [ -e "$file_name" ]; then
     # Find the last line with "received network end of" in the file
     last_line_end_of=$(grep -n "received network end of" "$file_name" | tail -n 1 | cut -d: -f1)
-    # If "received network end of" is found, delete lines with "received network voice header" after that line
+
+    # If "received network end of" is found, delete lines with "received network voice header" or "received network data from" after that line
     if [ -n "$last_line_end_of" ]; then
-      sed -i "${last_line_end_of},\$ {/received network voice header/d;}" "$file_name"
+      sed -i "${last_line_end_of},\$ {/received network voice header\|received network data from/d;}" "$file_name"
     fi
   else
     :
