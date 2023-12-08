@@ -51,6 +51,9 @@ tz=$( date +%Z )
 uaStr="WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 uaStrSF="WPSD-SuppFiles (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
+# Randomize the time for the daily cron jobs
+sed -i "/cron.daily/c ${cronMins} ${cronHours}  * * *   root    cd / && run-parts --report /etc/cron.daily" /etc/crontab
+
 # check if user already has firewall disabled, and if so, ensure it's kept that way.
 if grep -q LOGNDROP /etc/iptables.rules; then
     fwState="enabled"
@@ -344,9 +347,6 @@ chmod 775 /var/log/pi-star > /dev/null 2>&1
 
 # run any slipstream tasks
 bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
-
-# Randomize the time for the daily cron jobs
-sed -i "/cron.daily/c ${cronMins} ${cronHours}	* * *	root	cd / && run-parts --report /etc/cron.daily" /etc/crontab
 
 # Start all the services...
 #systemctl daemon-reload &> /dev/null # Reload systemd to account for service changes
