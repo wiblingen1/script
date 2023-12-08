@@ -585,6 +585,11 @@ if [ -n "$invalid_lines" ]; then
     sed -i 's/\(Callsign=.*\)-$/\1/; s/\(Callsign=.*\)- /\1/; s/\(Callsign=.*\) $/\1/' "$file_path"
 fi
 
+# cleanup DMRgw X-mode decrips...
+if grep -q '_Cross-over' /etc/dmrgateway ; then
+    sed -i 's/_Cross-over/_Cross-Mode/g' /etc/dmrgateway
+fi
+
 #
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
