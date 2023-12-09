@@ -184,6 +184,7 @@ main_function() {
     conn_check
     echo -e "${BULL} Stopping WPSD Services. Please wait..."
     wpsd-services fullstop > /dev/null 2>&1
+    process_log_file > /dev/null 2>&1
     echo -e "  ${TICK} Done!\n"
 
     echo -e "${BULL} Updating WPSD Utilities and Support Programs..."
