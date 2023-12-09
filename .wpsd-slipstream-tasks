@@ -590,6 +590,11 @@ if grep -q '_Cross-over' /etc/dmrgateway ; then
     sed -i 's/_Cross-over/_Cross-Mode/g' /etc/dmrgateway
 fi
 
+# fix red css color to newer more visible red:
+if grep -q 'b23b3b' /etc/pistar-css.ini ; then
+    sed -i 's/b23b3b/8C0C26/g' /etc/pistar-css.ini
+fi
+
 #
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
