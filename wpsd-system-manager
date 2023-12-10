@@ -6,6 +6,8 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+source /usr/local/sbin/.wpsd-shell-funcs
+
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 
 function DisableFirewall() {
@@ -158,6 +160,15 @@ while [[ $# -gt 0 ]]; do
 
     "-esw" | "--enable-services-watchdog")
         EnableServiceWatchdog
+        shift
+        ;;
+    "-fl" | "--fix-log")
+        process_log_file
+        shift
+        ;;
+
+    "-pl" | "--purge-logs")
+        purge_log_files
         shift
         ;;
 
