@@ -3,11 +3,19 @@
 # WPSD Hourly Cron Job Script W0CHP 
 #
 
+# Make sure we are root
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
 mount -o remount,rw / # for shits and giggles
 
 if [ ! -t 1 ]; then
   exec &> /tmp/WPSD-hourly-cron.log
 fi
+
+pkill .wpsd-slipstream-tasks > /dev/null 2>&1
 
 # migrate config update notice
 if grep -q ConfUpdReqd /etc/mmdvmhost ; then
