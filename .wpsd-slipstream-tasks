@@ -463,9 +463,12 @@ if [ -f "$armbian_env_file" ]; then
         armbian-firmware-full \
         armbian-firmware > /dev/null 2>&1
 fi
-# cleanup NanoPi/OPi bcm modprobing
+# cleanup NanoPi/OPi  modprobing
 if [ -f "$armbian_env_file" ] && [[ $(grep 'modprobe -r rtl8' /etc/rc.local) ]] ; then
     sed -i '/modprobe -r rtl8/d' /etc/rc.local
+fi
+if [ -f "$armbian_env_file" ] && [[ $(grep 'modprobe -r leds_' /etc/rc.local) ]] ; then
+    sed -i '/modprobe -r leds_/d' /etc/rc.local
 fi
 
 # remove last heard data manager; taxing, inaccurate, unreliable, and; mqtt coming ;-)
