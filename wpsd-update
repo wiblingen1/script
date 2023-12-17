@@ -7,6 +7,7 @@
 #                                                                             #
 ###############################################################################
 #
+
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
   exit 1
@@ -358,7 +359,9 @@ main_function() {
 	chmod 664 /usr/local/etc/ircddbgateway/*.ambe
 	chmod 664 /usr/local/etc/ircddbgateway/*.indx
     fi
-	
+
+    # should likely do more AMBE voice file existence checks here at some point.
+
     if [[ $(grep "\[Voice\]" /etc/p25gateway | wc -l) -eq 0 ]]; then # ensure p25gw is setup for voice supp.
 	echo "" >> /etc/p25gateway
 	sed -i '$a[Voice]\nEnabled=1\nLanguage=en_GB\nDirectory=/usr/local/etc/P25_Audio\n' /etc/p25gateway
