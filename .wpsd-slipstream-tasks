@@ -23,6 +23,8 @@ rc_local_file="/etc/rc.local"
 
 git config --global pull.ff only
 
+source /usr/local/sbin/.wpsd-shell-funcs
+
 # This part fully-disables read-only mode
 #
 # 1/2023 - W0CHP (updated on 2/23/2023)
@@ -616,6 +618,14 @@ fi
 # fix red css color to newer more visible red:
 if grep -q 'b23b3b' /etc/pistar-css.ini ; then
     sed -i 's/b23b3b/8C0C26/g' /etc/pistar-css.ini
+fi
+
+# dvmega cast-specific; ensure configs always have proper perms..
+castResult=$(isDVmegaCast)
+if [ "$castResult" == "true" ]; then
+    chmod 775 /usr/local/cast/etc
+    chown -R www-data:pi-star /usr/local/cast/etc
+    chmod 664 /usr/local/cast/etc/*
 fi
 
 #
