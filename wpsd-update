@@ -98,9 +98,6 @@ git_update() {
 	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} > /dev/null 2>&1
 	    git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2>&1 # restore user config files from stash
 	    git stash clear > /dev/null 2>&1 # housekeeping
-	    #echo -e "ChangeLog (last 3 changes):"
-	    #echo -e "---------------------------"
-	    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
 	    echo -e "  ${TICK} Updates installed!"
 	else
 	    if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
@@ -110,9 +107,6 @@ git_update() {
 		    # New updater version - Self-update and re-exec:
 		    echo -e "\n  ${COL_LIGHT_BLUE}${INFO} New version of the Updater available. Performing self-update..."
 		    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
-		    #echo -e "ChangeLog (last 3 changes):"
-		    #echo -e "---------------------------"
-		    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
 		    echo -e "  ${TICK} Updates installed!"
 		    if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
 			echo -e "  ${NOTE} Forcing update..."
@@ -133,9 +127,6 @@ git_update() {
 		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
 		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master > /dev/null 2>&1
 	    fi
-	    #echo -e "ChangeLog (last 3 changes):"
-	    #echo -e "---------------------------"
-	    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
 	    echo -e "  ${TICK} Updates installed!"
         fi
 	# Re-check that the updates are now good
@@ -173,7 +164,6 @@ main_function() {
     pkill .wpsd-slipstream-tasks > /dev/null 2>&1
 
     if [ -t 1 ] ; then
-	#echo -e "\n${BULL} Checking web server configuration..."
 	if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
 	    sed -i '\/PIDFile=\/run\/nginx.pid/a ExecStartPre=\/bin\/mkdir -p \/var\/log\/nginx' /lib/systemd/system/nginx.service
 	    systemctl daemon-reload
@@ -182,7 +172,6 @@ main_function() {
 	    exec "$0" "$@"
 	    exit 1
 	fi
-	#echo -e "  ${COL_BRIGHT_GREEN}${TICK} Done!"
     fi
 
     conn_check
@@ -194,17 +183,14 @@ main_function() {
     echo -e "${BULL} Updating WPSD Utilities and Support Programs..."
     git_update /usr/local/sbin
     #systemctl daemon-reload > /dev/null 2>&1
-    #echo -e "  ${TICK} Done!\n"
     echo ""
 
     echo -e "${BULL} Updating WPSD Web Dashboard Software..."
     git_update /var/www/dashboard
-    #echo -e "  ${TICK} Done!\n"
     echo ""
 
     echo -e "${BULL} Updating WPSD Digital Voice-Related Binaries..."
     git_update /usr/local/bin
-    #echo -e "  ${TICK} Done!\n"
     echo ""
 
     if ! [ -f /root/M17Hosts.txt ]; then
