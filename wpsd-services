@@ -11,6 +11,8 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+source /usr/local/sbin/.wpsd-shell-funcs
+
 # Display services active status
 function status_services() {
     services=("pistar-watchdog.service" "pistar-upnp.service" "nextiondriver.service" "mmdvmhost.service" "ircddbgateway.service" "dapnetgateway.service" "dmrgateway.service"  "p25gateway.service" "p25parrot.service" "nxdngateway.service" "m17gateway.service" "nxdnparrot.service" "dgidgateway.service" "ysfgateway.service" "ysfparrot.service" "ysf2dmr.service" "ysf2p25.service" "ysf2nxdn.service" "dmr2ysf.service" "dmr2m17.service" "dmr2nxdn.service" "nxdn2dmr.service" "aprsgateway.service" "gpsd.service" "gpsd.socket" "timeserver.service" "cron.service" "pistar-remote.timer" "pistar-remote.service")
@@ -68,6 +70,8 @@ function stop_services()
     if [ -d '/usr/local/cast' ] ; then
 	systemctl stop castudp.service > /dev/null 2>&1
     fi
+
+    process_log_file
 
     if [ -t 1 ] ; then
 	echo -e "\b\b\b: DONE.\b"
