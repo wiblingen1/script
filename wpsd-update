@@ -119,7 +119,8 @@ git_update() {
 			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
 			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
 		    fi
-		    echo -e "\n${COL_LIGHT_BLUE}${INFO} Relaunching Updater with the new version..."
+		    echo -e "\n${COL_LIGHT_BLUE}${INFO} Relaunching Updater with the new version in 3 seconds..."
+		    sleep 4
 		    exec "$0" "$@"
 		    exit 1
 		fi
