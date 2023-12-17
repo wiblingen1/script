@@ -436,6 +436,13 @@ for file in "${cronfiles[@]}"; do
         mv "$file" "$backup_destination$original_path/$file_name"
     fi
 done
+# disable UA motd messages:
+if [ -f "$armbian_env_file" ] ; then
+    if [ -f '/etc/update-motd.d/92-unattended-upgrades' ] ; then
+	mkdir -p /root/armbian/etc_update-motd.d
+	mv /etc/update-motd.d/92-unattended-upgrades /root/armbian/etc_update-motd.d
+    fi
+fi
 # disable armbian zram
 if [ -f "$armbian_env_file" ] ; then
     if ! `systemctl status armbian-zram-config.service | grep -q masked` ; then
