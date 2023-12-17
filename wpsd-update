@@ -83,7 +83,7 @@ git_update() {
 
     # # get rid of legacy index not that upnp rules are in /etc/wpsd-upnp-rules
     if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
-	git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git update-index --no-assume-unchanged pistar-upnp.service > /dev/null 2<&1
+	git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git update-index --no-assume-unchanged pistar-upnp.service > /dev/null 2>&1
     fi
 
     if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
@@ -91,10 +91,10 @@ git_update() {
         # WPSD has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
         if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
 	    cd ${gitFolder}
-	    git stash > /dev/null 2<&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
-	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} &> /dev/null
-	    git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2<&1 # restore user config files from stash
-	    git stash clear > /dev/null 2<&1 # housekeeping
+	    git stash > /dev/null 2>&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
+	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} > /dev/null 2>&1
+	    git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2>&1 # restore user config files from stash
+	    git stash clear > /dev/null 2>&1 # housekeeping
 	    #echo -e "ChangeLog (last 3 changes):"
 	    #echo -e "---------------------------"
 	    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
@@ -102,11 +102,11 @@ git_update() {
 	else
 	    if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
 		cd ${gitFolder}
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch > /dev/null 2<&1
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch > /dev/null 2>&1
 		if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep wpsd-update 2>/dev/null)" = "wpsd-update" ]; then
 		    # New updater version - Self-update and re-exec:
 		    echo -e "\n  ${COL_LIGHT_BLUE}${INFO} New version of the Updater available. Performing self-update..."
-		    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
+		    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
 		    #echo -e "ChangeLog (last 3 changes):"
 		    #echo -e "---------------------------"
 		    #git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git --no-pager log --no-decorate --pretty=oneline -n3 | cut --complement -d' ' -f1
@@ -117,7 +117,7 @@ git_update() {
 			    rm -f ${gitFolder}/pistar-upnp.service
 			fi
 			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
-			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
+			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
 		    fi
 		    echo -e "\n${COL_LIGHT_BLUE}${INFO} Relaunching Updater with the new version..."
 		    exec "$0" "$@"
@@ -126,8 +126,8 @@ git_update() {
 	    fi
 	    if [[ ${gitFolder} == "/usr/local/bin" ]]; then
 		# Update the Binaries
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master &> /dev/null
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master &> /dev/null
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master > /dev/null 2>&1
 	    fi
 	    #echo -e "ChangeLog (last 3 changes):"
 	    #echo -e "---------------------------"
