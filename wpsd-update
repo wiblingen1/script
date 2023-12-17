@@ -17,6 +17,7 @@ if ! flock -n 200 ; then
   echo -e "Another instance is already running...\n"
   exit 1
 fi
+
 script_name=$(basename "$0")
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
@@ -30,6 +31,7 @@ uaStr="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} 
 uaStrSF="WPSD-SuppFiles (Manual Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 source /usr/local/sbin/.wpsd-shell-funcs
+
 mount -o remount,rw / # for shits and giggles
 
 # connectivity check
@@ -150,7 +152,7 @@ git_update() {
 	fi
     else
 	echo -e "  ${INFO} No updates required."
-fi
+    fi
 }
 
 term_banner() {
