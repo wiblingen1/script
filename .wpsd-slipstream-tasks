@@ -645,6 +645,12 @@ if [ "$castResult" == "true" ]; then
 	systemctl start castudp.service > /dev/null 2>&1
 	systemctl start castserial.service > /dev/null 2>&1
     fi
+    if [ -d '/opt/cast' ] ; then
+	# setup the memory-list and firmware upgrade www symlinks if they don't exist yet.
+	if [ -L '/var/www/dashboard/admin/cast' ] && [ -d '/var/www/dashboard/admin/cast' ]; then
+	    ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast
+	fi
+    fi
 fi
 
 #
