@@ -620,12 +620,29 @@ if grep -q 'b23b3b' /etc/pistar-css.ini ; then
     sed -i 's/b23b3b/8C0C26/g' /etc/pistar-css.ini
 fi
 
-# dvmega cast-specific; ensure configs always have proper perms..
+# dvmega cast-specific stuff
 castResult=$(isDVmegaCast)
 if [ "$castResult" == "true" ]; then
+    # ensure configs always have proper perms
     chmod 775 /usr/local/cast/etc
     chown -R www-data:pi-star /usr/local/cast/etc
     chmod 664 /usr/local/cast/etc/*
+    # setup local cast repo and link repo to cast PATH
+    if [ ! -d '/opt/cast' ] ; then
+	systemctl stop castudp.service > /dev/null 2>&1
+	systemctl stop castserial.service > /dev/null 2>&1
+
+	git clone https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast.git /opt/cast > /dev/null 2>&1
+
+	rm -rf /usr/local/cast/sbin
+	ln -s /opt/cast/usr-local-cast-sbin /usr/local/cast/sbin
+
+	rm -rf /usr/local/cast/bin
+	ln -s /opt/cast/usr-local-cast-bin /usr/local/cast/bin
+
+	systemctl start castudp.service > /dev/null 2>&1
+	systemctl start castserial.service > /dev/null 2>&1
+    fi
 fi
 
 #
