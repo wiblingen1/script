@@ -52,7 +52,6 @@ case "$1" in
                         chmod 775 $LOGDIR
 			nice -n -10 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON started as PID "`$PGREP $DAEMON`
-			sleep 10
 			exit 0;
 		fi
 		;;
@@ -82,7 +81,6 @@ case "$1" in
                         chmod 775 $LOGDIR
 			nice -n -10 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON re-started as PID "`${PGREP} ${DAEMON}`
-			sleep 10
 			exit 0;
 		else
 			echo -e "$DAEMON is not running"
@@ -94,7 +92,6 @@ case "$1" in
                         chmod 775 $LOGDIR
 			nice -n -10 ${DAEMON_PATH}${DAEMON} ${DAEMON_OPTS}
 			echo -e "$DAEMON started as PID "`${PGREP} ${DAEMON}`
-			sleep 10
 			exit 0;
 		fi
 		;;
