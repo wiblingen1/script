@@ -206,7 +206,7 @@ main_function() {
 	   systemctl start castserial.service > /dev/null 2>&1
 
 	   mkdir /usr/local/cast/etc
-	   cp -a opt/cast/cast-factory-settings/* /usr/local/cast/etc/
+	   cp -a /opt/cast/cast-factory-settings/* /usr/local/cast/etc/
 	fi
 	if [ -d '/opt/cast' ] ; then
 	    # setup the memory-list and firmware upgrade www symlinks if they don't exist yet.
