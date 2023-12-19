@@ -93,6 +93,7 @@ git_update() {
 		cd ${gitFolder}
 		git reset --hard origin/master > /dev/null 2>&1
 		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch > /dev/null 2>&1
+		git reset --hard origin/master > /dev/null 2>&1
 		if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep wpsd-update 2>/dev/null)" = "wpsd-update" ]; then
 		    # New updater version - Self-update and re-exec:
 		    echo -e "\n  ${COL_LIGHT_BLUE}${INFO} New version of the Updater available. Performing self-update..."
