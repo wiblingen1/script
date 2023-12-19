@@ -631,6 +631,7 @@ if [ "$castResult" == "true" ]; then
     if [ ! -d '/opt/cast' ] ; then
 	cd /usr/local/sbin
 	git reset --hard > /dev/null 2>&1
+
 	systemctl stop castudp.service > /dev/null 2>&1
 	systemctl stop castserial.service > /dev/null 2>&1
 
