@@ -111,7 +111,7 @@ function start_services()
         systemctl start pistar-upnp.service > /dev/null 2>&1
     fi
     
-    # Restart cron service if fullstop was used before
+    # Restart cron service if fullstop was passed
     systemctl is-active --quiet cron.service || systemctl start cron.service
 
     if [ -t 1 ] ; then
