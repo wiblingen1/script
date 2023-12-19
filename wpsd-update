@@ -197,7 +197,7 @@ main_function() {
     castResult=$(isDVmegaCast)
     if [ "$castResult" == "true" ]; then
 	echo -e "${BULL} Updating WPSD DVMega CAST Software..."
-	git_update /usr/opt/cast
+	git_update /opt/cast
     fi
 
     if ! [ -f /root/M17Hosts.txt ]; then
