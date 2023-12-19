@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# This forcefulle terms. the NX driver before MMDVMHost shuts down
+# in order to provice better NX dispay "stopped" feedback - W0CHP
+#
+# Called by wpsd-services
+
 /usr/bin/killall NextionDriver
 
 exit 0
