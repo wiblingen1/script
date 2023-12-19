@@ -19,6 +19,8 @@ mount -o remount,rw / # for shits and giggles
 pkill pistar-hourly.cron > /dev/null 2>&1
 pkill .wpsd-slipstream-tasks > /dev/null 2>&1
 
+source /usr/local/sbin/.wpsd-shell-funcs
+
 # ensure repos can be updated
 if ! grep -q 'safe' /root/.gitconfig > /dev/null 2<&1 ; then
     git config --global --add safe.directory /var/www/dashboard > /dev/null 2<&1
@@ -96,14 +98,16 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 
     echo -e "\nUpdating binaries..."
     # Update the Binaries
-    if [ "${osName}" = "buster" ]; then
-	#branch="buster" # sunsetting
-	branch="master"
-	GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/bin --git-dir=/usr/local/bin/.git checkout -q "${branch}"
-    else
-	branch="master"
-    fi
+    branch="master"
     GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/bin --git-dir=/usr/local/bin/.git pull origin "${branch}"
+
+    # dvmega cast-specific stuff
+    castResult=$(isDVmegaCast)
+    if [ "$castResult" == "true" ]; then
+	echo -e "\nUpdating binaries..."
+        branch="master"
+	GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/opt/cast --git-dir=/opt/cast/.git pull origin "${branch}"
+    fi
 
     echo -e "\nUpdating Hostfiles..."
     # Host Files Update

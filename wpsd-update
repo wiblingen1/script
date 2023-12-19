@@ -193,6 +193,13 @@ main_function() {
     git_update /usr/local/bin
     echo ""
 
+    # dvmega cast-specific stuff
+    castResult=$(isDVmegaCast)
+    if [ "$castResult" == "true" ]; then
+	echo -e "${BULL} Updating WPSD DVMega CAST Software..."
+	git_update /usr/opt/cast
+    fi
+
     if ! [ -f /root/M17Hosts.txt ]; then
 	echo -e "# Format: Reflector Name IP Port\n# Example:\n# M17-000    81.231.241.25    17000\n\n" > /root/M17Hosts.txt
     fi
