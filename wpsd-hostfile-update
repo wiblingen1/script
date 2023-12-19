@@ -13,7 +13,7 @@ if [ "$(id -u)" != "0" ];then
 fi
 
 # check age of task marker file if it exists, and if it's < 8 hours young, bail.
-if [[ ${FORCE} -ne 1 ]] ; then
+if [[ ${FORCE} -ne 1 ]] ; then 
     if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "28880" ]; then
 	echo "Hostfles are less than 8 hours old. Not updating."
 	exit 0
