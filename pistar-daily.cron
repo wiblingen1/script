@@ -21,13 +21,6 @@ pkill .wpsd-slipstream-tasks > /dev/null 2>&1
 
 source /usr/local/sbin/.wpsd-shell-funcs
 
-# ensure repos can be updated
-if ! grep -q 'safe' /root/.gitconfig > /dev/null 2<&1 ; then
-    git config --global --add safe.directory /var/www/dashboard > /dev/null 2<&1
-    git config --global --add safe.directory /usr/local/bin > /dev/null 2<&1
-    git config --global --add safe.directory /usr/local/sbin > /dev/null 2<&1
-fi
-
 # migrate config update notice
 if grep -q ConfUpdReqd /etc/mmdvmhost ; then
     grep ConfUpdReqd /etc/mmdvmhost | sed 's/=/ = /' >> /etc/pistar-release

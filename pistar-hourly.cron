@@ -28,13 +28,6 @@ else
     fi
 fi
 
-# ensure repos can be updated
-if ! grep -q 'safe' /root/.gitconfig > /dev/null 2<&1 ; then
-    git config --global --add safe.directory /var/www/dashboard > /dev/null 2<&1
-    git config --global --add safe.directory /usr/local/bin > /dev/null 2<&1
-    git config --global --add safe.directory /usr/local/sbin > /dev/null 2<&1
-fi
-
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
