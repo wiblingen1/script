@@ -211,6 +211,10 @@ main_function() {
 		ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast
 	    fi
 	fi
+	# ensure configs always have proper perms
+	chmod 775 /usr/local/cast/etc
+	chown -R www-data:pi-star /usr/local/cast/etc
+	chmod 664 /usr/local/cast/etc/*
 
 	git_update /opt/cast
 	echo ""

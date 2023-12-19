@@ -647,31 +647,6 @@ if [ "$castResult" == "true" ]; then
     chmod 775 /usr/local/cast/etc
     chown -R www-data:pi-star /usr/local/cast/etc
     chmod 664 /usr/local/cast/etc/*
-    # setup local cast repo and link repo to cast PATH
-    if [ ! -d '/opt/cast' ] ; then
-	cd /usr/local/sbin
-	git reset --hard > /dev/null 2>&1
-
-	systemctl stop castudp.service > /dev/null 2>&1
-	systemctl stop castserial.service > /dev/null 2>&1
-
-	git clone https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast.git /opt/cast > /dev/null 2>&1
-
-	rm -rf /usr/local/cast/sbin
-	ln -s /opt/cast/usr-local-cast-sbin /usr/local/cast/sbin
-
-	rm -rf /usr/local/cast/bin
-	ln -s /opt/cast/usr-local-cast-bin /usr/local/cast/bin
-
-	systemctl start castudp.service > /dev/null 2>&1
-	systemctl start castserial.service > /dev/null 2>&1
-    fi
-    if [ -d '/opt/cast' ] ; then
-	# setup the memory-list and firmware upgrade www symlinks if they don't exist yet.
-	if [ ! -L '/var/www/dashboard/admin/cast' ] && [ ! -d '/var/www/dashboard/admin/cast' ]; then
-	    ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast
-	fi
-    fi
 fi
 
 #
