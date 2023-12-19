@@ -99,7 +99,10 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     if [ "$castResult" == "true" ]; then
 	echo -e "\nUpdating DVMega CAST software..."
         branch="master"
+	cd /opt/cast
+	git reset --hard origin/master
 	GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/opt/cast --git-dir=/opt/cast/.git pull origin "${branch}"
+	git reset --hard origin/master
     fi
 
     echo -e "\nUpdating Hostfiles..."
