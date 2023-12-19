@@ -170,16 +170,16 @@ main_function() {
     echo -e "  ${TICK} Done!\n"
 
     echo -e "${BULL} Updating WPSD Utilities and Support Programs..."
-    git_update /usr/local/sbin
+    git_update /usr/local/sbin > /dev/null 2>&1
     #systemctl daemon-reload > /dev/null 2>&1
     echo ""
 
     echo -e "${BULL} Updating WPSD Web Dashboard Software..."
-    git_update /var/www/dashboard
+    git_update /var/www/dashboard > /dev/null 2>&1
     echo ""
 
     echo -e "${BULL} Updating WPSD Digital Voice-Related Binaries..."
-    git_update /usr/local/bin
+    git_update /usr/local/bin > /dev/null 2>&1
     echo ""
 
     # dvmega cast-specific stuff
@@ -206,20 +206,20 @@ main_function() {
 	   systemctl start castserial.service > /dev/null 2>&1
 
 	   mkdir /usr/local/cast/etc
-	   cp -a /opt/cast/cast-factory-settings/* /usr/local/cast/etc/
+	   cp -a /opt/cast/cast-factory-settings/* /usr/local/cast/etc/ > /dev/null 2>&1
 	fi
 	if [ -d '/opt/cast' ] ; then
 	    # setup the memory-list and firmware upgrade www symlinks if they don't exist yet.
 	    if [ ! -L '/var/www/dashboard/admin/cast' ] && [ ! -d '/var/www/dashboard/admin/cast' ]; then
-		ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast
+		ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast > /dev/null 2>&1
 	    fi
 	fi
 	# ensure configs always have proper perms
-	chmod 775 /usr/local/cast/etc
-	chown -R www-data:pi-star /usr/local/cast/etc
-	chmod 664 /usr/local/cast/etc/*
+	chmod 775 /usr/local/cast/etc > /dev/null 2>&1
+	chown -R www-data:pi-star /usr/local/cast/etc > /dev/null 2>&1
+	chmod 664 /usr/local/cast/etc/* > /dev/null 2>&1
 
-	git_update /opt/cast
+	git_update /opt/cast > /dev/null 2>&1
 	echo ""
     fi
 
