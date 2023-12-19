@@ -6,6 +6,7 @@
 #                                                            #
 ##############################################################
 #
+
 # Make sure we are root
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
