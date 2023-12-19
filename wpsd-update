@@ -195,6 +195,9 @@ main_function() {
 	   systemctl stop castserial.service > /dev/null 2>&1
 
 	   git clone https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast.git /opt/cast > /dev/null 2>&1
+	   cd opt/cast
+	   git checkout master > /dev/null 2>&1
+	   git reset --hard origin/master > /dev/null 2>&1
 
 	   rm -rf /usr/local/cast/sbin
 	   ln -s /opt/cast/usr-local-cast-sbin /usr/local/cast/sbin > /dev/null 2>&1
