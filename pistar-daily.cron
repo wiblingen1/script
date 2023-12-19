@@ -104,7 +104,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     # dvmega cast-specific stuff
     castResult=$(isDVmegaCast)
     if [ "$castResult" == "true" ]; then
-	echo -e "\nUpdating binaries..."
+	echo -e "\nUpdating DVMega CAST software..."
         branch="master"
 	GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/opt/cast --git-dir=/opt/cast/.git pull origin "${branch}"
     fi
