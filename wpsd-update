@@ -226,8 +226,8 @@ main_function() {
 		ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast > /dev/null 2>&1
 	    fi
 	    # setup central fw upload dir.
-	    if [ ! -d '/usr/local/cast/fw' ]; then
-		mkdir /usr/local/cast/fw
+	    if [ ! -d '/opt/cast/usr-local-cast-www/fw' ]; then
+		mkdir /opt/cast/usr-local-cast-www/fw
 	    fi
 	fi
 	# ensure configs always have proper perms
