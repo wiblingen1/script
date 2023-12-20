@@ -25,7 +25,6 @@ git config --global pull.ff only
 
 source /usr/local/sbin/.wpsd-shell-funcs
 
-
 # ensure perms for git repos
 if ! grep -q 'safe' /root/.gitconfig > /dev/null 2<&1 ; then
     git config --global --add safe.directory /var/www/dashboard > /dev/null 2<&1
@@ -39,11 +38,6 @@ if [ "$castResult" == "true" ]; then
 	git config --global --add safe.directory /opt/cast > /dev/null 2<&1
     fi
 fi
-# ensure bullseye uses ff-only for newer git strategy
-if [ "${osName}" = "bullseye" ]; then
-    git config --global pull.ff only
-fi
-
 
 # This part fully-disables read-only mode
 #
@@ -681,8 +675,16 @@ if conn_check; then
     if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin check ${gitUaStr}" git fetch origin; then
         commits_behind=$(git rev-list --count HEAD..origin/master)
         if [[ $commits_behind -gt 0 ]]; then
+	    git reset --hard origin/master
             if env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master; then
                 echo "Local sbin repository updated successfully. Restarting script..."
+	        git reset --hard origin/master
+		# check if user already has firewall disabled, and if so, ensure it's kept that way.
+		if ! grep -q LOGNDROP /etc/iptables.rules ; then
+		    /usr/local/sbin/wpsd-system-manager -dfw > /dev/null 2>&1
+		else
+ 		    /usr/local/sbin/wpsd-system-manager -efw > /dev/null 2>&1
+		fi
                 exec bash "$0" "$@" # Re-execute the script with the same arguments
             else
                 echo "Failed to update the local sbin repository."
