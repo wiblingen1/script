@@ -642,7 +642,7 @@ if [ "$castResult" == "true" ]; then
     chown -R www-data:pi-star /usr/local/cast/etc
     chmod 664 /usr/local/cast/etc/*
 
-    ### www is a symlink so get main perms setup
+    # www is a symlink so get main perms setup
     chmod 775 /opt/cast/usr-local-cast-www
     chmod 775 /opt/cast/usr-local-cast-www/cast-firmware/fw
     chown -R www-data:www-data /opt/cast/usr-local-cast-www

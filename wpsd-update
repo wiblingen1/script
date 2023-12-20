@@ -226,18 +226,19 @@ main_function() {
 		ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast > /dev/null 2>&1
 	    fi
 	    # setup central fw upload dir.
-	    if [ ! -d '/opt/cast/usr-local-cast-www/fw' ]; then
-		mkdir /opt/cast/usr-local-cast-www/fw
+	    if [ ! -d '/opt/cast/usr-local-cast-www/cast-firmware/fw' ]; then
+		mkdir /opt/cast/usr-local-cast-www/cast-firmware/fw
 	    fi
 	fi
 	# ensure configs always have proper perms
-	chmod 775 /usr/local/cast/etc > /dev/null 2>&1
-	chown -R www-data:pi-star /usr/local/cast/etc > /dev/null 2>&1
-	chmod 664 /usr/local/cast/etc/* > /dev/null 2>&1
-	# ensure fw dir always have proper perms
-	chmod 775 /usr/local/cast/fw > /dev/null 2>&1
-	chown -R www-data:pi-star /usr/local/cast/fw > /dev/null 2>&1
-	chmod 664 /usr/local/cast/fw/* > /dev/null 2>&1
+	chmod 775 /usr/local/cast/etc
+	chown -R www-data:pi-star /usr/local/cast/etc
+	chmod 664 /usr/local/cast/etc/*
+
+	# www is a symlink so get main perms setup
+	chmod 775 /opt/cast/usr-local-cast-www
+	chmod 775 /opt/cast/usr-local-cast-www/cast-firmware/fw
+	chown -R www-data:www-data /opt/cast/usr-local-cast-www
 
 	git_update /opt/cast
 	echo ""
