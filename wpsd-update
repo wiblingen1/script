@@ -225,11 +225,19 @@ main_function() {
 	    if [ ! -L '/var/www/dashboard/admin/cast' ] && [ ! -d '/var/www/dashboard/admin/cast' ]; then
 		ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast > /dev/null 2>&1
 	    fi
+	    # setup central fw upload dir.
+	    [ ! -d '/usr/local/cast/fw' ]; then
+		mkdir /usr/local/cast/fw
+	    fi
 	fi
 	# ensure configs always have proper perms
 	chmod 775 /usr/local/cast/etc > /dev/null 2>&1
 	chown -R www-data:pi-star /usr/local/cast/etc > /dev/null 2>&1
 	chmod 664 /usr/local/cast/etc/* > /dev/null 2>&1
+	# ensure fw dir always have proper perms
+	chmod 775 /usr/local/cast/fw > /dev/null 2>&1
+	chown -R www-data:pi-star /usr/local/cast/fw > /dev/null 2>&1
+	chmod 664 /usr/local/cast/fw/* > /dev/null 2>&1
 
 	git_update /opt/cast
 	echo ""
