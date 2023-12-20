@@ -226,7 +226,7 @@ main_function() {
 		ln -s /opt/cast/usr-local-cast-www /var/www/dashboard/admin/cast > /dev/null 2>&1
 	    fi
 	    # setup central fw upload dir.
-	    [ ! -d '/usr/local/cast/fw' ]; then
+	    if [ ! -d '/usr/local/cast/fw' ]; then
 		mkdir /usr/local/cast/fw
 	    fi
 	fi
