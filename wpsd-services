@@ -71,7 +71,7 @@ function stop_services()
     process_log_file
 
     if [ -t 1 ] ; then
-	echo -e "\b\b\b: DONE.\b"
+	echo -e "DONE."
     else
 	echo -e "* DONE *"
     fi
