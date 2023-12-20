@@ -151,7 +151,7 @@ term_banner() {
     echo -e -n "${COL_NC}${COL_LIGHT_ORANGE}${BOLD}WPSD Software Update Utility${COL_NC}\n"
 }
 
-main_function() {
+perform_update() {
     systemctl stop cron.service > /dev/null 2<&1
     pkill pistar-hourly.cron > /dev/null 2>&1
     pkill pistar-daily.cron > /dev/null 2>&1
@@ -474,10 +474,10 @@ if [ -t 1 ]; then
     # run via terminal, only output to screen
     export FORCE_COLOR=1
     term_banner
-    main_function "$@"
+    perform_update "$@"
 else
     # if not run via terminal, log everything into a log file
-     main_function >> /var/log/pi-star/WPSD-update.log 2>&1
+     perform_update >> /var/log/pi-star/WPSD-update.log 2>&1
 fi
 
 exit 0
