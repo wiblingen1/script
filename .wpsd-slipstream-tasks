@@ -646,6 +646,11 @@ if [ "$castResult" == "true" ]; then
     chmod 775 /opt/cast/usr-local-cast-www
     chmod 775 /opt/cast/usr-local-cast-www/cast-firmware/fw
     chown -R www-data:www-data /opt/cast/usr-local-cast-www
+
+    # ensure avrdude conf. is installed for radio/hotspot mgmt.
+    if [ ! -f '/etc/avrdude.conf' ] ; then
+	curl -o /etc/avrdude.conf https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast/raw/branch/master/etc/avrdude.conf
+    fi
 fi
 
 #
