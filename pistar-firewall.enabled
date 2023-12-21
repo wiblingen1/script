@@ -130,6 +130,7 @@ iptables -A INPUT -p tcp -s 172.16.0.0/12 --dport 445 -j ACCEPT #   SMB Access (
 iptables -A INPUT -p tcp -s 10.0.0.0/8 --dport 445 -j ACCEPT #      SMB Access (Local Networks Only)
 iptables -A INPUT -p tcp --dport 8080 -j ACCEPT #                   HTTP Allow the Raspicontrol Portal Access
 iptables -A INPUT -p udp --dport 10022 -j ACCEPT #                  D-Star ircDDBGateway remote
+iptables -A INPUT -p udp --dport 40094 -j ACCEPT #                  X-parent data port
 iptables -A INPUT -p udp --dport 2460 -j ACCEPT #                   AMBEServer Port (Used by DVCast / DR2G AMBE)
 
 # Allow access to shellinabox - if installed
