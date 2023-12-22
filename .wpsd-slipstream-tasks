@@ -654,7 +654,7 @@ if [ "$castResult" == "true" ]; then
 
     # misc cleanups:
     if grep -q '3fb0' /etc/dstar-radio.mmdvmhost ; then
-	sed -i '/3fb0/d' etc/dstar-radio.mmdvmhost
+	sed -i '/3fb0/d' /etc/dstar-radio.mmdvmhost
     fi
 fi
 
