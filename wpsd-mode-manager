@@ -127,6 +127,7 @@ else
   castResult=$(isDVmegaCast)
   if [ "$castResult" == "true" ]; then
     sudo /usr/local/cast/bin/cast-reset
+    sleep 2
   fi
   systemctl restart ${SYSCTL_MMDVMHOST} > /dev/null 2>&1 &
   sync && sync && sync
