@@ -123,7 +123,13 @@ else
     process_log_file
     touch /etc/${1}_paused
   fi
-  systemctl restart ${SYSCTL_MMDVMHOST}
+  # dvmega cast-specific stuff
+  castResult=$(isDVmegaCast)
+  if [ "$castResult" == "true" ]; then
+    sudo /usr/local/cast/bin/cast-reset
+  fi
+  systemctl restart ${SYSCTL_MMDVMHOST} > /dev/null 2>&1 &
   sync && sync && sync
   systemctl start cron.service > /dev/null 2>/dev/null &
 fi
+
