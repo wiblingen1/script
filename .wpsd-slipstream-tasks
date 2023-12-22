@@ -708,6 +708,12 @@ if conn_check; then
         echo "Failed to fetch from the remote repository."
         exit 1
     fi
+    # dvmega cast-specific stuff (temp)
+    castResult=$(isDVmegaCast)
+    if [ "$castResult" == "true" ]; then
+	cd /opt/cast
+	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master
+    fi
 else
     echo "Failed to check the HTTP status of the repository URL: $url"
     exit 1
