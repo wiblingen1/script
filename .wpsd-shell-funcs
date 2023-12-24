@@ -108,7 +108,7 @@ function purge_log_files() { #obvs
 }
 
 isDVmegaCast() { #obvs
-  if [ -d "/usr/local/cast" ]; then
+  if [ -d "/opt/cast/.git" ]; then
     echo "true"
   else
     echo "false"
