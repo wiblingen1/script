@@ -105,6 +105,9 @@ if (file_exists($file1)) {
 } else {
     $modem_type = $release['ModemType'];
 }
+if (is_dir("/opt/cast/.git")) {
+    $modem_type = "DVMega Cast - $modem_type";
+}
 $controller_type = $release['ControllerType'];
 $callsign = $release['Callsign'];
 $wpsd_ver = $release['WPSD_Ver'];
