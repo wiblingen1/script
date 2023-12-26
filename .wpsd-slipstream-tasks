@@ -658,6 +658,11 @@ if [ "$castResult" == "true" ]; then
     fi
 fi
 
+# use WPSD TG as sample in ysf2dmr
+if grep -q 'StartupDstId=31672' /etc/ysf2dmr ; then
+    sed -i 's/StartupDstId=31672/StartupDstId=3170603/g' /etc/ysf2dmr
+fi
+
 #
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
