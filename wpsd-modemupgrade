@@ -79,6 +79,13 @@ if [ "$1" ]; then
     zum_libre)
       firmware_file="zumspot_libre_fw.bin"
       ;;
+    # MMDVM Pi (G4KLX) rpt. boards, etc.
+    mmdvm_pi-f7)
+      firmware_file="mmdvm_f7.bin"
+      ;;
+    mmdvm_pi-f4)
+      firmware_file="mmdvm_f4.bin"
+      ;;
     list|-l|--list)
       echo "hs_hat"
       echo "hs_hat-12mhz"
@@ -98,6 +105,8 @@ if [ "$1" ]; then
       echo "zum_rpi-duplex"
       echo "zum_usb"
       echo "zum_libre"
+      echo "mmdvm_pi-f7"
+      echo "mmdvm_pi-f4"
       exit 0
       ;;
     *)
@@ -161,6 +170,9 @@ then
   echo "  MMDVM_HS_GENERIC_DUPLEX (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade hs_hat_generic_duplex"
   echo "  MMDVM_HS_GENERIC_DUPLEX (14.7456MHz TCXO) USB:	wpsd-modemupgrade hs_hat_generic_duplex-usb"
   echo "  Nano_hotSPOT by BI7JTA (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade hs_hat_nano_hotspot"
+  echo ""
+  echo "  MMDVM Pi F7 Board 460800 baud (12.000Hz TCXO) GPIO:	wpsd-modemupgrade mmdvm_pi-f7"
+  echo "  MMDVM Pi F4 Board 460800 baud (12.000Hz TCXO) GPIO:	wpsd-modemupgrade mmdvm_pi-f4"
   echo ""
   echo "--------------------------------------------------------------------------------------------------"
   echo "To DOWNGRADE your Modem firmware to an older version, run: wpsd-modemdowngrade"
