@@ -652,6 +652,10 @@ if [ "$castResult" == "true" ]; then
     if [ ! -f '/etc/avrdude.conf' ] ; then
 	curl -o /etc/avrdude.conf https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast/raw/branch/master/etc/avrdude.conf
     fi
+    # remove legacy stuff
+    if [ -f '/usr/local/cast/etc/preset.txt' ] ; then
+	rm -f /usr/local/cast/etc/preset.txt
+    fi
 fi
 
 # use WPSD TG as sample in ysf2dmr
