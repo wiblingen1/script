@@ -92,7 +92,11 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
     if [[ ${hardwareField} == "ODROID"* ]]; then
         echo "Odroid XU3/XU4 System"
     elif [[ ${hardwareField} == *"sun8i"* ]]; then
-	clone_board=$(tr -d '\0' </proc/device-tree/model)
+	if [ -f '/etc/armbian-release' ] ; then
+	    clone_board=$(grep -oP 'BOARD_NAME="\K[^"]+' /etc/armbian-release)
+	else
+	    clone_board=$(tr -d '\0' </proc/device-tree/model)
+	fi
 	if [ ! -z "${clone_board}" ]; then
 	    echo "$clone_board, sun8i"
 	else
