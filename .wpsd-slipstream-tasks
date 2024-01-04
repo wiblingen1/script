@@ -664,6 +664,17 @@ if grep -q 'StartupDstId=31672' /etc/ysf2dmr ; then
     sed -i 's/StartupDstId=31672/StartupDstId=3170603/g' /etc/ysf2dmr
 fi
 
+# profile manager name robustness when it has spaces
+profile="/etc/WPSD_config_mgr/"
+if [[ $(find "$profile" -maxdepth 1 -type d -name "* *" -print -quit) ]]; then
+    for d in "$profile"/*\ *; do
+        if [ -d "$d" ]; then
+            new_name=$(echo "$d" | tr ' ' '_')
+            mv "$d" "$new_name"
+        fi
+    done
+fi
+
 #
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
