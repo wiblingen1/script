@@ -821,11 +821,15 @@ if [ ! -f '/etc/wpsd-upnp-rules' ]; then
 fi
 #
 
-# Update /etc/issue - 9/2023 W0CHP
+# Update /etc/issue - 9/2023 & 1/5/2024 W0CHP
 #
-if ! grep -q 'W0CHP' /etc/issue ; then
+if ! grep -q 'WPSD' /etc/issue ; then # doesn't exist, so get newest
     declare -a CURL_OPTIONS=('-Ls' '-A' "/etc/issue updater $uaStr")
     curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
 fi
+if grep -q 'W0CHP-PiStar-Dash' /etc/issue ; then # v0.1 - deprecated...update like above
+    curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
+fi
+
 #
 
