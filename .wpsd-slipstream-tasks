@@ -828,6 +828,7 @@ if ! grep -q 'WPSD' /etc/issue ; then # doesn't exist, so get newest
     curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
 fi
 if grep -q 'W0CHP-PiStar-Dash' /etc/issue ; then # v0.1 - deprecated...update like above
+    declare -a CURL_OPTIONS=('-Ls' '-A' "/etc/issue updater $uaStr")
     curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
 fi
 
