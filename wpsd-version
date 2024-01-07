@@ -13,13 +13,13 @@ function DisplayRepoStatus() {
 	    TARGET="WPSD Digital Voice Dashboard Software"
 	    ;;
 	"/usr/local/sbin")
-	    TARGET="Support Utilites and Programs"
+	    TARGET="WPSD Support Utilites and Programs"
 	    ;;
 	"/usr/local/bin")
-	    TARGET="Digital Voice and Related Binaries"
+	    TARGET="WPSD Digital Voice and Related Binaries"
 	    ;;
 	"/opt/cast")
-	    TARGET="WPSD DVmega Cast Software"
+	    TARGET="WPSD DVMega Cast Software"
 	    ;;
     esac
 
