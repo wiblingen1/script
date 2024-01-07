@@ -48,7 +48,7 @@ echo ' _      _____  _______
     # dvmega cast-specific stuff
     castResult=$(isDVmegaCast)
     if [ "$castResult" == "true" ]; then
-	DisplayRepoStatus "/usr/opt/cast"
+	DisplayRepoStatus "/opt/cast"
     fi
     if [ -t 1 ] || [ -n "$PS1" ] ; then # since this is called by `motdgen`, omit the following for the motd...
 	echo -e "\n${COL_NC}Environment Status"
