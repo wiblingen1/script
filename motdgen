@@ -28,9 +28,6 @@ while ! interface_has_ip; do
     fi
 done
 
-# WPSD git id
-gitId=$( cat /etc/.W0CHP-PiStar-Dash.remote_version )
-
 echo -e "$( /usr/local/sbin/wpsd-version )
 ${COL_NC}
 ${QUES} Your WPSD dashboard can be accesed from:
