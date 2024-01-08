@@ -253,12 +253,18 @@ chown -R www-data:pi-star /var/www/dashboard
 isInstalled=$(dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -c "ok installed")
 if [[ $isInstalled -eq 0 ]]; then
   echo "lsb-release package is not installed. Installing..."
-  sudo apt-get update
-  sudo apt-get -y install lsb-release base-files
+  apt-get update
+  apt-get -y install lsb-release base-files
 else
   :
 fi
 #
+
+# 01/08/24: no BT:
+if [ -f '/etc/bluetooth/input.conf' ] ; then
+    apt-get remove -y --purge bluez pi-bluetooth bluez-firmware
+    apt-get autoremove -y
+fi
 
 # 6/4/23 Ensure we can update successfully:
 find /usr/local/sbin -type f -exec chattr -i {} +
@@ -385,11 +391,11 @@ OLD_DEST="/usr/share/bash-completion/completions/pistar-services"
 DEST="/usr/share/bash-completion/completions/wpsd-services"
 COMPLETION_CONFIG="/etc/bash_completion.d/wpsd-services"
 if [ -f "$OLD_DEST" ]; then
-    sudo rm -f "$OLD_DEST"
+    rm -f "$OLD_DEST"
     echo "Removed $OLD_DEST"
 fi
 if [ -f "$DEST" ]; then
-    sudo rm -f "$DEST"
+    rm -f "$DEST"
     echo "Removed $DEST"
 fi
 if [ ! -f "$COMPLETION_CONFIG" ]; then
@@ -407,8 +413,8 @@ if [ ! -f "$COMPLETION_CONFIG" ]; then
     echo "} &&" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
     echo "complete -F _wpsd_services wpsd-services" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
     echo "" | sudo tee -a "$COMPLETION_CONFIG" >/dev/null
-    sudo chown root:root "$COMPLETION_CONFIG"
-    sudo chmod 0644 "$COMPLETION_CONFIG"
+    chown root:root "$COMPLETION_CONFIG"
+    chmod 0644 "$COMPLETION_CONFIG"
     echo "New completion file created"
 fi
 if [ -f /devnull ] ; then # ugh - cleanup prev. typo.
