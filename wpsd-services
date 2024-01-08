@@ -116,6 +116,10 @@ function start_services()
     if [ "$(grep "pistar-upnp.service" /etc/crontab | cut -c 1)" != '#' ]; then
         systemctl start pistar-upnp.service > /dev/null 2>&1
     fi
+    # dvmega cast-specific stuff
+    if [ "$castResult" == "true" ]; then
+	/usr/local/cast/sbin/RSET.sh  > /dev/null 2>&1
+    fi
     
     # Restart cron service if fullstop was passed
     systemctl is-active --quiet cron.service || systemctl start cron.service
