@@ -1,7 +1,7 @@
 #!/bin/bash
 
 gitFolder="/var/www/dashboard"
-gitRemoteVer=/etc/.W0CHP-PiStar-Dash.remote_version
+gitRemoteVer=/etc/.WPSD_remote_version
 # W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, check that branch.
 gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
 gitStatusRemote=$( cat ${gitRemoteVer} )

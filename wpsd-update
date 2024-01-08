@@ -413,7 +413,7 @@ perform_update() {
     gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
     gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update Version Cacher (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
-    echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
+    echo ${gitStatusRemote} > /etc/.WPSD_remote_version
 
     # log file perms
     chown -R mmdvm:mmdvm /var/log/pi-star > /dev/null 2>&1

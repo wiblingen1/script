@@ -374,6 +374,11 @@ if grep -q "slipstream" /etc/rc.local; then
   sed -i '/slipstream/d' /etc/rc.local
 fi
 
+# cleanup legacy ver. cache:
+if [ -f '/etc/.W0CHP-PiStar-Dash.remote_version' ] ; then
+    rm -r /etc/.W0CHP-PiStar-Dash.remote_version
+fi
+
 # cleanup legacy motdgen
 if grep -q 'pistar-motdgen' $rc_local_file ; then
    sed -i 's/pistar-motdgen/motdgen/g' $rc_local_file

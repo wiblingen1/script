@@ -189,7 +189,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
     gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
-    echo ${gitStatusRemote} > /etc/.W0CHP-PiStar-Dash.remote_version
+    echo ${gitStatusRemote} > /etc/.WPSD_remote_version
 
 else
     echo "WPSD Update Server connection failure! Will try again during next scheduled job tommorrow."
