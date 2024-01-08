@@ -377,6 +377,7 @@ fi
 # cleanup legacy ver. cache:
 if [ -f '/etc/.W0CHP-PiStar-Dash.remote_version' ] ; then
     rm -r /etc/.W0CHP-PiStar-Dash.remote_version
+    touch /etc/.WPSD_remote_version
 fi
 
 # cleanup legacy motdgen
