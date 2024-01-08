@@ -363,17 +363,9 @@ if grep -q 'shuf -i 3-4' $rc_local_file ; then
   sed -i "s/shuf -i 3-4/shuf -i 2-4/g" $rc_local_file
 fi
 
-# add slipstream to rc.local
-# Define the correct entry
-correct_entry="nohup /usr/local/sbin/.wpsd-slipstream-tasks &"
-# Check if the correct entry already exists in $rc_local_file
-if grep -q -x "$correct_entry" $rc_local_file; then
-  :
-else
-  # Remove the legacy entries and add the correct entry
-  sed -i '/nohup nohup.*&/d' $rc_local_file
-  sed -i '/\/usr\/local\/sbin\/slipstream-tasks\.sh/d' $rc_local_file
-  sed -i '/# slipstream tasks/a '"$correct_entry"'' $rc_local_file
+# cleanup slipstream in rc.local
+if grep -q "slipstream" /etc/rc.local; then
+  sed -i '/slipstream/d' /etc/rc.local
 fi
 
 # cleanup legacy motdgen
