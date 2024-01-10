@@ -25,6 +25,20 @@ git config --global pull.ff only
 
 source /usr/local/sbin/.wpsd-shell-funcs
 
+# 6/4/23 Ensure we can update successfully:
+find /usr/local/sbin -type f -exec chattr -i {} +
+find /usr/local/sbin -type d -exec chattr -i {} +
+find /usr/local/bin -type f -exec chattr -i {} +
+find /usr/local/bin -type d -exec chattr -i {} +
+find /var/www/dashboard -type f -exec chattr -i {} +
+find /var/www/dashboard -type d -exec chattr -i {} +
+#
+
+# 5/30/23: ensure www perms are correct:
+cd /var/www/dashboard && chmod 755 `find  -type d`
+chown -R www-data:pi-star /var/www/dashboard
+#
+
 # ensure perms for git repos
 if ! grep -q 'safe' /root/.gitconfig > /dev/null 2<&1 ; then
     git config --global --add safe.directory /var/www/dashboard > /dev/null 2<&1
@@ -39,60 +53,6 @@ if [ "$castResult" == "true" ]; then
     fi
 fi
 
-# This part fully-disables read-only mode
-#
-# 1/2023 - W0CHP (updated on 2/23/2023)
-#
-if grep -qo ',ro' /etc/fstab ; then
-    sed -i 's/defaults,ro/defaults,rw/g' /etc/fstab
-    sed -i 's/defaults,noatime,ro/defaults,noatime,rw/g' /etc/fstab
-fi
-if grep -qo 'remount,ro' /etc/bash.bash_logout ; then
-    sed -i '/remount,ro/d' /etc/bash.bash_logout
-fi
-if grep -qo 'fs_mode:+' /etc/bash.bashrc ; then
-    sed -i 's/${fs_mode:+($fs_mode)}//g' /etc/bash.bashrc
-fi
-if grep -qo 'remount,ro' /usr/local/sbin/pistar-hourly.cron ; then
-    sed -i '/# Mount the disk RO/d' /usr/local/sbin/pistar-hourly.cron
-    sed -i '/mount -o remount,ro/d' /usr/local/sbin/pistar-hourly.cron
-fi
-if grep -qo 'remount,ro' $rc_local_file ; then
-    sed -i '/remount,ro/d' $rc_local_file
-fi
-if grep -qo 'remount,ro' /etc/apt/apt.conf.d/100update ; then
-    sed -i '/remount,ro/d' /etc/apt/apt.conf.d/100update
-fi
-if grep -qo 'remount,ro' /lib/systemd/system/apt-daily-upgrade.service ; then
-    sed -i '/remount,ro/d' /lib/systemd/system/apt-daily-upgrade.service
-    systemctl daemon-reload 
-fi
-if grep -qo 'remount,ro' /lib/systemd/system/apt-daily.service ; then
-    sed -i '/remount,ro/d' /lib/systemd/system/apt-daily.service
-    systemctl daemon-reload 
-fi
-if grep -qo 'remount,ro' /etc/systemd/system/apt-daily-upgrade.service ; then
-    sed -i '/remount,ro/d' /etc/systemd/system/apt-daily-upgrade.service
-    systemctl daemon-reload 
-fi
-if grep -qo 'remount,ro' /etc/systemd/system/apt-daily.service ; then
-    sed -i '/remount,ro/d' /etc/systemd/system/apt-daily.service
-    systemctl daemon-reload 
-fi
-if grep -qo 'fs_mode=' /etc/bash.bashrc ; then
-    sed -i '/fs_mode=/d' /etc/bash.bashrc
-fi
-if grep -qo '# Aliases to control re-mounting' /etc/bash.bashrc ; then
-    sed -i '/# Aliases to control re-mounting/d' /etc/bash.bashrc
-fi
-if grep -qo 'alias rpi-ro=' /etc/bash.bashrc ; then
-    sed -i '/alias rpi-ro=/d' /etc/bash.bashrc
-fi
-if grep -qo 'alias rpi-rw=' /etc/bash.bashrc ; then
-    sed -i '/alias rpi-rw=/d' /etc/bash.bashrc
-fi
-#
-
 # Tweak shelliniabox/web ssh colors:
 #
 # 10/2023 - W0CHP
@@ -101,28 +61,6 @@ if ! grep -q "Terminal.css" "/etc/default/shellinabox"; then
     systemctl restart shellinabox.service
 fi
 # 
-
-# Fix legacy radio type misspelling
-#
-# 6/2023 - W0CHP
-if [ -f "/etc/dstar-radio.mmdvmhost" ]; then
-    if grep -q "genesysdualhat" "/etc/dstar-radio.mmdvmhost"; then
-        sed -i 's/genesysdualhat/genesisdualhat/g' "/etc/dstar-radio.mmdvmhost"
-    else
-	:
-    fi
-else
-    :
-fi
-#
-
-# migrate AX.25 entries
-#
-# 6/2023 W0CHP
-if grep -q "AX 25" /etc/mmdvmhost; then
-  sed -i 's/AX 25/AX.25/g' /etc/mmdvmhost
-fi
-#
 
 # migrate legacy network info URLs
 # 
@@ -166,14 +104,6 @@ for file in "${files[@]}"; do
 done
 #
 
-# fix YSF2DMR config file w/bad call preventing startup
-#
-# 7/2023
-if grep -q "M1ABC" /etc/ysf2dmr && [ "$CALL" != "M1ABC" ]; then
-  sed -i "s/M1ABC/${CALL}/g" /etc/ysf2dmr
-fi
-#
-
 # Git URI changed when transferring repos from me to the org.
 #
 # 2/2023 - W0CHP
@@ -193,70 +123,13 @@ gitURIupdate "/usr/local/bin"
 gitURIupdate "/usr/local/sbin"
 #
 
-# Config backup file name change, so lets address that
-#
-# 5/2023 W0CHP
-#
-if grep -q 'Pi-Star_Config_\*\.zip' $rc_local_file ; then
-    sed -i 's/Pi-Star_Config_\*\.zip/WPSD_Config_\*\.zip/g' $rc_local_file
-fi
-#
-
 # migrated from other scripts to centralize
 #
 # 5/2023 W0CHP
 #
-# cleanup legacy naming convention
-if grep -q 'modemcache' $rc_local_file ; then
-    sed -i 's/modemcache/hwcache/g' $rc_local_file
-    sed -i 's/# cache modem info/# cache hw info/g' $rc_local_file 
-fi
-# bullseye; change weird interface names* back to what most are accustomed to;
-# <https://wiki.debian.org/NetworkInterfaceNames#THE_.22PREDICTABLE_NAMES.22_SCHEME>
-# sunxi systems don't have /boot/cmdline.txt so we can ignore that.
-# Raspbian::
-if [ "${OS_VER}" -gt "10" ] && [ -f '/boot/cmdline.txt' ] && [[ ! $(grep "net.ifnames" /boot/cmdline.txt) ]] ; then
-    sed -i 's/$/ net.ifnames=1 biosdevname=0/' /boot/cmdline.txt
-fi
 # Armbian:
 if [ "${OS_VER}" -gt "10" ] && [ -f '/boot/armbianEnv.txt' ] && [[ ! $(grep "net.ifnames" /boot/armbianEnv.txt) ]] ; then
     sed -i '$ a\extraargs=net.ifnames=0' /boot/armbianEnv.txt
-fi
-# ensure pistar-remote config has key-value pairs for new funcs (12/2/22)
-if ! grep -q 'hostfiles=8999995' /etc/pistar-remote ; then
-    sed -i "/^# TG commands.*/a hostfiles=8999995" /etc/pistar-remote
-fi
-if ! grep -q 'reconnect=8999994' /etc/pistar-remote ; then
-    sed -i "/^# TG commands.*/a reconnect=8999994" /etc/pistar-remote
-fi
-#
-
-# Change default Dstar startup ref from "REF001 C" to "None", re: KC1AWV 5/21/23
-#
-# 5/2023 W0CHP
-#
-config_file="/etc/ircddbgateway"
-gateway_callsign=$(grep -Po '(?<=gatewayCallsign=).*' "$config_file")
-reflector1=$(grep -Po '(?<=reflector1=).*' "$config_file")
-if [ "$gateway_callsign" = "M1ABC" ]; then
-    new_reflector1="None"
-    sed -i "s/^reflector1=.*/reflector1=$new_reflector1/" "$config_file"
-fi
-#
-
-# 5/30/23: ensure www perms are correct:
-cd /var/www/dashboard && chmod 755 `find  -type d`
-chown -R www-data:pi-star /var/www/dashboard
-#
-
-# 6/2/2023: ensure lsb-release exists:
-isInstalled=$(dpkg-query -W -f='${Status}' lsb-release 2>/dev/null | grep -c "ok installed")
-if [[ $isInstalled -eq 0 ]]; then
-  echo "lsb-release package is not installed. Installing..."
-  apt-get update
-  apt-get -y install lsb-release base-files
-else
-  :
 fi
 #
 
@@ -265,37 +138,6 @@ if [ -f '/etc/bluetooth/input.conf' ] ; then
     apt-get remove -y --purge bluez pi-bluetooth bluez-firmware
     apt-get autoremove -y
 fi
-
-# 6/4/23 Ensure we can update successfully:
-find /usr/local/sbin -type f -exec chattr -i {} +
-find /usr/local/sbin -type d -exec chattr -i {} +
-find /usr/local/bin -type f -exec chattr -i {} +
-find /usr/local/bin -type d -exec chattr -i {} +
-find /var/www/dashboard -type f -exec chattr -i {} +
-find /var/www/dashboard -type d -exec chattr -i {} +
-#
-
-# ensure D-S remote control file exists and is correct - 6/6/2023
-DSremoteFile="/root/.Remote Control"
-passwordLine="password="
-if [ -e "$DSremoteFile" ]; then
-    if ! grep -q "^$passwordLine" "$DSremoteFile" || [ ! -s "$DSremoteFile" ]; then
-        echo "$passwordLine""raspberry" > "$DSremoteFile"
-        echo "address=127.0.0.1" >> "$DSremoteFile"
-        echo "port=10022" >> "$DSremoteFile"
-        echo "windowX=0" >> "$DSremoteFile"
-        echo "windowY=0" >> "$DSremoteFile"
-    else
-	:
-    fi
-else
-    echo "$passwordLine""raspberry" > "$DSremoteFile"
-    echo "address=127.0.0.1" >> "$DSremoteFile"
-    echo "port=10022" >> "$DSremoteFile"
-    echo "windowX=0" >> "$DSremoteFile"
-    echo "windowY=0" >> "$DSremoteFile"
-fi
-#
 
 #  all proper sec/update repos are defined for bullseye, except on armv6 archs
 if [ "${osName}" = "bullseye" ] && [ $( uname -m ) != "armv6l" ] ; then
@@ -327,22 +169,6 @@ if [ $( uname -m ) == "armv6l" ] ; then
 fi
 #
 
-# remove dstarrepeater unit file/service - 7/2023 W0CHP
-#
-if [ -f '/lib/systemd/system/dstarrepeater.service' ] ; then
-    systemctl stop dstarrepeater.timer
-    systemctl disable dstarrepeater.timer
-    systemctl stop dstarrepeater.service
-    systemctl disable dstarrepeater.service
-    rm -f /lib/systemd/system/dstarrepeater.timer
-    rm -f /lib/systemd/system/dstarrepeater.service
-    systemctl daemon-reload
-fi
-if grep -qo 'dstarrepeater =' /etc/pistar-release ; then
-    sed -i '/dstarrepeater =/d' /etc/pistar-release
-fi
-#
-
 # Increase /run ram disk a bit for better updating. 7/2023 W0CHP - thanks KF4HZU!
 #
 sed -i 's|^tmpfs[[:blank:]]*/run[[:blank:]]*tmpfs[[:blank:]]*nodev,noatime,nosuid,mode=1777,size=32m[[:blank:]]*0[[:blank:]]*0$|tmpfs                   /run                    tmpfs   nodev,noatime,nosuid,mode=1777,size=64m         0       0|' /etc/fstab
@@ -356,30 +182,22 @@ if [ -f '/usr/sbin/WPSD-Installer' ]; then
     rm -rf /usr/sbin/WPSD-Installer
 fi
 
-# avahi service names
-if grep -q 'Pi-Star Web Interface' /etc/avahi/services/http.service ; then
-    sed -i 's/Pi-Star Web Interface/WPSD Web Interface/g' /etc/avahi/services/http.service
-    sed -i 's/Pi-Star SSH/WPSD SSH/g' /etc/avahi/services/ssh.service
-    systemctl restart avahi-daemon.socket
-    systemctl restart avahi-daemon.service
-fi
-
 # update daily cron shuffle rules in rc.local; 2am-4am
 if grep -q 'shuf -i 3-4' $rc_local_file ; then
   sed -i "s/shuf -i 3-4/shuf -i 2-4/g" $rc_local_file
 fi
 
 # cleanup slipstream in rc.local
-if grep -q "slipstream" /etc/rc.local; then
-  sed -i '/slipstream/d' /etc/rc.local
+if grep -q "slipstream" $rc_local_file; then
+  sed -i '/slipstream/d' $rc_local_file
 fi
 
 # boot config restore cleanup
-if grep -q 'pistar-bootconfig.sh' /etc/rc.local ; then
-    sed -i 's/pistar-bootconfig.sh/.wpsd-config-restore/g' /etc/rc.local
+if grep -q 'pistar-bootconfig.sh' $rc_local_file ; then
+    sed -i 's/pistar-bootconfig.sh/.wpsd-config-restore/g' $rc_local_file
 fi
-if grep -q 'pistar-expand' /etc/rc.local ; then
-    sed -i 's/pistar-expand/.wpsd-expand/g' /etc/rc.local
+if grep -q 'pistar-expand' $rc_local_file ; then
+    sed -i 's/pistar-expand/.wpsd-expand/g' $rc_local_file
 fi
 
 # cleanup legacy ver. cache:
@@ -501,50 +319,13 @@ if [ -f "$armbian_env_file" ]; then
         armbian-firmware > /dev/null 2>&1
 fi
 # cleanup NanoPi/OPi  modprobing
-if [ -f "$armbian_env_file" ] && [[ $(grep 'modprobe -r rtl8' /etc/rc.local) ]] ; then
-    sed -i '/modprobe -r rtl8/d' /etc/rc.local
+if [ -f "$armbian_env_file" ] && [[ $(grep 'modprobe -r rtl8' $rc_local_file) ]] ; then
+    sed -i '/modprobe -r rtl8/d' $rc_local_file
 fi
-if [ -f "$armbian_env_file" ] && [[ $(grep 'modprobe -r leds_' /etc/rc.local) ]] ; then
-    sed -i '/modprobe -r leds_/d' /etc/rc.local
-fi
-
-# remove last heard data manager; taxing, inaccurate, unreliable, and; mqtt coming ;-)
-if [ -f /lib/systemd/system/mmdvm-log-backup.service ] ; then
-    systemctl stop mmdvm-log-backup.timer > /dev/null 2<&1
-    systemctl disable mmdvm-log-backup.timer > /dev/null 2<&1
-    systemctl stop mmdvm-log-backup.service > /dev/null 2<&1
-    systemctl disable mmdvm-log-backup.service > /dev/null 2<&1
-    systemctl stop mmdvm-log-restore.service > /dev/null 2<&1
-    systemctl disable mmdvm-log-restore.service > /dev/null 2<&1
-    systemctl stop mmdvm-log-shutdown.service > /dev/null 2<&1
-    systemctl disable mmdvm-log-shutdown.service > /dev/null 2<&1
-    rm -rf //lib/systemd/system/mmdvm-log-* > /dev/null 2<&1
-    systemctl daemon-reload > /dev/null 2<&1
-    rm -rf /home/pi-star/.backup-mmdvmhost-logs > /dev/null 2<&1
+if [ -f "$armbian_env_file" ] && [[ $(grep 'modprobe -r leds_' $rc_local_file) ]] ; then
+    sed -i '/modprobe -r leds_/d' $rc_local_file
 fi
 
-# Check for gpsd
-if compgen -G "/lib/systemd/system/mobilegps*" > /dev/null; then
-    systemctl disable mobilegps.timer > /dev/null 2<&1
-    systemctl disable mobilegps.service > /dev/null 2<&1
-    rm -rf /lib/systemd/system/mobilegps*
-    systemctl daemon-reload > /dev/null 2<&1
-fi
-if ! dpkg-query -l | grep -q libgps28  > /dev/null; then
-    apt-get -qq update > /dev/null 2>&1
-    apt-get -qq install --reinstall -y gpsd libgps28 gpsd-tools > /dev/null 2>&1
-    # disable by default; enabled in config page on request:
-    systemctl disable gpsd.service > /dev/null 2>&1
-    systemctl disable gpsd.socket > /dev/null 2>&1
-    systemctl mask gpsd.service > /dev/null 2>&1
-    systemctl mask gpsd.socket > /dev/null 2>&1
-    apt-get -qq autoclean > /dev/null 2>&1
-fi
-# now fix upstream gpsd binding bug:
-if grep -q BindIPv6Only /lib/systemd/system/gpsd.socket ; then
-    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/gpsd.socket -o /lib/systemd/system/gpsd.socket > /dev/null 2>&1
-    systemctl daemon-reload > /dev/null 2<&1
-fi
 # ensure gpsd is only enabled by the user:
 if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
     systemctl stop gpsd.service > /dev/null 2>&1
@@ -553,31 +334,6 @@ if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/
     systemctl disable gpsd.socket > /dev/null 2>&1
     systemctl mask gpsd.service > /dev/null 2>&1
     systemctl mask gpsd.socket > /dev/null 2>&1
-fi
-
-# check for vnstat
-if ! [ -x "$(command -v vnstat)" ]; then
-    # Install vnstat
-    apt-get -qq update > /dev/null 2>&1
-    apt-get -qq install -y vnstat > /dev/null 2>&1
-fi
-# tmpfs for vnstat
-if ! grep -q vnstat /etc/fstab ; then
-    systemctl stop vnstat.service > /dev/null
-    rm -rf /var/lib/vnstat > /dev/null
-    mkdir -p /var/lib/vnstat > /dev/null
-    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
-    echo "tmpfs                   /var/lib/vnstat         tmpfs   nodev,noatime,nosuid,mode=0755,size=64m         0       0"  >> /etc/fstab
-    mount /var/lib/vnstat > /dev/null
-    chown -R vnstat:vnstat /var/lib/vnstat > /dev/null
-    systemctl restart vnstat.service > /dev/null
-fi
-
-# swap ntpd for systemd-timesyncd
-if [ ! -f "/lib/systemd/system/systemd-timesyncd.service" ] ; then
-    apt-get -qq remove -y --purge ntp > /dev/null 2>&1
-    apt-get -qq autoremove -y > /dev/null 2>&1
-    apt-get -qq install -y systemd-timesyncd > /dev/null 2>&1
 fi
 
 # more rc.local updates...
@@ -603,24 +359,9 @@ if [ -f "$armbian_env_file" ] ; then
     fi
 fi
 
-# ensure bullseye has proper php extensions
-dpkg --configure -a > /dev/null 2>&1
-if [ "${osName}" = "bullseye" ]; then
-    if [ ! -f "/usr/share/php7.4-zip/zip/zip.ini" ] ; then
-	apt-get -q=2 install -y php-zip > /dev/null 2>&1
-	apt-get -q=2 clean > /dev/null 2<&1
-	apt-get -q=2 autoclean > /dev/null 2<&1
-     fi
-fi
-
 # m0ar leg. cleanups; already called from rc.local
 if [ -f '/etc/network/if-up.d/pistar-motdgen' ] ; then
     rm -rf /etc/network/if-up.d/pistar-motdgen
-fi
-
-# mobileGPS is gone...we can remove from ircddbgw:
-if grep -q "mobileGPS" "/etc/ircddbgateway"; then
-    sed -i '/mobileGPS/d' "/etc/ircddbgateway"
 fi
 
 # aaaaand more legacy cleanups
@@ -648,29 +389,6 @@ if grep -q 'b23b3b' /etc/pistar-css.ini ; then
     sed -i 's/b23b3b/8C0C26/g' /etc/pistar-css.ini
 fi
 
-# dvmega cast-specific stuff
-castResult=$(isDVmegaCast)
-if [ "$castResult" == "true" ]; then
-    # ensure configs always have proper perms
-    chmod 775 /usr/local/cast/etc
-    chown -R www-data:pi-star /usr/local/cast/etc
-    chmod 664 /usr/local/cast/etc/*
-
-    # www is a symlink so get main perms setup
-    chmod 775 /opt/cast/usr-local-cast-www
-    chmod 775 /opt/cast/usr-local-cast-www/cast-firmware/fw
-    chown -R www-data:www-data /opt/cast/usr-local-cast-www
-
-    # ensure avrdude conf. is installed for radio/hotspot mgmt.
-    if [ ! -f '/etc/avrdude.conf' ] ; then
-	curl -o /etc/avrdude.conf https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast/raw/branch/master/etc/avrdude.conf
-    fi
-    # remove legacy stuff
-    if [ -f '/usr/local/cast/etc/preset.txt' ] ; then
-	rm -f /usr/local/cast/etc/preset.txt
-    fi
-fi
-
 # use WPSD TG as sample in ysf2dmr
 if grep -q 'StartupDstId=31672' /etc/ysf2dmr ; then
     sed -i 's/StartupDstId=31672/StartupDstId=3170603/g' /etc/ysf2dmr
@@ -692,6 +410,29 @@ fi
 # If the conn_check() function below fails, the script bails until next cron run.
 # Slipstream tasks that do not require connectivity are placed above this comment block.
 #
+
+# dvmega cast-specific stuff
+castResult=$(isDVmegaCast)
+if [ "$castResult" == "true" ]; then
+    # ensure configs always have proper perms
+    chmod 775 /usr/local/cast/etc
+    chown -R www-data:pi-star /usr/local/cast/etc
+    chmod 664 /usr/local/cast/etc/*
+
+    # www is a symlink so get main perms setup
+    chmod 775 /opt/cast/usr-local-cast-www
+    chmod 775 /opt/cast/usr-local-cast-www/cast-firmware/fw
+    chown -R www-data:www-data /opt/cast/usr-local-cast-www
+
+    # ensure avrdude conf. is installed for radio/hotspot mgmt.
+    if [ ! -f '/etc/avrdude.conf' ] ; then
+        curl -o /etc/avrdude.conf https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast/raw/branch/master/etc/avrdude.conf
+    fi
+    # remove legacy stuff
+    if [ -f '/usr/local/cast/etc/preset.txt' ] ; then
+        rm -f /usr/local/cast/etc/preset.txt
+    fi
+fi
 
 # 5/27/23: Bootstrapping backend scripts
 CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
@@ -730,13 +471,16 @@ if conn_check; then
         else
             echo "Local sbin repository is up to date."
 	    ## temp stuck dash hash fix
-	    #gitFolder="/var/www/dashboard"
-	    #cd ${gitFolder}
+	    if [ "$UUID" == "000000002d6e2c26" ] ; then
+	    gitFolder="/var/www/dashboard"
+	    cd ${gitFolder}
 	    #git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
-	    #env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="dashcode update bootstrap ${gitUaStr}" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
-	    #git reset --hard
+            git reset --hard origin/master
+	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="dashcode update bootstrap ${gitUaStr}" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
+            git reset --hard origin/master
 	    #git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
 	    #git stash clear # housekeeping
+	    fi
         fi
     else
         echo "Failed to fetch from the remote repository."
@@ -791,38 +535,6 @@ if [ -L "$libOLEDfull_path" ]; then
 fi
 #
 
-# Insert missing key/values in mmdvnhost config for my custom native NextionDriver
-# 
-# 5/2023 W0CHP
-#
-# only insert the key/values IF MMDVMHost has display type of "Nextion" defined.
-if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2`" = "Nextion" ]; then
-    # Check if the GroupsFileSrc and DMRidFileSrc exist in the INI file
-    if ! grep -q "^GroupsFileSrc=" /etc/mmdvmhost; then
-        # Insert GroupsFileSrc in the NextionDriver section
-        sed -i '/^\[NextionDriver\]$/a GroupsFileSrc=https://hostfiles.w0chp.net/groupsNextion.txt' /etc/mmdvmhost
-    fi
-    # Check if GroupsFile is set to groups.txt and change it to groupsNextion.txt
-    if grep -q "^GroupsFile=groups.txt" /etc/mmdvmhost; then
-        sed -i 's/^GroupsFile=groups.txt$/GroupsFile=groupsNextion.txt/' /etc/mmdvmhost
-    fi
-fi
-#
-
-# Add nextion halt functions
-#
-# 7/2023 W0CHP
-#
-if [ ! -f '/lib/systemd/system/stop-nextion.service' ]; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "Nextion Halt Service Installer (slipstream) $uaStr")
-    curl "${CURL_OPTIONS[@]}" https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/nextion-driver-term -o /usr/local/sbin/nextion-driver-term
-    chmod a+x /usr/local/sbin/nextion-driver-term
-    curl "${CURL_OPTIONS[@]}" https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/stop-nextion.service -o /lib/systemd/system/stop-nextion.service
-    systemctl daemon-reload
-    systemctl enable stop-nextion.service
-fi
-#
-
 # Install new WPSD uPnP rules engine
 #
 # 11/23 W0CHP
@@ -843,6 +555,5 @@ if grep -q 'W0CHP-PiStar-Dash' /etc/issue ; then # v0.1 - deprecated...update li
     declare -a CURL_OPTIONS=('-Ls' '-A' "/etc/issue updater (slipstream) $uaStr")
     curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
 fi
-
 #
 
