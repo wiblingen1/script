@@ -475,6 +475,7 @@ if conn_check; then
 	    gitFolder="/var/www/dashboard"
 	    cd ${gitFolder}
 	    #git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
+	    rm -f /etc/pistar-css.ini
             git reset --hard origin/master
 	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="dashcode update bootstrap ${gitUaStr}" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
             git reset --hard origin/master
