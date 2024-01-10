@@ -1,14 +1,9 @@
 #!/bin/bash
-#########################################################
-#                                                       #
-#               Config Restore on Bootup                #
-#                                                       #
-# Written for Pi-Star (http://www.mw0mwz.co.uk/pi-star) #
-#               By Andy Taylor (MW0MWZ)                 #
-#                                                       #
-#                    Version W0CHP                      #
-#                                                       #
-#########################################################
+######################################################
+#                                                    #
+#            WPSD Config Restore on Bootup           #
+#                                                    #
+######################################################
 
 # Check we are root
 if [ "$(id -u)" != "0" ]
@@ -30,15 +25,7 @@ fi
 unzip -j /boot/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
 
 # Stop the services
-systemctl stop cron.service 2>&1
-systemctl stop mmdvmhost.service 2>&1
-systemctl stop ircddbgateway.service 2>&1
-systemctl stop timeserver.service 2>&1
-systemctl stop pistar-watchdog.service 2>&1
-systemctl stop ysfgateway.service 2>&1
-systemctl stop p25gateway.service 2>&1
-
-# Make the disk writable
+wpsd-services fullstop 
 
 # Overwrite the configs
 rm -f /etc/dstar-radio.* 2>&1
@@ -47,7 +34,7 @@ mv -f /tmp/config_restore/config.php /var/www/dashboard/config/ 2>&1
 mv -f /tmp/config_restore/wpa_supplicant.conf /etc/wpa_supplicant/ 2>&1
 mv -f /tmp/config_restore/* /etc/ 2>&1
 
-#Set the Timezone
+# Set the Timezone
 timedatectl set-timezone `grep date /var/www/dashboard/config/config.php | grep -o "'.*'" | sed "s/'//g"`
 
 # Clean up

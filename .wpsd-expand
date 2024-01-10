@@ -1,20 +1,14 @@
 #!/bin/bash
-###############################################################################
-#                                                                             #
-#                        Pi-Star Partition Expander                           #
-#                                                                             #
-#    Version 1.2, Code, Design and Development by Andy Taylor (MW0MWZ).       #
-#                                                                             #
-#    This script will expand your root file system to fill the SD Card        #
-#                                                                             #
-###############################################################################
+############################################################################
+#                                                                          #
+#                        WPSD Partition Expander                           #
+#                                                                          #
+############################################################################
 
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
   exit 1
 fi
-
-# Remount read-write
 
 # Figure out if this is a systemd system
 if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then

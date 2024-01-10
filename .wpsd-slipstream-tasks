@@ -374,6 +374,14 @@ if grep -q "slipstream" /etc/rc.local; then
   sed -i '/slipstream/d' /etc/rc.local
 fi
 
+# boot config restore cleanup
+if grep -q 'pistar-bootconfig.sh' /etc/rc.local ; then
+    sed -i 's/pistar-bootconfig.sh/.wpsd-config-restore/g' /etc/rc.local
+fi
+if grep -q 'pistar-expand' /etc/rc.local ; then
+    sed -i 's/pistar-expand/.wpsd-expand/g' /etc/rc.local
+fi
+
 # cleanup legacy ver. cache:
 if [ -f '/etc/.W0CHP-PiStar-Dash.remote_version' ] ; then
     rm -r /etc/.W0CHP-PiStar-Dash.remote_version
