@@ -406,6 +406,15 @@ if [[ $(find "$profile" -maxdepth 1 -type d -name "* *" -print -quit) ]]; then
 fi
 
 #
+# slipstream bkgnd/rc.local task cleanup
+# 1/11/2024 - W0CHP
+#
+if [ -f '/nohup.out' ] ; then
+    rm -f /nohup.out
+fi
+#
+
+#
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
 # Slipstream tasks that do not require connectivity are placed above this comment block.
