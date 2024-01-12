@@ -268,11 +268,16 @@ then
     local firmware_file="$2"  # Pass the firmware_file as an argument
 
     echo -e "${BULL} Downloading latest '$1' firmware version ($VERSION)..."
-    sleep 1
+
     # Use curl to download the firmware and capture the HTTP status code
     http_status_code=$(curl -s -w "%{http_code}" -o "$FW_TMP/$firmware_file" -A "$UAstr" "$BASE_FW_URL")
 
     if [[ $http_status_code -ge 200 && $http_status_code -le 399 ]]; then
+      cd $FW_TMP
+      # Download STM32F10X_Lib (only for binary tools)
+      if [ ! -d "./STM32F10X_Lib/utils" ]; then
+	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$UAstr" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/STM32F10X_Lib.git &> /dev/null
+      fi
       echo -e "    ${COL_BRIGHT_GREEN}${TICK} Complete."
     else
       echo -e "    ${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} HTTP $http_status_code. Firmware file does not exist for selected modem and version. Aborting."
@@ -316,8 +321,6 @@ then
     # Stop MMDVMHost process to free up the serial port
     systemctl stop mmdvmhost.timer >/dev/null 2>&1
     systemctl stop mmdvmhost.service >/dev/null 2>&1
-    sleep 2
-    killall MMDVMHost >/dev/null 2>&1
 
     # NanoPI GPIO handling
     if [[ ${hardware} == "NanoPi" ]]; then
@@ -335,13 +338,6 @@ then
         SPINNER_PID=$!
     else
 	echo -e "\n    ${NOTE}  Flashing modem - please wait..."
-    fi
-
-    cd $FW_TMP
-
-    # Download STM32F10X_Lib (only for binary tools)
-    if [ ! -d "./STM32F10X_Lib/utils" ]; then
-      env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$UAstr" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/STM32F10X_Lib.git &> /dev/null
     fi
 
     # Configure vars depending on OS
@@ -385,12 +381,10 @@ then
     # flash handling for USB modems...
     if [ "$USB_MODEM" = true ]; then
 	if [ "$VERBOSE" = 1 ] ; then
-	    $DFU_RST $DEV_USB_SER 1000
-	    sleep 1
+	    $DFU_RST $DEV_USB_SER 750
 	    $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R
 	else
-	    $DFU_RST $DEV_USB_SER 1000 2>&1
-	    sleep 1
+	    $DFU_RST $DEV_USB_SER 750 2>&1
 	    output=$(eval $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R 2>&1)
 	fi
     else  # flash handling for GPIO modems...
