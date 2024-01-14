@@ -116,8 +116,12 @@ if [ "$1" ]; then
   esac
 fi
 
+# special handlers/booleans for cetain modem types
 if [[ $1 == *usb* ]]; then
   USB_MODEM=true
+fi
+if [[ $1 == *mmdvm_pi-f* ]]; then
+  MMDVM_PI=true
 fi
 
 hardware=$(grep -i hardware /etc/pistar-release | awk -F "= " '{print $2}')
@@ -275,8 +279,14 @@ then
     if [[ $http_status_code -ge 200 && $http_status_code -le 399 ]]; then
       cd $FW_TMP
       # Download STM32F10X_Lib (only for binary tools)
-      if [ ! -d "./STM32F10X_Lib/utils" ]; then
-	env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$UAstr" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/STM32F10X_Lib.git &> /dev/null
+      if [ "$MMDVM_PI" = true ]; then # need older ver. for MMDVM-Pi...
+	if [ ! -d "./STM32flash-0.7" ] ; then
+	  env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$UAstr" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/STM32flash-0.7.git &> /dev/null
+	fi
+      else
+	if [ ! -d "./STM32F10X_Lib/utils" ]; then
+	  env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$UAstr" git clone https://wpsd-swd.w0chp.net/WPSD-SWD/STM32F10X_Lib.git &> /dev/null
+	fi
       fi
       echo -e "    ${COL_BRIGHT_GREEN}${TICK} Complete."
     else
@@ -387,7 +397,14 @@ then
 	    $DFU_RST $DEV_USB_SER 750 2>&1
 	    output=$(eval $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R 2>&1)
 	fi
-    else  # flash handling for GPIO modems...
+    elif [ "$MMDVM_PI" = true ]; then
+	./STM32flash-0.7/stm32flash-0.7 -i 20,-21,21:-20,21 /dev/ttyAMA0 > /dev/null 2>&1
+	if [ "$VERBOSE" = 1 ] ; then
+	  ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
+	else
+	  output=$(eval ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
+	fi
+    else  # The rest; flash handling for MMDVM_HS GPIO modems...
 	# Upload the firmware to the modem and place output into buffer for fail/success checking logic
 	if [ "$VERBOSE" = 1 ] ; then
 	    $STM32FLASH -k /dev/ttyAMA0 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
