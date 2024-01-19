@@ -6,6 +6,11 @@
 # 2/2023 - W0CHP
 # 
 
+if [ "$(id -u)" != "0" ]
+then
+    exit 1
+fi
+
 # Updated 2/23/2023 - W0CHP:
 # TGIFspots contain really weird hacks/scripts, etc.[1] for their Nextion
 # screens, and it all collides with WPSD and our native Nextion driver
