@@ -40,6 +40,9 @@ mv -f /tmp/config_restore/* /etc/ 2>&1
 # Set the Timezone
 timedatectl set-timezone `grep date /var/www/dashboard/config/config.php | grep -o "'.*'" | sed "s/'//g"`
 
+# cache hw info
+/usr/local/sbin/.wpsd-sys-cache
+
 # Clean up
 rm -rf /boot/WPSD_Config_*.zip 2>&1
 sync; sync; sync;
