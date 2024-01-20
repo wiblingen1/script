@@ -404,21 +404,20 @@ then
 	    output=$(eval $DFU_UTIL -D ${firmware_file} -d 1eaf:0003 -a 2 -R -R 2>&1)
 	fi
     elif [ "$MMDVM_PI" = true ]; then
-	if [ "$is_aarch64" = true ] ; then
-	  ./STM32flash-0.7/stm32flash-0.7-aarch64 -k /dev/ttyAMA0
-	else
-	  ./STM32flash-0.7/stm32flash-0.7 -k /dev/ttyAMA0
-	fi
 	if [ "$VERBOSE" = 1 ] ; then
 	    if [ "$is_aarch64" = true ] ; then
-	      ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
+              ./STM32flash-0.7/stm32flash-0.7-aarch64 -i 20,-21,21:-20,21 /dev/ttyAMA0 >/dev/null 2>&1
+              ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
 	    else
-	      ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
+              ./STM32flash-0.7/stm32flash-0.7 -i 20,-21,21:-20,21 /dev/ttyAMA0 >/dev/null 2>&1
+              ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
 	    fi
 	else
 	    if [ "$is_aarch64" = true ] ; then
+              ./STM32flash-0.7/stm32flash-0.7-aarch64 -i 20,-21,21:-20,21 /dev/ttyAMA0 >/dev/null 2>&1
 	      output=$(eval ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
 	    else
+              ./STM32flash-0.7/stm32flash-0.7 -i 20,-21,21:-20,21 /dev/ttyAMA0 >/dev/null 2>&1
 	      output=$(eval ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
 	    fi
 	fi
