@@ -3,7 +3,7 @@
 # batch-add static BM TGs script - W0CHP
 # expects args passed from bm_manager.php
 
-cat /var/www/dashboard/.bm_tgs.batch |
+cat /tmp/.bm_tgs.batch |
 while IFS=$'\n' read -r talkgroup; do
     curl -A "WPSD Dashboard" -X 'POST' \
        "https://api.brandmeister.network/v2/device/$2/talkgroup" \
@@ -15,7 +15,7 @@ done
 echo -e "All Requested Static Talk Groups Added!\n"
 
 # delete unused file
-rm -f /var/www/dashboard/.bm_tgs.batch
+rm -f /tmp/.bm_tgs.batch
 
 sync
 
