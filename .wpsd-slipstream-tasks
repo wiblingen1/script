@@ -317,6 +317,12 @@ fi
 if [ -f "$armbian_env_file" ] && [[ $(grep 'modprobe -r leds_' $rc_local_file) ]] ; then
     sed -i '/modprobe -r leds_/d' $rc_local_file
 fi
+# repo migration : 1/23/24 W0CHP
+if [ -f "$armbian_env_file" ] ; then
+    if grep -q 'beta.armbian.com' /etc/apt/sources.list.d/armbian.list ; then
+	sed -i -s '/beta.armbian.com/apt.armbian.com' /etc/apt/sources.list.d/armbian.list
+    fi
+fi
 
 # ensure gpsd is only enabled by the user:
 if ! `systemctl status gpsd.socket | grep -q masked` && [ `sed -n '/^\[GPSD\]/,/^\[/p' /etc/dmrgateway | grep "^Enable" | awk -F '=' '{print $2}'` == 0 ] ; then
