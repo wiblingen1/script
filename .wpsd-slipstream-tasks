@@ -320,7 +320,7 @@ fi
 # repo migration : 1/23/24 W0CHP
 if [ -f "$armbian_env_file" ] ; then
     if grep -q 'beta' /etc/apt/sources.list.d/armbian.list ; then
-	sed -i 's/beta/apt/g' /etc/apt/sources.list.d/armbian.list
+	sed -i 's/beta\.armbian\.com/apt.armbian.com/g' /etc/apt/sources.list.d/armbian.list
     fi
 fi
 
