@@ -300,6 +300,7 @@ fi
 if [ -f "$armbian_env_file" ]; then
     apt-mark hold \
 	base-files \
+	hostapd \
         armbian-bsp-cli-nanopineo-current \
         armbian-bsp-cli-nanopineo \
         linux-u-boot-nanopineo-edge \
