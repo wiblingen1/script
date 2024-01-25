@@ -1,17 +1,19 @@
 #!/usr/bin/python
 
-###############################################################################
-#                                                                             #
-#                            WPSD Service Watchdog                            #
-#                                                                             #
-###############################################################################
+###########################################################################
+#                                                                         #
+#                         WPSD Service Watchdog                           #
+#                                                                         #
+#                       Refactored for Py3 - W0CHP                        #
+#                                                                         #
+###########################################################################
 
 import subprocess
 import time
 import os
 import linecache
 import datetime
-import ConfigParser
+import configparser
 
 time.sleep(90) #Assumiing the host has just started up, let the services settle...
 
@@ -187,7 +189,7 @@ while True: #Main loop
 	checkproctime.wait()
 
 	# If PiStar-Remote not enabled, dont try and keep it running
-	pistarRemoteConfig = ConfigParser.RawConfigParser()
+	pistarRemoteConfig = configparser.RawConfigParser()
 	pistarRemoteConfig.read('/etc/pistar-remote')
 
 	isEnabled = pistarRemoteConfig.get('enable', 'enabled')

@@ -429,6 +429,33 @@ fi
 #
 
 #
+# close the py2 coffin
+# 1/25/2024 - W0CHP
+#
+if dpkg -l | grep -q python-configparser; then
+    :
+else
+    apt-get update
+    apt-get install -y python-configparser
+fi
+if dpkg -l | grep -q python-is-python3; then
+    :
+else
+    apt-get update
+    apt-get install -y python-is-python3
+fi
+
+#py2packages=$(dpkg -l | grep python2 | awk '{print $2}' | sed 's/:.*//g')
+#if [ -n "$py2packages" ]; then
+#    apt-get purge -y $py2packages
+#    if [ $? -eq 0 ]; then
+#        echo "Legacy python2 Packages have been successfully removed and purged."
+#    else
+#        echo "Failed to remove and purge legacy python2 packages. Please check for errors."
+#    fi
+#fi
+
+#
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
 # Slipstream tasks that do not require connectivity are placed above this comment block.

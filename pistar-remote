@@ -1,40 +1,37 @@
 #!/usr/bin/python
 
-###############################################################################
-#                                                                             #
-#                        Pi-Star Auto Remote Control                          #
-#                                                                             #
-#    Version 1.9, Code, Design and Development by Andy Taylor (MW0MWZ).       #
-#                                                                             #
-#  This Python script is desiged to look for specific things in the logs for  #
-#       MMDVMHost and act on those to give RF control over the repeater.      #
-#                                                                             #
-###############################################################################
+###########################################################################
+#                                                                         #
+#                         WPSD RF Remote Control                          #
+#                                                                         #
+#                       Refactored for Py3 - W0CHP                        #
+#                                                                         #
+###########################################################################
 
 import datetime
 import time
 import linecache
 import os
 import subprocess
-import ConfigParser
+import configparser
 import random
 
 # Read the config;
-config = ConfigParser.RawConfigParser()
+config = configparser.RawConfigParser()
 config.read('/etc/pistar-remote')
 
 # Read the MMDVMHost config;
-mmdvmConfig = ConfigParser.RawConfigParser()
+mmdvmConfig = configparser.RawConfigParser()
 mmdvmConfig.read('/etc/mmdvmhost')
 
 # Read the YSFGateway config;
-ysfGatewayConfig = ConfigParser.RawConfigParser()
+ysfGatewayConfig = configparser.RawConfigParser()
 ysfGatewayConfig.read('/etc/ysfgateway')
 
 # If not enabled, die;
 isEnabled = config.get('enable', 'enabled')
 if (isEnabled != 'true'):
-	quit()
+    quit()
 
 # Substitute variables from config
 mmdvmLogPath = mmdvmConfig.get('Log', 'FilePath')
@@ -45,384 +42,408 @@ keeperCall = config.get('keeper', 'callsign')
 
 # DMR Control Options
 if config.has_option('dmr', 'svckill'):
-	dmrstop = config.get('dmr', 'svckill')
+    dmrstop = config.get('dmr', 'svckill')
 else:
-	dmrstop = str(999999999999)
+    dmrstop = str(999999999999)
 if config.has_option('dmr', 'svcrestart'):
-	dmrrestart = config.get('dmr', 'svcrestart')
+    dmrrestart = config.get('dmr', 'svcrestart')
 else:
-	dmrrestart = str(999999999999)
+    dmrrestart = str(999999999999)
 if config.has_option('dmr', 'reboot'):
-	dmrreboot = config.get('dmr', 'reboot')
+    dmrreboot = config.get('dmr', 'reboot')
 else:
-	dmrreboot = str(999999999999)
+    dmrreboot = str(999999999999)
 if config.has_option('dmr', 'shutdown'):
-	dmrshutdown = config.get('dmr', 'shutdown')
+    dmrshutdown = config.get('dmr', 'shutdown')
 else:
-	dmrshutdown = str(999999999999)
+    dmrshutdown = str(999999999999)
 if config.has_option('dmr', 'hostfiles'):
-	dmrhostfiles = config.get('dmr', 'hostfiles')
+    dmrhostfiles = config.get('dmr', 'hostfiles')
 else:
-	dmrhostfiles = str(999999999999)
+    dmrhostfiles = str(999999999999)
 if config.has_option('dmr', 'reconnect'):
-	dmrreconnect = config.get('dmr', 'reconnect')
+    dmrreconnect = config.get('dmr', 'reconnect')
 else:
-	dmrreconnect = str(999999999999)
+    dmrreconnect = str(999999999999)
 
 # D-Star Control Options
 if config.has_option('d-star', 'svckill'):
-	dstarstop = config.get('d-star', 'svckill')
+    dstarstop = config.get('d-star', 'svckill')
 else:
-	dstarstop = str(999999999999)
+    dstarstop = str(999999999999)
 if config.has_option('d-star', 'svcrestart'):
-	dstarrestart = config.get('d-star', 'svcrestart')
+    dstarrestart = config.get('d-star', 'svcrestart')
 else:
-	dstarrestart = str(999999999999)
+    dstarrestart = str(999999999999)
 if config.has_option('d-star', 'reboot'):
-	dstarreboot = config.get('d-star', 'reboot')
+    dstarreboot = config.get('d-star', 'reboot')
 else:
-	dstarreboot = str(999999999999)
+    dstarreboot = str(999999999999)
 if config.has_option('d-star', 'shutdown'):
-	dstarshutdown = config.get('d-star', 'shutdown')
+    dstarshutdown = config.get('d-star', 'shutdown')
 else:
-	dstarshutdown = str(999999999999)
+    dstarshutdown = str(999999999999)
 if config.has_option('d-star', 'hostfiles'):
-	dstarhostfiles = config.get('d-star', 'hostfiles')
+    dstarhostfiles = config.get('d-star', 'hostfiles')
 else:
-	dstarhostfiles = str(999999999999)
+    dstarhostfiles = str(999999999999)
 if config.has_option('d-star', 'getip'):
-	dstargetip = config.get('d-star', 'getip')
+    dstargetip = config.get('d-star', 'getip')
 else:
-	dstargetip = str(999999999999)
+    dstargetip = str(999999999999)
 if config.has_option('d-star', 'wifissid'):
-	dstargetwifissid = config.get('d-star', 'wifissid')
+    dstargetwifissid = config.get('d-star', 'wifissid')
 else:
-	dstargetwifissid = str(999999999999)
+    dstargetwifissid = str(999999999999)
 if config.has_option('d-star', 'wifirssi'):
-	dstargetwifirssi = config.get('d-star', 'wifirssi')
+    dstargetwifirssi = config.get('d-star', 'wifirssi')
 else:
-	dstargetwifirssi = str(999999999999)
+    dstargetwifirssi = str(999999999999)
 if config.has_option('d-star', '8Ball'):
-        dstar8ball = config.get('d-star', '8Ball')
+    dstar8ball = config.get('d-star', '8Ball')
 else:
-        dstar8ball = str(999999999999)
-dstarmodule = mmdvmConfig.get('General', 'Callsign').ljust(7) + mmdvmConfig.get('D-Star', 'Module')
+    dstar8ball = str(999999999999)
+dstarmodule = mmdvmConfig.get('General', 'Callsign').ljust(
+    7) + mmdvmConfig.get('D-Star', 'Module')
 
 # YSF Control Options
 if config.has_option('ysf', 'svckill'):
-	ysfstop = config.get('ysf', 'svckill')
+    ysfstop = config.get('ysf', 'svckill')
 else:
-	ysfstop = str(999999999999)
+    ysfstop = str(999999999999)
 if config.has_option('ysf', 'svcrestart'):
-	ysfrestart = config.get('ysf', 'svcrestart')
+    ysfrestart = config.get('ysf', 'svcrestart')
 else:
-	ysfrestart = str(999999999999)
+    ysfrestart = str(999999999999)
 if config.has_option('ysf', 'reboot'):
-	ysfreboot = config.get('ysf', 'reboot')
+    ysfreboot = config.get('ysf', 'reboot')
 else:
-	ysfreboot = str(999999999999)
+    ysfreboot = str(999999999999)
 if config.has_option('ysf', 'shutdown'):
-	ysfshutdown = config.get('ysf', 'shutdown')
+    ysfshutdown = config.get('ysf', 'shutdown')
 else:
-	ysfshutdown = str(999999999999)
+    ysfshutdown = str(999999999999)
 if config.has_option('ysf', 'hostfiles'):
-	ysfhostfiles = config.get('ysf', 'hostfiles')
+    ysfhostfiles = config.get('ysf', 'hostfiles')
 else:
-	ysfhostfiles = str(999999999999)
+    ysfhostfiles = str(999999999999)
 
 # P25 Control Options
 if config.has_option('p25', 'svckill'):
-        p25stop = config.get('p25', 'svckill')
+    p25stop = config.get('p25', 'svckill')
 else:
-        p25stop = str(999999999999)
+    p25stop = str(999999999999)
 if config.has_option('p25', 'svcrestart'):
-        p25restart = config.get('p25', 'svcrestart')
+    p25restart = config.get('p25', 'svcrestart')
 else:
-        p25restart = str(999999999999)
+    p25restart = str(999999999999)
 if config.has_option('p25', 'reboot'):
-        p25reboot = config.get('p25', 'reboot')
+    p25reboot = config.get('p25', 'reboot')
 else:
-        p25reboot = str(999999999999)
+    p25reboot = str(999999999999)
 if config.has_option('p25', 'shutdown'):
-        p25shutdown = config.get('p25', 'shutdown')
+    p25shutdown = config.get('p25', 'shutdown')
 else:
-        p25shutdown = str(999999999999)
+    p25shutdown = str(999999999999)
 if config.has_option('p25', 'hostfiles'):
-        p25hostfiles = config.get('p25', 'hostfiles')
+    p25hostfiles = config.get('p25', 'hostfiles')
 else:
-        p25hostfiles = str(999999999999)
+    p25hostfiles = str(999999999999)
 
 # 8-Ball answers
 magic8ball = [
-        'It is certain',
-        'It is decidedly so',
-        'Without a doubt',
-        'Yes definitely',
-        'You may rely on it',
-        'As I see it, yes',
-        'Most likely',
-        'Outlook good',
-        'Yes',
-        'Signs point to yes',
-        'Reply hazy try agn',
-        'Ask again later',
-        'Tell you later',
-        'Cannot predict now',
-        'Concentrate, ask agn',
-        'Dont count on it',
-        'My reply is no',
-        'My sources say no',
-        'Outlook not so good',
-        'Very doubtful'
-        ]
+    'It is certain',
+    'It is decidedly so',
+    'Without a doubt',
+    'Yes definitely',
+    'You may rely on it',
+    'As I see it, yes',
+    'Most likely',
+    'Outlook good',
+    'Yes',
+    'Signs point to yes',
+    'Reply hazy try agn',
+    'Ask again later',
+    'Tell you later',
+    'Cannot predict now',
+    'Concentrate, ask agn',
+    'Dont count on it',
+    'My reply is no',
+    'My sources say no',
+    'Outlook not so good',
+    'Very doubtful'
+]
 
 # Some Variables that are important later
 txtTransmitOldBin = '/usr/local/bin/texttransmit'
 txtTransmitNewBin = '/usr/local/bin/texttransmitd'
 if os.path.isfile(txtTransmitOldBin):
-	txtTransmitBin = '/usr/local/bin/texttransmit'
+    txtTransmitBin = '/usr/local/bin/texttransmit'
 if os.path.isfile(txtTransmitNewBin):
-	txtTransmitBin = '/usr/local/bin/texttransmitd'
+    txtTransmitBin = '/usr/local/bin/texttransmitd'
 
 # Now run the loop
 while True:
-	# Check that the process is running, if its not there is no point in trying to stop it.
-	checkproc = subprocess.Popen('pgrep' + ' MMDVMHost', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	if checkproc.stdout.readlines():
+    # Check that the process is running, if its not there is no point in trying to stop it.
+    checkproc = subprocess.Popen(
+        'pgrep' + ' MMDVMHost', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if checkproc.stdout.readlines():
 
-		# This is the main loop that keeps waiting, we dont want to hammer the logs too often, every 30 secs should be enough.
-		utcnow = datetime.datetime.utcnow()
-		datenow = utcnow.strftime('%Y-%m-%d')
-		dateminus60sec = datetime.datetime.utcnow() - datetime.timedelta(seconds=30)
-		logstampnow = utcnow.strftime('%Y-%m-%d %H:%M:%S')
-		logstampnowminus60sec = dateminus60sec.strftime('%Y-%m-%d %H:%M:%S')
-		currentLog = mmdvmLogPath + '/' + mmdvmFileRoot + '-' + datenow + '.log'
-		currentLogYSF = ysfGatewayLogPath + '/' + ysfGatewayFileRoot + '-' + datenow + '.log'
+        # This is the main loop that keeps waiting, we dont want to hammer the logs too often, every 30 secs should be enough.
+        utcnow = datetime.datetime.utcnow()
+        datenow = utcnow.strftime('%Y-%m-%d')
+        dateminus60sec = datetime.datetime.utcnow() - datetime.timedelta(seconds=30)
+        logstampnow = utcnow.strftime('%Y-%m-%d %H:%M:%S')
+        logstampnowminus60sec = dateminus60sec.strftime('%Y-%m-%d %H:%M:%S')
+        currentLog = mmdvmLogPath + '/' + mmdvmFileRoot + '-' + datenow + '.log'
+        currentLogYSF = ysfGatewayLogPath + '/' + \
+            ysfGatewayFileRoot + '-' + datenow + '.log'
 
-		loglist = []
-		# Open the MMDVMHost Log
-		if os.path.isfile(currentLog):		
-			logfile = open(currentLog, 'r')
-			loglist = logfile.readlines()
-			logfile.close()
+        loglist = []
+        # Open the MMDVMHost Log
+        if os.path.isfile(currentLog):
+            logfile = open(currentLog, 'r')
+            loglist = logfile.readlines()
+            logfile.close()
 
-		# Parse the log lines
-		for line in loglist:
-			# We only care about logs in the last 60 secs
-			if line[3:22] >= logstampnowminus60sec and line[3:22] <= logstampnow:
+        # Parse the log lines
+        for line in loglist:
+            # We only care about logs in the last 60 secs
+            if line[3:22] >= logstampnowminus60sec and line[3:22] <= logstampnow:
 
-				# DMR Stop MMDVMHost
-				# M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
-				if str('received RF voice header from ' + keeperCall + ' to ' + dmrstop) in line:
-					# Kill the Services
-					os.system(r'systemctl stop mmdvmhost.timer')
-					os.system(r'systemctl stop pistar-watchdog.timer')
-					os.system(r'systemctl stop mmdvmhost.service')
-					os.system(r'systemctl stop pistar-watchdog.service')
+                # DMR Stop MMDVMHost
+                # M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
+                if str('received RF voice header from ' + keeperCall + ' to ' + dmrstop) in line:
+                    # Kill the Services
+                    os.system(r'systemctl stop mmdvmhost.timer')
+                    os.system(r'systemctl stop pistar-watchdog.timer')
+                    os.system(r'systemctl stop mmdvmhost.service')
+                    os.system(r'systemctl stop pistar-watchdog.service')
 
-				# DMR Restart MMDVMHost
-				# M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
-				if str('received RF voice header from ' + keeperCall + ' to ' + dmrrestart) in line:
-					# Restart the Services
-					os.system(r'systemctl restart mmdvmhost.service')
-					os.system(r'systemctl restart dmrgateway.service')
-					time.sleep(30)
+                # DMR Restart MMDVMHost
+                # M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
+                if str('received RF voice header from ' + keeperCall + ' to ' + dmrrestart) in line:
+                    # Restart the Services
+                    os.system(r'systemctl restart mmdvmhost.service')
+                    os.system(r'systemctl restart dmrgateway.service')
+                    time.sleep(30)
 
-				# DMR Restart the OS
-				# M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
-				if str('received RF voice header from ' + keeperCall + ' to ' + dmrreboot) in line:
-					# Restart the OS
-					os.system(r'shutdown -r now')
+                # DMR Restart the OS
+                # M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
+                if str('received RF voice header from ' + keeperCall + ' to ' + dmrreboot) in line:
+                    # Restart the OS
+                    os.system(r'shutdown -r now')
 
-				# DMR Shutdown the OS
-				# M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
-				if str('received RF voice header from ' + keeperCall + ' to ' + dmrshutdown) in line:
-					# Shutdown the OS
-					os.system(r'shutdown -h now')
+                # DMR Shutdown the OS
+                # M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
+                if str('received RF voice header from ' + keeperCall + ' to ' + dmrshutdown) in line:
+                    # Shutdown the OS
+                    os.system(r'shutdown -h now')
 
-				# DMR Update Hostfiles
-				# M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
-				if str('received RF voice header from ' + keeperCall + ' to ' + dmrhostfiles) in line:
-					# Update Host files
-					os.system(r'/usr/local/sbin/wpsd-hostfile-update')
+                # DMR Update Hostfiles
+                # M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
+                if str('received RF voice header from ' + keeperCall + ' to ' + dmrhostfiles) in line:
+                    # Update Host files
+                    os.system(r'/usr/local/sbin/wpsd-hostfile-update')
 
-				# DMR Reconnect WIFI
-				# M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
-				if str('received RF voice header from ' + keeperCall + ' to ' + dmrreconnect) in line:
-					# trigger reconnect
-					os.system(r'logger -t "[$$]" "Pi-Star --> Wifi Reconnect initiated <--"')
-					os.system(r'wpa_cli reconfigure wlan0')
-					os.system(r'ifdown wlan0 && sleep 3')
-					os.system(r'ifup wlan0')
-					os.system(r'wpa_cli scan')
+                # DMR Reconnect WIFI
+                # M: 2017-07-03 09:39:38.208 DMR Slot 2, received RF voice header from M1ABC to 123456
+                if str('received RF voice header from ' + keeperCall + ' to ' + dmrreconnect) in line:
+                    # trigger reconnect
+                    os.system(
+                        r'logger -t "[$$]" "Pi-Star --> Wifi Reconnect initiated <--"')
+                    os.system(r'wpa_cli reconfigure wlan0')
+                    os.system(r'ifdown wlan0 && sleep 3')
+                    os.system(r'ifup wlan0')
+                    os.system(r'wpa_cli scan')
 
-				# P25 Stop MMDVMHost
-                                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
-                                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25stop) in line:
-                                        # Kill the Services
-                                        os.system(r'systemctl stop mmdvmhost.timer')
-                                        os.system(r'systemctl stop pistar-watchdog.timer')
-                                        os.system(r'systemctl stop mmdvmhost.service')
-                                        os.system(r'systemctl stop pistar-watchdog.service')
+                # P25 Stop MMDVMHost
+                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
+                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25stop) in line:
+                    # Kill the Services
+                    os.system(r'systemctl stop mmdvmhost.timer')
+                    os.system(r'systemctl stop pistar-watchdog.timer')
+                    os.system(r'systemctl stop mmdvmhost.service')
+                    os.system(r'systemctl stop pistar-watchdog.service')
 
-                                # P25 Restart MMDVMHost
-                                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
-                                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25restart) in line:
-                                        # Restart the Services
-                                        os.system(r'systemctl restart mmdvmhost.service')
-                                        os.system(r'systemctl restart dmrgateway.service')
-					time.sleep(30)
+                # P25 Restart MMDVMHost
+                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
+                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25restart) in line:
+                    # Restart the Services
+                    os.system(r'systemctl restart mmdvmhost.service')
+                    os.system(r'systemctl restart dmrgateway.service')
+                    time.sleep(30)
 
-                                # P25 Restart the OS
-                                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
-                                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25reboot) in line:
-                                        # Restart the OS
-                                        os.system(r'shutdown -r now')
+                # P25 Restart the OS
+                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
+                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25reboot) in line:
+                    # Restart the OS
+                    os.system(r'shutdown -r now')
 
-                                # P25 Shutdown the OS
-                                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
-                                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25shutdown) in line:
-                                        # Shutdown the OS
-                                        os.system(r'shutdown -h now')
+                # P25 Shutdown the OS
+                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
+                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25shutdown) in line:
+                    # Shutdown the OS
+                    os.system(r'shutdown -h now')
 
-				# P25 Update Hostfiles
-				# M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
-                                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25hostfiles) in line:
-					# Update Host Files
-					os.system(r'/usr/local/sbin/wpsd-hostfile-update')
+                # P25 Update Hostfiles
+                # M: 2017-08-08 08:02:43.352 P25, received RF transmission from M1ABC to TG 123456
+                if str('P25, received RF transmission from ' + keeperCall + ' to TG ' + p25hostfiles) in line:
+                    # Update Host Files
+                    os.system(r'/usr/local/sbin/wpsd-hostfile-update')
 
-				# D-Star Stop MMDVMHost
-				# M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-				if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarstop) in line:
-					# Kill the Services
-					os.system(txtTransmitBin + ' -text "Shutting down at keeper request" "' + dstarmodule + '"')
-					time.sleep(5)
-                                        os.system(r'systemctl stop mmdvmhost.timer')
-                                        os.system(r'systemctl stop pistar-watchdog.timer')
-                                        os.system(r'systemctl stop mmdvmhost.service')
-                                        os.system(r'systemctl stop pistar-watchdog.service')
+                # D-Star Stop MMDVMHost
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarstop) in line:
+                    # Kill the Services
+                    os.system(
+                        txtTransmitBin + ' -text "Shutting down at keeper request" "' + dstarmodule + '"')
+                    time.sleep(5)
+                    os.system(r'systemctl stop mmdvmhost.timer')
+                    os.system(r'systemctl stop pistar-watchdog.timer')
+                    os.system(r'systemctl stop mmdvmhost.service')
+                    os.system(r'systemctl stop pistar-watchdog.service')
 
-				# D-Star Restart MMDVMHost
-				# M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-				if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarrestart) in line:
-					# Restart the Services
-					os.system(txtTransmitBin + ' -text "Restarting services at keeper request" "' + dstarmodule + '"')
-					time.sleep(5)
-                                        os.system(r'systemctl restart ircddbgateway.service')
-                                        os.system(r'systemctl restart mmdvmhost.service')
-					time.sleep(30)
+                # D-Star Restart MMDVMHost
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarrestart) in line:
+                    # Restart the Services
+                    os.system(
+                        txtTransmitBin + ' -text "Restarting services at keeper request" "' + dstarmodule + '"')
+                    time.sleep(5)
+                    os.system(r'systemctl restart ircddbgateway.service')
+                    os.system(r'systemctl restart mmdvmhost.service')
+                    time.sleep(30)
 
-				# D-Star Reboot the OS
-				# M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-				if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarreboot) in line:
-					# Kill the Services
-					os.system(txtTransmitBin + ' -text "Rebooting OS at keeper request" "' + dstarmodule + '"')
-					time.sleep(5)
-					os.system(r'shutdown -r now')
+                # D-Star Reboot the OS
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarreboot) in line:
+                    # Kill the Services
+                    os.system(
+                        txtTransmitBin + ' -text "Rebooting OS at keeper request" "' + dstarmodule + '"')
+                    time.sleep(5)
+                    os.system(r'shutdown -r now')
 
-				# D-Star Shutdown the OS
-				# M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-				if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarshutdown) in line:
-					# Shutdown
-					os.system(txtTransmitBin + ' -text "Shutting down OS at keeper request" "' + dstarmodule + '"')
-					time.sleep(5)
-					os.system(r'shutdown -h now')
+                # D-Star Shutdown the OS
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarshutdown) in line:
+                    # Shutdown
+                    os.system(
+                        txtTransmitBin + ' -text "Shutting down OS at keeper request" "' + dstarmodule + '"')
+                    time.sleep(5)
+                    os.system(r'shutdown -h now')
 
-				# D-Star Hostfiles Update
-				# M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-				if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarhostfiles) in line:
-					# Update Host files
-					os.system(txtTransmitBin + ' -text "Updating Hostfiles at keeper request" "' + dstarmodule + '"')
-					time.sleep(5)
-					os.system(r'/usr/local/sbin/wpsd-hostfile-update')
+                # D-Star Hostfiles Update
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstarhostfiles) in line:
+                    # Update Host files
+                    os.system(
+                        txtTransmitBin + ' -text "Updating Hostfiles at keeper request" "' + dstarmodule + '"')
+                    time.sleep(5)
+                    os.system(r'/usr/local/sbin/wpsd-hostfile-update')
 
-				# D-Star Get the current IP
-				# M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-				if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstargetip) in line:
-					# Get the IP
-					myIP = os.popen('/bin/hostname -I | awk \'{print $1}\'').read()
-					os.system(txtTransmitBin + ' -text "IP: ' + myIP + '" "' + dstarmodule + '"')
+                # D-Star Get the current IP
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstargetip) in line:
+                    # Get the IP
+                    myIP = os.popen(
+                        '/bin/hostname -I | awk \'{print $1}\'').read()
+                    os.system(txtTransmitBin + ' -text "IP: ' +
+                              myIP + '" "' + dstarmodule + '"')
 
-				# D-Star Get the wifi SSID
-				# M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-				if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstargetwifissid) in line:
-					# Get the SSID
-					if os.path.islink('/sys/class/net/wlan0'):
-						ssid = os.popen('/sbin/iwconfig wlan0 | grep ESSID | awk -F ":" \'{print $2}\' | sed \'s/"//g\'').read()
-						os.system(txtTransmitBin + ' -text "SSID: ' + ssid + '" "' + dstarmodule + '"')
-					else:
-						os.system(txtTransmitBin + ' -text "WiFi: Not connected" "' + dstarmodule + '"')
+                # D-Star Get the wifi SSID
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstargetwifissid) in line:
+                    # Get the SSID
+                    if os.path.islink('/sys/class/net/wlan0'):
+                        ssid = os.popen(
+                            '/sbin/iwconfig wlan0 | grep ESSID | awk -F ":" \'{print $2}\' | sed \'s/"//g\'').read()
+                        os.system(txtTransmitBin + ' -text "SSID: ' +
+                                  ssid + '" "' + dstarmodule + '"')
+                    else:
+                        os.system(
+                            txtTransmitBin + ' -text "WiFi: Not connected" "' + dstarmodule + '"')
 
-				# D-Star Get the wifi RSSI
-				# M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-				if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstargetwifirssi) in line:
-					# Get the SSID
-					if os.path.islink('/sys/class/net/wlan0'):
-						rssi = os.popen('/sbin/iwconfig wlan0 | grep -i "signal level" | awk -F "=" \'{print $3}\'').read()
-						os.system(txtTransmitBin + ' -text "RSSI: ' + rssi + '" "' + dstarmodule + '"')
-					else:
-						os.system(txtTransmitBin + ' -text "WiFi: Not connected" "' + dstarmodule + '"')
+                # D-Star Get the wifi RSSI
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstargetwifirssi) in line:
+                    # Get the SSID
+                    if os.path.islink('/sys/class/net/wlan0'):
+                        rssi = os.popen(
+                            '/sbin/iwconfig wlan0 | grep -i "signal level" | awk -F "=" \'{print $3}\'').read()
+                        os.system(txtTransmitBin + ' -text "RSSI: ' +
+                                  rssi + '" "' + dstarmodule + '"')
+                    else:
+                        os.system(
+                            txtTransmitBin + ' -text "WiFi: Not connected" "' + dstarmodule + '"')
 
-				# D-Star 8Ball
-                                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
-                                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstar8ball) in line:
-                                        # Ask the 8Ball
-                                        magic8ballanswer = random.choice(magic8ball)
-                                        os.system(txtTransmitBin + ' -text "' + magic8ballanswer + '" "' + dstarmodule + '"')
+                # D-Star 8Ball
+                # M: 2017-07-03 11:38:57.349 D-Star, received RF header from M1ABC  /1234 to COMMAND1
+                if str('D-Star, received RF header from ' + keeperCall + ' ') and str(dstar8ball) in line:
+                    # Ask the 8Ball
+                    magic8ballanswer = random.choice(magic8ball)
+                    os.system(txtTransmitBin + ' -text "' +
+                              magic8ballanswer + '" "' + dstarmodule + '"')
 
-				# YSF
-				# M: 2017-07-13 19:50:43.464 YSF, received RF header from M1ABC      to ALL
-				if str('YSF, received RF header from ' + keeperCall + ' ') in line:
-					# YSF Log Checking here
-					logfileysf = open(currentLogYSF, 'r')
-					loglistysf = logfileysf.readlines()
-					logfileysf.close()
+                # YSF
+                # M: 2017-07-13 19:50:43.464 YSF, received RF header from M1ABC      to ALL
+                if str('YSF, received RF header from ' + keeperCall + ' ') in line:
+                    # YSF Log Checking here
+                    logfileysf = open(currentLogYSF, 'r')
+                    loglistysf = logfileysf.readlines()
+                    logfileysf.close()
 
-					checkproc = subprocess.Popen('pgrep' + ' YSFGateway', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-					if checkproc.stdout.readlines():
+                    checkproc = subprocess.Popen(
+                        'pgrep' + ' YSFGateway', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    if checkproc.stdout.readlines():
 
-						# Parse the log lines
-						for lineysf in loglistysf:
+                        # Parse the log lines
+                        for lineysf in loglistysf:
 
-							# We only care about logs in the last 60 secs
-							if lineysf[3:22] >= logstampnowminus60sec and lineysf[3:22] <= logstampnow:
+                            # We only care about logs in the last 60 secs
+                            if lineysf[3:22] >= logstampnowminus60sec and lineysf[3:22] <= logstampnow:
 
-								# YSF Stop MMDVMHost
-								# M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
-								if (str('Trying to find non existent') and str(ysfstop) in lineysf) or (str('Received Connect to') and str(ysfstop) in lineysf):
-									# Kill the Services
-									os.system(r'systemctl stop mmdvmhost.timer')
-									os.system(r'systemctl stop pistar-watchdog.timer')
-									os.system(r'systemctl stop mmdvmhost.service')
-									os.system(r'systemctl stop pistar-watchdog.service')
+                                # YSF Stop MMDVMHost
+                                # M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
+                                if (str('Trying to find non existent') and str(ysfstop) in lineysf) or (str('Received Connect to') and str(ysfstop) in lineysf):
+                                    # Kill the Services
+                                    os.system(
+                                        r'systemctl stop mmdvmhost.timer')
+                                    os.system(
+                                        r'systemctl stop pistar-watchdog.timer')
+                                    os.system(
+                                        r'systemctl stop mmdvmhost.service')
+                                    os.system(
+                                        r'systemctl stop pistar-watchdog.service')
 
-								# YSF Restart MMDVMHost
-								# M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
-								if (str('Trying to find non existent') and str(ysfrestart) in lineysf) or (str('Received Connect to') and str(ysfrestart) in lineysf):
-									# Restart the Services
-									os.system(r'systemctl restart ysfgateway.service')
-									os.system(r'systemctl restart mmdvmhost.service')
-									time.sleep(30)
+                                # YSF Restart MMDVMHost
+                                # M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
+                                if (str('Trying to find non existent') and str(ysfrestart) in lineysf) or (str('Received Connect to') and str(ysfrestart) in lineysf):
+                                    # Restart the Services
+                                    os.system(
+                                        r'systemctl restart ysfgateway.service')
+                                    os.system(
+                                        r'systemctl restart mmdvmhost.service')
+                                    time.sleep(30)
 
-								# YSF Reboot the OS
-								# M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
-								if (str('Trying to find non existent') and str(ysfreboot) in lineysf) or (str('Received Connect to') and str(ysfreboot) in lineysf):
-									# Reboot the OS
-									os.system(r'shutdown -r now')
+                                # YSF Reboot the OS
+                                # M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
+                                if (str('Trying to find non existent') and str(ysfreboot) in lineysf) or (str('Received Connect to') and str(ysfreboot) in lineysf):
+                                    # Reboot the OS
+                                    os.system(r'shutdown -r now')
 
-								# YSF Shutdown the OS
-								# M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
-								if (str('Trying to find non existent') and str(ysfshutdown) in lineysf) or (str('Received Connect to') and str(ysfshutdown) in lineysf):
-									# Shutdown the OS
-									os.system(r'shutdown -h now')
+                                # YSF Shutdown the OS
+                                # M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
+                                if (str('Trying to find non existent') and str(ysfshutdown) in lineysf) or (str('Received Connect to') and str(ysfshutdown) in lineysf):
+                                    # Shutdown the OS
+                                    os.system(r'shutdown -h now')
 
-								# YSF Update the Hostfiles
-								# M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
-								if (str('Trying to find non existent') and str(ysfhostfiles) in lineysf) or (str('Received Connect to') and str(ysfhostfiles) in lineysf):
-									# Update the host files
-									os.system(r'/usr/local/sbin/wpsd-hostfile-update')
-	
-		# This is the 30 second sleep before the next pass.
-		time.sleep(30)
+                                # YSF Update the Hostfiles
+                                # M: 2017-07-13 19:24:59.704 Trying to find non existent reflector with an id of 12345
+                                if (str('Trying to find non existent') and str(ysfhostfiles) in lineysf) or (str('Received Connect to') and str(ysfhostfiles) in lineysf):
+                                    # Update the host files
+                                    os.system(
+                                        r'/usr/local/sbin/wpsd-hostfile-update')
 
-
+        # This is the 30 second sleep before the next pass.
+        time.sleep(30)
