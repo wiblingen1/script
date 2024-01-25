@@ -432,11 +432,13 @@ fi
 # close the py2 coffin
 # 1/25/2024 - W0CHP
 #
-if dpkg -l | grep -q python-configparser; then
-    :
-else
-    apt-get update
-    apt-get install -y python-configparser
+if [ "${OS_VER}" -lt "12" ] ; then # only for bullseye
+    if dpkg -l | grep -q python-configparser; then
+	:
+    else
+	apt-get update
+	apt-get install -y python-configparser
+    fi
 fi
 if dpkg -l | grep -q python-is-python3; then
     :
@@ -444,7 +446,6 @@ else
     apt-get update
     apt-get install -y python-is-python3
 fi
-
 #py2packages=$(dpkg -l | grep python2 | awk '{print $2}' | sed 's/:.*//g')
 #if [ -n "$py2packages" ]; then
 #    apt-get purge -y $py2packages
