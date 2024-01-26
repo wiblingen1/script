@@ -12,38 +12,47 @@ then
         exit 1
 fi
 
-if [ ! -f /boot/WPSD_Config_*.zip ]; then
-	exit 1
+platform_info=$(/usr/local/sbin/.wpsd-platform-detect)
+if [[ $platform_info =~ "Raspberry Pi 5" ]]; then
+    is_raspberry_pi_5=true
+else
+    is_raspberry_pi_5=false
 fi
 
-# First lets make the working directory
+if $is_raspberry_pi_5 ; then
+    if [ ! -f /boot/firmware/WPSD_Config_*.zip ]; then
+	exit 1
+    fi
+else
+    if [ ! -f /boot/WPSD_Config_*.zip ]; then
+	exit 1
+    fi
+fi
+
 if [ ! -d /tmp/config_restore ]; then
 	mkdir /tmp/config_restore
 fi
 
-# Unpack the configs
-unzip -j /boot/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
+if $is_raspberry_pi_5 ; then
+    unzip -j /boot/firmwware/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
+else
+    unzip -j /boot/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
+fi
 
-# Stop the services
 wpsd-services fullstop 
 
-# Overwrite the configs
 rm -f /etc/dstar-radio.* 2>&1
 mv -f /tmp/config_restore/ircddblocal.php /var/www/dashboard/config/ 2>&1
 mv -f /tmp/config_restore/config.php /var/www/dashboard/config/ 2>&1
 mv -f /tmp/config_restore/wpa_supplicant.conf /etc/wpa_supplicant/ 2>&1
 mv -f /tmp/config_restore/* /etc/ 2>&1
 
-# setup nextion (or not) based on config
 /usr/local/sbin/nextion-driver-helper
 
-# Set the Timezone
 timedatectl set-timezone `grep date /var/www/dashboard/config/config.php | grep -o "'.*'" | sed "s/'//g"`
 
-# cache hw info
 /usr/local/sbin/.wpsd-sys-cache
 
-# Clean up
 rm -rf /boot/WPSD_Config_*.zip 2>&1
 sync; sync; sync;
 reboot
