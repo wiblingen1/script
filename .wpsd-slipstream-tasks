@@ -609,3 +609,9 @@ if grep -q 'W0CHP-PiStar-Dash' /etc/issue ; then # v0.1 - deprecated...update li
 fi
 #
 
+# WiFi Reg. Domain for Bookworm and bullseye
+if [ ! -f '/usr/local/etc/regulatory.txt' ] ; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "WiFi Reg. Domain Installer $uaStr")
+    curl "${CURL_OPTIONS[@]}" -o /usr/local/etc/regulatory.txt https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/regulatory.txt
+fi
+
