@@ -26,12 +26,12 @@ fi
 if [ ! -f /etc/ssl/certs/wpsd.crt ]; then
 	getFQDN=$( hostname -A | cut -d " " -f1 )
 	# Create the new Private / Public keys
-	sudo openssl req -x509 -nodes -days 3650 -newkey rsa:4096 -keyout /etc/ssl/private/pi-star.key -out /etc/ssl/certs/pi-star.crt \
-	  -subj "/C=US/ST=Minnesota/L=Winona/O=WPSD/OU=WPSD Dev Team/CN=WPSD" \
+	sudo openssl req -x509 -nodes -days 3650 -newkey rsa:4096 -keyout /etc/ssl/private/wpsd.key -out /etc/ssl/certs/wpsd.crt \
+	  -subj "/C=US/ST=Minnesota/L=Winona/O=WPSD/OU=WPSD Dev Team/CN=wpsd" \
 	  -addext "subjectAltName=DNS:wpsd,DNS:wpsd.local,DNS:pi-star,DNS:pi-star.local,DNS:pi-star*,DNS:pi-star*.local,DNS:${getFQDN},DNS:$(hostname).local,DNS:$(hostname)"
 
 	# Configure NginX
-cat << 'EOF' > /etc/nginx/sites-enabled/pi-star
+	cat << 'EOF' > /etc/nginx/sites-enabled/pi-star
 server {
 	listen 80 default_server;
 	listen 443 ssl http2;
