@@ -609,9 +609,21 @@ if grep -q 'W0CHP-PiStar-Dash' /etc/issue ; then # v0.1 - deprecated...update li
 fi
 #
 
+#
 # WiFi Reg. Domain for Bookworm and bullseye
+# 2/1/2024 - W0CHP
+#
 if [ ! -f '/usr/local/etc/regulatory.txt' ] ; then
-    declare -a CURL_OPTIONS=('-Ls' '-A' "WiFi Reg. Domain Installer $uaStr")
+    declare -a CURL_OPTIONS=('-Ls' '-A' "WiFi Reg. Domain Installer (slipstream) $uaStr")
     curl "${CURL_OPTIONS[@]}" -o /usr/local/etc/regulatory.txt https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/regulatory.txt
 fi
+#
+
+#
+# BW dnsmasq config check - 2/9/2024
+if ! grep 'WPSD' /etc/dnsmasq.conf ; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "BW dnsmasq config installer (slipstream) $uaStr")
+    curl "${CURL_OPTIONS[@]}" -o /etc/ https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/dnsmasq.conf
+fi
+#
 
