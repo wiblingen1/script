@@ -5,38 +5,23 @@
 #                                                    #
 ######################################################
 
-# Check we are root
-if [ "$(id -u)" != "0" ]
-then
-        echo "This script must be run as root" 1>&2
-        exit 1
+if [ "$(id -u)" != "0" ] ; then
+    echo "This script must be run as root" 1>&2
+    exit 1
 fi
 
-platform_info=$(/usr/local/sbin/.wpsd-platform-detect)
-if [[ $platform_info =~ "Raspberry Pi 5" ]]; then
-    is_raspberry_pi_5=true
-else
-    is_raspberry_pi_5=false
-fi
-
-if $is_raspberry_pi_5 ; then
-    if [ ! -f /boot/firmware/WPSD_Config_*.zip ]; then
-	exit 1
-    fi
-else
-    if [ ! -f /boot/WPSD_Config_*.zip ]; then
-	exit 1
-    fi
-fi
-
-if [ ! -d /tmp/config_restore ]; then
+if [ -f /boot/WPSD_Config_*.zip ]; then
+    if [ ! -d /tmp/config_restore ]; then
 	mkdir /tmp/config_restore
-fi
-
-if $is_raspberry_pi_5 ; then
-    unzip -j /boot/firmwware/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
-else
+    fi
     unzip -j /boot/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
+elif [ -f /boot/firmware/WPSD_Config_*.zip ]; then
+    if [ ! -d /tmp/config_restore ]; then
+	mkdir /tmp/config_restore
+    fi
+    unzip -j /boot/firmware/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
+else
+    exit 1
 fi
 
 wpsd-services fullstop 
@@ -53,8 +38,12 @@ timedatectl set-timezone `grep date /var/www/dashboard/config/config.php | grep 
 
 /usr/local/sbin/.wpsd-sys-cache
 
-rm -rf /boot/WPSD_Config_*.zip 2>&1
-rm -rf /boot/firmware/WPSD_Config_*.zip 2>&1
+if [ -d /boot/firmware ]; then
+    rm -rf /boot/firmware/WPSD_Config_*.zip 2>&1
+else
+    rm -rf /boot/WPSD_Config_*.zip 2>&1
+fi
+sync: 
 
 sync; sync; sync;
 reboot
