@@ -621,7 +621,7 @@ fi
 
 #
 # BW dnsmasq config check - 2/9/2024
-if ! grep 'wpsd' /etc/dnsmasq.conf ; then
+if ! grep -q 'wpsd' /etc/dnsmasq.conf ; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "BW dnsmasq config installer (slipstream) $uaStr")
     curl "${CURL_OPTIONS[@]}" -o /etc/dnsmasq.conf https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/dnsmasq.conf
     systemctl restart dnsmasq
