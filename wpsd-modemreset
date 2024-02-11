@@ -42,7 +42,7 @@ if [ -f '/etc/dstar-radio.mmdvmhost' ]; then
     modemSelectedHuman=${modemSelectedHuman::-9}
 
     # Replace "&amp;" with "&" in modemSelectedHuman
-    modemSelectedHuman=${modemSelectedHuman//&amp;/&}
+    modemSelectedHuman=$(echo "$modemSelectedHuman" | sed 's/&amp;/\&/g')
 fi
 
 # Get the Port the modem is on
@@ -62,11 +62,10 @@ if [ -z "${1}" ]; then
   systemctl stop mmdvmhost.service
 fi
 
-# Reset process for MMDVM HS_HAT Board (20,-21,21:-20,21)
-pinbase=$(ls -la /sys/class/gpio/gpiochip* | sed -n "s/.*gpiochip\([0-9]*\).*/\1/p" | head -n 1)
-let pin20=${pinbase}+20
-let pin21=${pinbase}+21
-# Reset GPIO connected Modems
+# Reset 
+getPins=$(ls /sys/class/gpio/gpiochip* | sed -n "s/.*gpiochip\([0-9]*\).*/\1/p" | head -n 1)
+let pin20=${getPins}+20
+let pin21=${getPins}+21
 echo ${pin20} > /sys/class/gpio/export
 echo ${pin21} > /sys/class/gpio/export
 echo out > /sys/class/gpio/gpio${pin20}/direction

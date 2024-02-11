@@ -204,7 +204,7 @@ then
     modemSelectedHuman=${modemSelectedHuman::-9}
 
     # Replace "&amp;" with "&" in modemSelectedHuman
-    modemSelectedHuman=${modemSelectedHuman//&amp;/&}
+    modemSelectedHuman=$(echo "$modemSelectedHuman" | sed 's/&amp;/\&/g')
 
     echo "Modem selected in Dashboard: ${modemSelectedHuman}"
   fi
