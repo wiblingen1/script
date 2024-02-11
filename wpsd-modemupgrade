@@ -130,6 +130,11 @@ else
     is_aarch64=false
 fi
 
+# gpio front/back compat. for pi5 and older Pi SBCs; since Pi5 has its own GPIO chip (gpiochip4 [pinctrl-rp1])
+getGPIOpinMaps=$(ls -al /sys/class/gpio/gpiochip* | sed -n "s/.*gpiochip\([0-9]*\).*/\1/p" | head -n 1)
+pin20=$((getGPIOpinMaps + 20))
+pin21=$((getGPIOpinMaps + 21))
+
 hardware=$(grep -i hardware /etc/pistar-release | awk -F "= " '{print $2}')
 numLogs=$(ls -1rt /var/log/pi-star/MMDVM-*.log | wc -l)
 if [[ ${numLogs} -gt 0 ]]; then
@@ -394,6 +399,14 @@ then
 	STM32FLASH="./STM32F10X_Lib/utils/macosx/stm32flash"
     fi
 
+    # Arch GPIO handling
+    if [[ ${hardware} == "NanoPi" ]]; then
+      echo 3 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio3/direction
+      echo 1 > /sys/class/gpio/gpio3/value
+      echo 3 > /sys/class/gpio/unexport
+    fi
+
     # flash handling for USB modems...
     if [ "$USB_MODEM" = true ]; then
 	if [ "$VERBOSE" = 1 ] ; then
@@ -406,18 +419,18 @@ then
     elif [ "$MMDVM_PI" = true ]; then
 	if [ "$VERBOSE" = 1 ] ; then
 	    if [ "$is_aarch64" = true ] ; then
-              ./STM32flash-0.7/stm32flash-0.7-aarch64 -i 20,-21,21:-20,21 /dev/ttyAMA0 >/dev/null 2>&1
+              ./STM32flash-0.7/stm32flash-0.7-aarch64 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
               ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
 	    else
-              ./STM32flash-0.7/stm32flash-0.7 -i 20,-21,21:-20,21 /dev/ttyAMA0 >/dev/null 2>&1
+              ./STM32flash-0.7/stm32flash-0.7 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
               ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
 	    fi
 	else
 	    if [ "$is_aarch64" = true ] ; then
-              ./STM32flash-0.7/stm32flash-0.7-aarch64 -i 20,-21,21:-20,21 /dev/ttyAMA0 >/dev/null 2>&1
+              ./STM32flash-0.7/stm32flash-0.7-aarch64 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
 	      output=$(eval ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
 	    else
-              ./STM32flash-0.7/stm32flash-0.7 -i 20,-21,21:-20,21 /dev/ttyAMA0 >/dev/null 2>&1
+              ./STM32flash-0.7/stm32flash-0.7 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
 	      output=$(eval ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
 	    fi
 	fi
@@ -425,10 +438,10 @@ then
 	# Upload the firmware to the modem and place output into buffer for fail/success checking logic
 	if [ "$VERBOSE" = 1 ] ; then
 	    $STM32FLASH -k /dev/ttyAMA0 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
-	    $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0
+	    $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0
 	else
 	    $STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
-	    output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0 2>&1)
+	    output=$(eval $STM32FLASH -v -w ${firmware_file} -g 0x0 -R -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 2>&1)
 	fi
     fi
 
