@@ -636,3 +636,13 @@ if grep -q "shuf -i 2-4 -n1" "$rc_local_file"; then
 fi
 #
 
+#
+# disable BT in BW - 2/12/2024 W0CHP
+#
+if [ "${OS_VER}" -ge "12" ] ; then
+    if ! grep -q 'toverlay=disable-bt' /boot/firmware/config.txt ; then
+	sed -i '/\[all\]/a dtoverlay=disable-bt' /boot/firmware/config.txt
+    fi
+fi
+#
+
