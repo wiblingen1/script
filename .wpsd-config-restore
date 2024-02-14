@@ -14,12 +14,12 @@ if [ -f /boot/WPSD_Config_*.zip ]; then
     if [ ! -d /tmp/config_restore ]; then
 	mkdir /tmp/config_restore
     fi
-    unzip -j /boot/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
+    unzip /boot/WPSD_Config_*.zip -d /tmp/config_restore/
 elif [ -f /boot/firmware/WPSD_Config_*.zip ]; then
     if [ ! -d /tmp/config_restore ]; then
 	mkdir /tmp/config_restore
     fi
-    unzip -j /boot/firmware/WPSD_Config_*.zip -d /tmp/config_restore/ 2>&1
+    unzip /boot/firmware/WPSD_Config_*.zip -d /tmp/config_restore/
 else
     exit 1
 fi
@@ -28,43 +28,44 @@ source /usr/local/sbin/.wpsd-shell-funcs
 
 wpsd-services fullstop 
 
-rm -rf /etc/dstar-radio.* /etc/bmapi.key /etc/dapnetapi.key /etc/timeserver.disable /etc/WPSD_config_mgr > /dev/null
-cp -a /tmp/config_restore/WPSD_config_mgr /etc/ > /dev/null
+rm -rf /etc/dstar-radio.* /etc/bmapi.key /etc/dapnetapi.key /etc/timeserver.disable /etc/WPSD_config_mgr
+cp -a /tmp/config_restore/WPSD_config_mgr /etc/
 castResult=$(isDVmegaCast)
 if [ "$castResult" == "true" ]; then
-    mkdir -p /usr/local/cast/etc  > /dev/null
-    cp -a /tmp/config_restore/cast-settings/* /usr/local/cast/etc/ > /dev/null
+    mkdir -p /usr/local/cast/etc 
+    mv -f -a /tmp/config_restore/cast-settings/* /usr/local/cast/etc/
     chmod 775 /usr/local/cast/etc ; sudo chown -R www-data:pi-star /usr/local/cast/etc ; sudo chmod 664 /usr/local/cast/etc/*
-   /usr/local/cast/sbin/RSET.sh  > /dev/null 2>&1 &
+    rm -rf /tmp/config_restore/cast-settings
+    /usr/local/cast/sbin/RSET.sh  &
 fi
-mv -f /tmp/config_restore/gpsd /etc/default/ > /dev/null
-mv -f /tmp/config_restore/RSSI.dat /usr/local/etc/ > /dev/null
-mv -f /tmp/config_restore/ircddblocal.php /var/www/dashboard/config/ > /dev/null
-mv -f /tmp/config_restore/config.php /var/www/dashboard/config/ > /dev/null
-mv -f /tmp/config_restore/language.php /var/www/dashboard/config/ > /dev/null
-find /tmp/config_restore/ -maxdepth 1 -name "*Hosts.txt" -exec mv -fv {} /root \; > /dev/null
-mv -f /tmp/config_restore/wpa_supplicant.conf /etc/wpa_supplicant/ > /dev/null
-mv -f /tmp/config_restore/*.nmconnection /etc/NetworkManager/system.connections/ > /dev/null
-mv -f /tmp/config_restore/wpsd-upnp-rules /etc/ > /dev/null
-mv -f /tmp/config_restore/hostapd.conf /etc/hostapd/ > /dev/null
-mv -f /tmp/config_restore/*_paused /etc/ > /dev/null
-cp -a /tmp/config_restore/.bm_tgs.json.saved /etc/ > /dev/null
-mv -f /tmp/config_restore/* /etc/ > /dev/null
+mv -f /tmp/config_restore/gpsd /etc/default/
+mv -f /tmp/config_restore/RSSI.dat /usr/local/etc/
+mv -f /tmp/config_restore/ircddblocal.php /var/www/dashboard/config/
+mv -f /tmp/config_restore/config.php /var/www/dashboard/config/
+mv -f /tmp/config_restore/language.php /var/www/dashboard/config/
+find /tmp/config_restore/ -maxdepth 1 -name "*Hosts.txt" -exec mv -fv {} /root \;
+mv -f /tmp/config_restore/wpa_supplicant.conf /etc/wpa_supplicant/
+mv -f /tmp/config_restore/*.nmconnection /etc/NetworkManager/system.connections/
+mv -f /tmp/config_restore/wpsd-upnp-rules /etc/
+mv -f /tmp/config_restore/hostapd.conf /etc/hostapd/
+mv -f /tmp/config_restore/*_paused /etc/
+mv -f /tmp/config_restore/.bm_tgs.json.saved /etc/
+mv -f /tmp/config_restore/* /etc/ # everything else / All The Things
 TIMEZONE=$(grep -o -P "date_default_timezone_set\\('\\K[^']+" /var/www/dashboard/config/config.php | sed 's/^[ \t]*//;s/[ \t]*$//')
-timedatectl set-timezone ${TIMEZONE} > /dev/null
+timedatectl set-timezone ${TIMEZONE}
 IRCDDBPW=($grep remotePassword /etc/ircddbgateway | awk -F'=' '{print $2}')
-sed -i "/password=/c\\password=${IRCDDBPW}" /root/.Remote\ Control > /dev/null
+sed -i "/password=/c\\password=${IRCDDBPW}" /root/.Remote\ Control
 
-/usr/local/sbin/nextion-driver-helper > /dev/null
+/usr/local/sbin/nextion-driver-helper
 
-/usr/local/sbin/wpsd-hostfile-update > /dev/null
+/usr/local/sbin/wpsd-hostfile-update
 
-/usr/local/sbin/.wpsd-sys-cache > /dev/null
+/usr/local/sbin/.wpsd-sys-cache
 
 if [ -d /boot/firmware ]; then
-    rm -rf /boot/firmware/WPSD_Config_*.zip 2>&1
+    rm -rf /boot/firmware/WPSD_Config_*.zip
 else
-    rm -rf /boot/WPSD_Config_*.zip 2>&1
+    rm -rf /boot/WPSD_Config_*.zip
 fi
 
 sync; sync; sync;
