@@ -26,9 +26,9 @@ fi
 
 source /usr/local/sbin/.wpsd-shell-funcs
 
-wpsd-services fullstop 
+wpsd-services fullstop
 
-rm -rf /etc/dstar-radio.* /etc/bmapi.key /etc/dapnetapi.key /etc/timeserver.disable /etc/WPSD_config_mgr
+rm -rf /etc/dstar-radio.* /etc/mmdvmhost /etc/bmapi.key /etc/dapnetapi.key /etc/timeserver.disable /etc/WPSD_config_mgr
 cp -a /tmp/config_restore/WPSD_config_mgr /etc/
 castResult=$(isDVmegaCast)
 if [ "$castResult" == "true" ]; then
@@ -38,6 +38,7 @@ if [ "$castResult" == "true" ]; then
     rm -rf /tmp/config_restore/cast-settings
     /usr/local/cast/sbin/RSET.sh  &
 fi
+mv -f /tmp/config_restore/mmvvmhost /etc/
 mv -f /tmp/config_restore/gpsd /etc/default/
 mv -f /tmp/config_restore/RSSI.dat /usr/local/etc/
 mv -f /tmp/config_restore/ircddblocal.php /var/www/dashboard/config/
@@ -62,9 +63,9 @@ sed -i "/password=/c\\password=${IRCDDBPW}" /root/.Remote\ Control
 
 /usr/local/sbin/.wpsd-sys-cache
 
-if [ -d /boot/firmware ]; then
+if [ -d /boot/firmware ]; then # bookworm+
     rm -rf /boot/firmware/WPSD_Config_*.zip
-else
+else # bullseye
     rm -rf /boot/WPSD_Config_*.zip
 fi
 
