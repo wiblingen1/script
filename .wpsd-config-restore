@@ -69,6 +69,10 @@ else
 fi
 
 sync; sync; sync;
+
+# Reset the GPIO Pins on Pi4, Pi5 etc. only
+/usr/local/sbin/wpsd-modemreset boot
+
 sudo wpsd-services start
 
 exit 0
