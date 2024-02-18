@@ -57,9 +57,9 @@ timedatectl set-timezone ${TIMEZONE}
 IRCDDBPW=($grep remotePassword /etc/ircddbgateway | awk -F'=' '{print $2}')
 sed -i "/password=/c\\password=${IRCDDBPW}" /root/.Remote\ Control
 
-/usr/local/sbin/nextion-driver-helper
-
 /usr/local/sbin/wpsd-hostfile-update
+
+/usr/local/sbin/nextion-driver-helper
 
 /usr/local/sbin/.wpsd-sys-cache
 
