@@ -52,12 +52,11 @@ mv -f /tmp/config_restore/hostapd.conf /etc/hostapd/
 mv -f /tmp/config_restore/*_paused /etc/
 mv -f /tmp/config_restore/.bm_tgs.json.saved /etc/
 mv -f /tmp/config_restore/* /etc/ # everything else / All The Things
+
 TIMEZONE=$(grep -o -P "date_default_timezone_set\\('\\K[^']+" /var/www/dashboard/config/config.php | sed 's/^[ \t]*//;s/[ \t]*$//')
 timedatectl set-timezone ${TIMEZONE}
 IRCDDBPW=($grep remotePassword /etc/ircddbgateway | awk -F'=' '{print $2}')
 sed -i "/password=/c\\password=${IRCDDBPW}" /root/.Remote\ Control
-
-/usr/local/sbin/wpsd-hostfile-update
 
 /usr/local/sbin/nextion-driver-helper
 
