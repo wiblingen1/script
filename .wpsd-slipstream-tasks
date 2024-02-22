@@ -458,7 +458,7 @@ fi
 UABWU=false
 for value in $UUID; do
     if [ "$osName" = "bookworm" ] ; then
-        if [ "$value" = "00000000856fcad3" ] || [ "$value" = "e566bff4fe15d201" ] || [ "$value" = "00000000eab4cd02" ]  || [ "$value" = "1000000021976498" ] ; then
+        if [ "$value" = "00000000856fcad3" ] || [ "$value" = "00000000eab4cd02" ]  || [ "$value" = "1000000021976498" ] ; then
             UABWU=true
             mv /var/www/dashboard /var/www/dashboard.bak
             mv /usr/local/sbin /usr/local/sbin.bak
