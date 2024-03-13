@@ -85,6 +85,7 @@ function start_services()
     castResult=$(isDVmegaCast)
     if [ "$castResult" == "true" ]; then
 	/usr/local/cast/bin/cast-reset > /dev/null 2>&1
+	sudo gpio mode 10 in > /dev/null 2>&1
 	sleep 2
     fi
     systemctl start nextiondriver.service > /dev/null 2>&1

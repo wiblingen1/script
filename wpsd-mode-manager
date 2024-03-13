@@ -127,6 +127,7 @@ else
   castResult=$(isDVmegaCast)
   if [ "$castResult" == "true" ]; then
     sudo /usr/local/cast/bin/cast-reset
+    sudo gpio mode 10 in
     sleep 2
   fi
   systemctl restart ${SYSCTL_MMDVMHOST} > /dev/null 2>&1 &
