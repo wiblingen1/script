@@ -16,6 +16,7 @@ fi
 # Non interactive mode, pass "NP=1" env. var. E.g. `sudo NP=1 wpsd-modemupdate <foo>`
 #
 
+OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
 source /usr/local/sbin/.wpsd-shell-funcs
 
 # Check CLI arguments and determine the modem type and its respective FW file...
@@ -419,16 +420,26 @@ then
     elif [ "$MMDVM_PI" = true ]; then
 	if [ "$VERBOSE" = 1 ] ; then
 	    if [ "$is_aarch64" = true ] ; then
-              ./STM32flash-0.7/stm32flash-0.7-aarch64 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
-              ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
+		if [ "$OS_VER" -ge "12" ] ; then
+		    ./STM32flash-0.7/stm32flash-0.7 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
+		    ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
+		else
+		    ./STM32flash-0.7/stm32flash-0.7-aarch64 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
+		    ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
+		fi
 	    else
               ./STM32flash-0.7/stm32flash-0.7 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
               ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0
 	    fi
 	else
 	    if [ "$is_aarch64" = true ] ; then
-              ./STM32flash-0.7/stm32flash-0.7-aarch64 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
-	      output=$(eval ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
+		if [ "$OS_VER" -ge "12" ] ; then 
+		    ./STM32flash-0.7/stm32flash-0.7 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
+		    output=$(eval ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
+		else
+		    ./STM32flash-0.7/stm32flash-0.7-aarch64 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
+		    output=$(eval ./STM32flash-0.7/stm32flash-0.7-aarch64 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
+		fi
 	    else
               ./STM32flash-0.7/stm32flash-0.7 -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0 >/dev/null 2>&1
 	      output=$(eval ./STM32flash-0.7/stm32flash-0.7 -b 115200 -v -w ${firmware_file} -g 0x0 -R /dev/ttyAMA0 2>&1)
