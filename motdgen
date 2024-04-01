@@ -14,7 +14,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 export FORCE_COLOR=1 # used for below bash:
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 # Wait for an IP address
 counter=0

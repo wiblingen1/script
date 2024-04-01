@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 script_name=$(basename "$0")
 

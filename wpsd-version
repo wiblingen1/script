@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 UUID=$( grep UUID /etc/pistar-release | awk '{print $3}' )
 platInfo=$( /usr/local/sbin/.wpsd-platform-detect )

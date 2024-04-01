@@ -10,20 +10,7 @@ fi
 
 git config --global pull.ff only
 
-# common vars
-osName=$( /usr/bin/lsb_release -cs )
-CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
-UUID=$( grep "UUID" /etc/pistar-release | awk '{print $3}' )
-OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
-gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
-dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
-uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
-hwDeetz="$(/usr/local/sbin/.wpsd-platform-detect) ( $(uname -r) )"
-uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
-armbian_env_file="/boot/armbianEnv.txt"
-rc_local_file="/etc/rc.local"
-
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 # 6/4/23 Ensure we can update successfully:
 find /usr/local/sbin -type f -exec chattr -i {} +

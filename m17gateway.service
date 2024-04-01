@@ -17,7 +17,7 @@ LOGDIR=/var/log/pi-star
 USER=root
 GROUP=mmdvm
 
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 case "$1" in
 	install)

@@ -24,7 +24,7 @@ else
     exit 1
 fi
 
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 wpsd-services fullstop
 

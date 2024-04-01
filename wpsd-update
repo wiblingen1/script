@@ -20,25 +20,15 @@ if ! flock -n 200 ; then
 fi
 
 script_name=$(basename "$0")
-gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
-dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
-SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
-CONN_CHECK_URI="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Dash.git"
-CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
-osName=$( /usr/bin/lsb_release -cs )
-uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
-hwDeetz="$(/usr/local/sbin/.wpsd-platform-detect) ( $(uname -r) )"
-uaStr="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
-uaStrSF="WPSD-SuppFiles (Manual Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 mount -o remount,rw / # for shits and giggles
 
 # connectivity check
 conn_check() {
     echo -e "\n${BULL} Checking connectivity to the WPSD Update System..."
-    status_code=$(curl -I -m 30 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+    status_code=$(curl -m 30 -A "ConnCheck WPSD-Update (Manual-Update) ${uaStr}" --write-out %{http_code} --silent --output /dev/null "${CONN_CHECK_URI}")
     sleep 1
     if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 	echo -e "  ${COL_BRIGHT_GREEN}${TICK} Connection established!\n"

@@ -18,7 +18,7 @@ USER=root
 GROUP=mmdvm
 TGSTATIC=`grep Static= /etc/p25gateway | sed 's/Static=//'`
 
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 # Pre-flight checks...
 test -x ${DAEMON_PATH}${DAEMON} || exit 0

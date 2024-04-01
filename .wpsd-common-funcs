@@ -50,6 +50,26 @@ spinner() {
     done
 }
 
+# common vars
+osName=$( /usr/bin/lsb_release -cs )
+CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
+UUID=$( grep "UUID" /etc/pistar-release | awk '{print $3}' )
+OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
+SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
+CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
+hostFileURL="https://hostfiles.w0chp.net"
+gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
+dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
+uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
+hwDeetz="$(/usr/local/sbin/.wpsd-platform-detect) ( $(uname -r) )"
+uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+uaStrSF="WPSD-SuppFiles Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+armbian_env_file="/boot/armbianEnv.txt"
+rc_local_file="/etc/rc.local"
+cronMins=$(shuf -i 0-59 -n 1)
+cronHours=$(shuf -i 1-3 -n1)
+tz=$( date +%Z )
+
 # Function to check if any network interface has an IP address
 interface_has_ip() {
   local interfaces=($(ip -o addr show | awk '{print $2}'))

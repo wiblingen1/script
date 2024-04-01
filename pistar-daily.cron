@@ -19,7 +19,7 @@ mount -o remount,rw / # for shits and giggles
 pkill pistar-hourly.cron > /dev/null 2>&1
 pkill .wpsd-slipstream-tasks > /dev/null 2>&1
 
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 # migrate config update notice
 if grep -q ConfUpdReqd /etc/mmdvmhost ; then
@@ -31,20 +31,6 @@ else
         echo "ConfUpdReqd = " >> /etc/pistar-release
     fi
 fi
-
-cronMins=$(shuf -i 0-59 -n 1)
-cronHours=$(shuf -i 1-3 -n1)
-SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
-gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
-dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
-CONN_CHECK_URI="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Dash.git"
-CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
-osName=$( /usr/bin/lsb_release -cs )
-uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
-hwDeetz="$(/usr/local/sbin/.wpsd-platform-detect) ( $(uname -r) )"
-tz=$( date +%Z )
-uaStr="WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
-uaStrSF="WPSD-SuppFiles (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 # Randomize the time for the daily cron jobs
 sed -i "/cron.daily/c ${cronMins} ${cronHours}  * * *   root    cd / && run-parts --report /etc/cron.daily" /etc/crontab
@@ -61,14 +47,14 @@ wpsd-services fullstop > /dev/null 2>&1
 
 # connectivity check
 echo -e "\nChecking connectivity to WPSD update server..."
-status_code=$(curl -I -m 6 -A "ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+status_code=$(curl -m 6 -A "ConnCheck (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) ${uaStr}" --write-out %{http_code} --silent --output /dev/null "${CONN_CHECK_URI}")
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo -e "WPSD Update Server connection ok!"
 
     echo -e "\nUpdating sbins..."
     cd /usr/local/sbin
     git update-index --no-assume-unchanged pistar-upnp.service # get rid of legacy index not that upnp rules are in /etc/wpsd-upnp-rules
-    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
+    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
 
     echo -e "\nResetting firewall back to user prefs..."
     if [ "$fwState" == "enabled" ]; then
@@ -84,7 +70,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
     cd ${gitFolder}
     git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
-    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
+    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
     git reset --hard
     git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
     git stash clear # housekeeping
@@ -92,7 +78,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo -e "\nUpdating binaries..."
     # Update the Binaries
     branch="master"
-    GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/bin --git-dir=/usr/local/bin/.git pull origin "${branch}"
+    GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/usr/local/bin --git-dir=/usr/local/bin/.git pull origin "${branch}"
 
     # dvmega cast-specific stuff
     castResult=$(isDVmegaCast)
@@ -101,7 +87,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
         branch="master"
 	cd /opt/cast
 	git reset --hard origin/master
-	GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/opt/cast --git-dir=/opt/cast/.git pull origin "${branch}"
+	GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=/opt/cast --git-dir=/opt/cast/.git pull origin "${branch}"
 	git reset --hard origin/master
     fi
 
@@ -112,10 +98,10 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     fi
     /usr/local/sbin/wpsd-hostfile-update > /dev/null 2>&1
 
-    echo -e "\nMigration and post-upd. maint. tasks..."
+    echo -e "\nPerforming maint. tasks..."
     # if css does not exist, install default one
     if [ ! -f "/etc/pistar-css.ini" ] ; then
-	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/pistar-css-W0CHP.ini -o /etc/pistar-css.ini
+	curl -Ls -A "WPSD-SuppFiles (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) ${uaStrSF}" $SUPPORTING_FILES_REPO/pistar-css-W0CHP.ini -o /etc/pistar-css.ini
     fi
 
     # setup our own native NextionDriver service...
@@ -128,8 +114,8 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
         :
     else # yay no tgifspot hacks!
     	if [ ! -f '/lib/systemd/system/nextiondriver.service' ] ; then # lets get a native service placeholder installed at the very least
-    	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
-   	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
+    	    curl -Ls -A "WPSD-SuppFiles (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) ${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
+   	    curl -Ls -A "WPSD-SuppFiles (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) ${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
     	    # Enable the NextionDriver service
     	    systemctl daemon-reload > /dev/null 2<&1
     	    systemctl stop nextiondriver.service > /dev/null 2<&1
@@ -143,8 +129,8 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     	    fi
 	    if [ "`sed -nr "/^\[General\]/,/^\[/{ :l /^\s*[^#].*/ p; n; /^\[/ q; b l; }" /etc/mmdvmhost | grep "Display" | cut -d= -f 2`" != "Nextion" ]; then
 	    	if grep -qo 'killall' /lib/systemd/system/nextiondriver.service ; then
-	    	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
-	    	    curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
+	    	    curl -Ls -A "WPSD-SuppFiles (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) ${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
+	    	    curl -Ls -A "WPSD-SuppFiles (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) ${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
             	    systemctl daemon-reload > /dev/null 2<&1
             	    systemctl stop nextiondriver.service > /dev/null 2<&1
             	    /usr/bin/killall NextionDriver > /dev/null 2<&1
@@ -175,8 +161,8 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     	    if grep -qo 'killall' /lib/systemd/system/nextiondriver.service ; then # our native support has not been installed/config'd, user likely using ON7LDS script - init!
 	    	systemctl stop nextiondriver.service > /dev/null 2<&1
 	    	/usr/bin/killall NextionDriver > /dev/null 2<&1
-	    	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
-	    	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
+	    	curl -Ls -A "WPSD-SuppFiles (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) ${uaStrSF}" $SUPPORTING_FILES_REPO/mmdvmhost.service-W0CHP  -o /lib/systemd/system/mmdvmhost.service
+	    	curl -Ls -A "WPSD-SuppFiles (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) ${uaStrSF}" $SUPPORTING_FILES_REPO/nextiondriver.service-W0CHP  -o /lib/systemd/system/nextiondriver.service
 	    	systemctl daemon-reload > /dev/null 2<&1
 	    	systemctl enable nextiondriver.service > /dev/null 2<&1
 	    	systemctl restart nextiondriver.service > /dev/null 2<&1
@@ -188,7 +174,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     # Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
     gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
-    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
+    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (WPSD-Daily-Cron [${cronHours}:${cronMins} ${tz}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
     echo ${gitStatusRemote} > /etc/.WPSD_remote_version
 
 else

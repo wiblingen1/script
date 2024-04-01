@@ -17,7 +17,7 @@ fi
 #
 
 OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 # Check CLI arguments and determine the modem type and its respective FW file...
 if [ "$1" ]; then

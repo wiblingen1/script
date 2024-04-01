@@ -17,7 +17,7 @@ USER=root
 GROUP=mmdvm
 LOGDIR=/var/log/pi-star
 
-source /usr/local/sbin/.wpsd-shell-funcs
+source /usr/local/sbin/.wpsd-common-funcs
 
 # Pre-flight checks...
 test -x ${DAEMON_PATH}${DAEMON} || exit 0

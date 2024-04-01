@@ -11,6 +11,8 @@ fi
 
 mount -o remount,rw / # for shits and giggles
 
+source /usr/local/sbin/.wpsd-common-funcs
+
 if [ ! -t 1 ]; then
   exec &> /tmp/WPSD-hourly-cron.log
 fi
@@ -27,19 +29,6 @@ else
 	echo "ConfUpdReqd = " >> /etc/pistar-release
     fi
 fi
-
-gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
-dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
-CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
-CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
-osName=$( /usr/bin/lsb_release -cs )
-uuidStr=$(egrep 'UUID|ModemType|ModemMode|ControllerType' /etc/pistar-release | awk {'print $3'} | tac | xargs| sed 's/ /_/g')
-
-# used to radomize the cron mins below
-cronMins=$(shuf -i 0-59 -n 1)
-
-hwDeetz="$(/usr/local/sbin/.wpsd-platform-detect) ( $(uname -r) )"
-uaStr="ConnCheck (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
 
 # Shrink NginX error log to stop it getting out of hand
 echo "$(tail -500 /var/log/nginx/error.log)" > /var/log/nginx/error.log
