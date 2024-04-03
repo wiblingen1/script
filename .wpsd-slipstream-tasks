@@ -455,6 +455,12 @@ for value in $UUID; do
     fi
 done
 
+modemfile="/etc/dstar-radio.mmdvmhost"
+if grep -q "Hardware=genesis" "$modemfile"; then
+    sed -i sed -i '/Hardware=genesis.*/d' "$modemfile"
+    wpsd-services fullstop > /dev/null 2>&1
+fi
+
 #
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
