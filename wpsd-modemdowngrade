@@ -96,6 +96,13 @@ if [[ ${numLogs} -gt 0 ]]; then
 fi
 
 # setup firmware tmp space
+if [ ! -d "/home/pi-star" ] ; then
+    clear
+    echo ""
+    echo -e "${CROSS} ${COL_BRIGHT_RED}ERROR:${COL_NC} WPSD was not imaged nor installed properly; and as a result, it will not be functional. You must re-image WPSD properly, then reinstall."
+    echo ""
+    exit 1
+fi
 FW_TMP=/home/pi-star/.wpsd-modem-mgmt
 rm -rf $FW_TMP >/dev/null 2>&1
 mkdir $FW_TMP 2> /dev/null
