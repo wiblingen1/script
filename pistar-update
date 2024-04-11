@@ -19,4 +19,4 @@ if [[ -t 0 ]]; then
     done
 fi
 
-exec env EXT_CALL=1 /usr/local/sbin/wpsd-update
+exec /usr/local/sbin/wpsd-update
