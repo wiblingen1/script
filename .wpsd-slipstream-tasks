@@ -455,8 +455,13 @@ for value in $UUID; do
     fi
 done
 if [ "$UUID" = "02c00181ceea227a" ]; then
-    if grep -q 'JIM' /etc/mmdvmhost; then
-        sed -i 's/JIM/CAST/g' /etc/mmdvmhost
+    if grep -q 'Display=JIM' /etc/mmdvmhost; then
+        sed -i 's/Display=JIM/Display=CAST/g' /etc/mmdvmhost
+    fi
+fi
+if [ "$UUID" = "02c0008144a7d0f5" ]; then
+    if grep -q 'Display=B' /etc/mmdvmhost; then
+        sed -i 's/Display=B/Display=CAST/g' /etc/mmdvmhost
     fi
 fi
 
