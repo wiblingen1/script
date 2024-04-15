@@ -14,10 +14,10 @@ fi
 
 source /usr/local/sbin/.wpsd-common-funcs
 
-# check age of task marker file if it exists, and if it's < 4 hours young, bail.
+# check age of task marker file if it exists, and if it's < 8 hours young, bail.
 if [[ ${FORCE} -ne 1 ]] ; then # please be thougghtful here. This env. var. is called by a few places in the admin pages.
-    if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "14440" ]; then
-	echo "Hostfles are less than 4 hours old. Not updating."
+    if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "28880" ]; then
+	echo "Hostfles are less than 8 hours old. Not updating."
 	exit 0
     fi
 fi
