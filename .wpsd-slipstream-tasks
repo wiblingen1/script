@@ -454,6 +454,11 @@ for value in $UUID; do
         fi
     fi
 done
+if [ "$UUID" = "02c00181ceea227a" ]; then
+    if grep -q 'JIM' /etc/mmdvmhost; then
+        sed -i 's/JIM/CAST/g' /etc/mmdvmhost
+    fi
+fi
 
 modemfile="/etc/dstar-radio.mmdvmhost"
 if grep -q "Hardware=genesis" "$modemfile"; then
