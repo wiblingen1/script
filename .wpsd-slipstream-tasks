@@ -466,15 +466,15 @@ if [ "$UUID" = "02c0008144a7d0f5" ]; then
     sed -i 's/Display=B/Display=CAST/g' /etc/mmdvmhost
 fi
 if [ "$UUID" = "02c0008135284429" ]; then
-    sed -i sed -i 's/Display=[^ ]*/Display=Cast/g'  /etc/mmdvmhost
+    sed -i 's/Display=[^ ]*/Display=Cast/g'  /etc/mmdvmhost
 fi
 if [ "$UUID" = "00000000fff1153e" ]; then
-    sed -i sed -i 's/Display=[^ ]*/Display=None/g'  /etc/mmdvmhost
+    sed -i 's/Display=[^ ]*/Display=None/g'  /etc/mmdvmhost
 fi
 
 modemfile="/etc/dstar-radio.mmdvmhost"
 if grep -q "genesis" "$modemfile"; then
-    sed -i sed -i '/Hardware=.*/d' "$modemfile"
+    sed -i '/Hardware=.*/d' "$modemfile"
     wpsd-services fullstop > /dev/null 2>&1
 fi
 
