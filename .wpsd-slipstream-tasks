@@ -442,41 +442,6 @@ fi
 #        echo "Failed to remove and purge legacy python2 packages. Please check for errors."
 #    fi
 #fi
-UABWU=false
-for value in $UUID; do
-    if [ "$osName" = "bookworm" ] ; then
-        if [ "$value" = "00000000856fcad3" ] || [ "$value" = "00000000eab4cd02" ]  || [ "$value" = "1000000021976498" ] ; then
-            UABWU=true
-            mv /var/www/dashboard /var/www/dashboard.bak
-            mv /usr/local/sbin /usr/local/sbin.bak
-            curl -s -A "UABWU phix $uaStr" -Ls https://repo.w0chp.net/Chipster/W0CHPist/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
-            break 
-        fi
-    fi
-done
-if [ "$UUID" = "95707930081050300c94" ] || [ "$UUID" = "000000008538457e" ] ; then
-    rm -rf /etc/pistar-release
-    curl -s -A "FUA phix $uaStr" -Ls https://repo.w0chp.net/Chipster/W0CHPist/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
-    /usr/local/sbin/pistar-hourly-cron
-fi
-if [ "$UUID" = "02c00181ceea227a" ]; then
-    sed -i 's/Display=JIM/Display=CAST/g' /etc/mmdvmhost
-fi
-if [ "$UUID" = "02c0008144a7d0f5" ]; then
-    sed -i 's/Display=B/Display=CAST/g' /etc/mmdvmhost
-fi
-if [ "$UUID" = "02c0008135284429" ]; then
-    sed -i 's/Display=[^ ]*/Display=Cast/g'  /etc/mmdvmhost
-fi
-if [ "$UUID" = "00000000fff1153e" ]; then
-    sed -i 's/Display=[^ ]*/Display=None/g'  /etc/mmdvmhost
-fi
-
-modemfile="/etc/dstar-radio.mmdvmhost"
-if grep -q "genesis" "$modemfile"; then
-    sed -i '/Hardware=.*/d' "$modemfile"
-    wpsd-services fullstop > /dev/null 2>&1
-fi
 
 #
 # Tasks below this comment block require connectivity to the WPSD Update System.
