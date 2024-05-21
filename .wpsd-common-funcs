@@ -55,8 +55,8 @@ osName=$( /usr/bin/lsb_release -cs )
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 UUID=$( grep "UUID" /etc/pistar-release | awk '{print $3}' )
 OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
-SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files"
-CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
+SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files"
+CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/WPSD-Scripts/branches"
 hostFileURL="https://hostfiles.w0chp.net"
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )

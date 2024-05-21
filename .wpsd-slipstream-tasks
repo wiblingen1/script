@@ -110,6 +110,48 @@ gitURIupdate "/usr/local/bin"
 gitURIupdate "/usr/local/sbin"
 #
 
+# Git repo name changes/migrations
+#
+# 5/20204 - W0CHP
+#
+update_git_remotes() {
+    if [ "$#" -lt 2 ]; then
+        echo "Usage: update_git_remotes <dir1> <url1> [<dir2> <url2> ...] [remote-name]"
+        return 1
+    fi
+
+    # Get the remote name (default to 'origin')
+    remote_name=${!#}
+    if [[ ! $remote_name =~ ^[a-zA-Z0-9]+$ ]]; then
+        remote_name="origin"
+    else
+        # Exclude the last argument from the directories list
+        set -- "${@:1:$(($#-1))}"
+    fi
+
+    # Iterate over the pairs of directory and URL arguments
+    while (( "$#" >= 2 )); do
+        dir=$1
+        new_remote_url=$2
+
+        if [ -d "$dir/.git" ]; then
+            echo "Updating remote URL in $dir..."
+            git -C "$dir" remote set-url "$remote_name" "$new_remote_url"
+            echo "Updated $dir"
+        else
+            echo "Skipping $dir: Not a git repository"
+        fi
+
+        # Shift past the current directory and URL
+        shift 2
+    done
+
+    echo "All specified repositories updated."
+}
+# now update the repo remote URLs
+update_git_remotes /var/www/dashboard https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-WebCode.git /usr/local/bin https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Binaries.git /usr/local/sbin https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Scripts.git
+#
+
 # migrated from other scripts to centralize
 #
 # 5/2023 W0CHP
@@ -473,7 +515,6 @@ if [ "$castResult" == "true" ]; then
 fi
 
 # 5/27/23: Bootstrapping backend scripts
-CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/W0CHP-PiStar-sbin/branches"
 gitUaStr="Slipstream Task $uaStr"
 conn_check() {
     local status=$(curl -L -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
