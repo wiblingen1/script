@@ -112,7 +112,7 @@ gitURIupdate "/usr/local/sbin"
 
 # Git repo name changes/migrations
 #
-# 5/20204 - W0CHP
+# 5/2024 - W0CHP
 #
 update_git_remotes() {
     if [ "$#" -lt 2 ]; then
@@ -135,9 +135,15 @@ update_git_remotes() {
         new_remote_url=$2
 
         if [ -d "$dir/.git" ]; then
-            echo "Updating remote URL in $dir..."
-            git -C "$dir" remote set-url "$remote_name" "$new_remote_url"
-            echo "Updated $dir"
+            echo "Checking remote URL in $dir..."
+            current_remote_url=$(git -C "$dir" remote get-url "$remote_name")
+            if [ "$current_remote_url" != "$new_remote_url" ]; then
+                echo "Updating remote URL in $dir from $current_remote_url to $new_remote_url..."
+                git -C "$dir" remote set-url "$remote_name" "$new_remote_url"
+                echo "Updated $dir"
+            else
+                echo "Skipping $dir: Remote URL is already set to $new_remote_url"
+            fi
         else
             echo "Skipping $dir: Not a git repository"
         fi
@@ -146,9 +152,10 @@ update_git_remotes() {
         shift 2
     done
 
-    echo "All specified repositories updated."
+    echo "All specified repositories checked."
 }
-# now update the repo remote URLs
+
+# Now update the repo remote URLs if needed
 update_git_remotes /var/www/dashboard https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-WebCode.git /usr/local/bin https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Binaries.git /usr/local/sbin https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Scripts.git
 #
 
