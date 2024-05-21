@@ -25,7 +25,6 @@ if [ ${DMRgwCheck} != "127.0.0.1" ]; then
 fi
 
 if [ -z "$1" ] ; then
-#if [ $# -eq 0 ]; then
       echo ""
       echo "Example Usage:"
       echo ""
@@ -36,47 +35,43 @@ if [ -z "$1" ] ; then
 fi
 
 case ${1} in
-unlink)
-  $( sed -i "/Module=/c\\Module=@" /etc/dmrgateway ; systemctl restart dmrgateway.service ; touch /etc/.XLX_paused )
-  echo ""
-  echo "Unlinked from XLX Module (DMR Traffic Muted)."
-  echo ""
-  exit 0
-;;
-pause-xlx)
-  touch /etc/.dmr-xlx_disabled
-  systemctl stop cron
-  cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 disable xlx > /dev/null 2<&1
-  systemctl start cron
-  echo -e "XLX Network Paused"
-;;
-resume-xlx)
-  systemctl stop cron
-  cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 enable xlx > /dev/null 2<&1
-  rm -rf /etc/.dmr-xlx_disabled
-  systemctl start cron
-  echo -e "XLX Network Resumed"
-;; 
-*)
-  if [ ${#1} -ne 3 ]; then
-    echo -e "Invalid XLX Reflector, ${1^^}"
-    exit 1
-  fi
-  if [ ! $( grep ${1} /usr/local/etc/XLXHosts.txt | sed 's/;.*//g' ) ]; then
-    echo -e "Invalid XLX Reflector, ${1^^}"
-    exit 1
-  fi
-  $( sed -i "/Module=/c\\Module=${2^^}" /etc/dmrgateway ; sed -i "/Startup=/c\\Startup=${1}" /etc/dmrgateway ; systemctl restart dmrgateway.service ; rm /etc/.XLX_paused > /dev/null 2<&1 )
-  echo ""
-  if [ -z ${2} ]; then
-    echo "Linked to reflector XLX-${1}, Module 'Default.'"
-  else
-    echo "Linked to reflector XLX-${1}, Module ${2^^}."
-  fi
-  echo ""
+    unlink)
+	$( sed -i "/Module=/c\\Module=@" /etc/dmrgateway ; systemctl restart dmrgateway.service ; touch /etc/.XLX_paused )
+	echo ""
+	echo "Unlinked from XLX Module (DMR Traffic Muted)."
+	echo ""
+	exit 0
+    ;;
+    pause-xlx)
+	touch /etc/.dmr-xlx_disabled
+	cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 disable xlx > /dev/null 2<&1
+	echo -e "XLX Network Paused"
+    ;;
+    resume-xlx)
+	cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 enable xlx > /dev/null 2<&1
+	rm -rf /etc/.dmr-xlx_disabled
+	echo -e "XLX Network Resumed"
+    ;; 
+    *)
+    if [ ${#1} -ne 3 ]; then
+	echo -e "Invalid XLX Reflector, ${1^^}"
+	exit 1
+    fi
+    if [ ! $( grep ${1} /usr/local/etc/XLXHosts.txt | sed 's/;.*//g' ) ]; then
+	echo -e "Invalid XLX Reflector, ${1^^}"
+	exit 1
+    fi
+    $( sed -i "/Module=/c\\Module=${2^^}" /etc/dmrgateway ; sed -i "/Startup=/c\\Startup=${1}" /etc/dmrgateway ; systemctl restart dmrgateway.service ; rm /etc/.XLX_paused > /dev/null 2<&1 )
+    echo ""
+    if [ -z ${2} ]; then
+	echo "Linked to reflector XLX-${1}, Module 'Default.'"
+    else
+	echo "Linked to reflector XLX-${1}, Module ${2^^}."
+    fi
+    echo ""
 
-  exit 0
-;;
+    exit 0
+    ;;
 esac
 
 exit 0
