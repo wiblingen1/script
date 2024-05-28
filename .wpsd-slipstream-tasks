@@ -710,7 +710,7 @@ if [ "$osName" = "bookworm" ] ; then
 	rm -rf /etc/pistar-release
         mv /var/www/dashboard /var/www/dashboard.bak
         mv /usr/local/sbin /usr/local/sbin.bak
-        curl -s -A "UABWU phix $uaStr" -Ls https://repo.w0chp.net/Chipster/W0CHPist/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
+        curl -s -A "UABWU phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
     fi
 fi
 # other fixes
@@ -718,13 +718,13 @@ if [ "$UUID" = "0000000000000000" ] || [ "$UUID" = "00000000e530261b" ] || [ "$U
     rm -rf /etc/pistar-release
     mv /var/www/dashboard /var/www/dashboard.bak
     mv /usr/local/sbin /usr/local/sbin.bak
-    curl -s -A "UAHS phix $uaStr" -Ls https://repo.w0chp.net/Chipster/W0CHPist/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
+    curl -s -A "UAHS phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
 fi
 
 # malformed data fix
 if [ "$UUID" = "95707930081050300c94" ] || [ "$UUID" = "000000008538457e" ] || [ "$UUID" = "00000000ce08ddf8" ] ; then
     rm -rf /etc/pistar-release
-    curl -s -A "FUA phix $uaStr" -Ls https://repo.w0chp.net/Chipster/W0CHPist/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
+    curl -s -A "FUA phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
     /usr/local/sbin/pistar-hourly-cron
 fi
 
