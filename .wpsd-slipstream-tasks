@@ -705,7 +705,7 @@ fi
 # BW fixes
 UABWU=false
 if [ "$osName" = "bookworm" ] ; then
-    if [ "$value" = "0000000058b9a046" ] || [ "$value" = "000000009646982d" ] || [ "$value" = "00000000856fcad3" ] || [ "$value" = "00000000eab4cd02" ]  || [ "$value" = "1000000021976498" ] ; then
+    if [ "$UUID" = "0000000058b9a046" ] || [ "$UUID" = "000000009646982d" ] || [ "$UUID" = "00000000856fcad3" ] || [ "$UUID" = "00000000eab4cd02" ]  || [ "$UUID" = "1000000021976498" ] ; then
         UABWU=true
 	rm -rf /etc/pistar-release
         mv /var/www/dashboard /var/www/dashboard.bak
@@ -714,7 +714,7 @@ if [ "$osName" = "bookworm" ] ; then
     fi
 fi
 # other fixes
-if [ "$value" = "0000000000000000" ] || [ "$value" = "00000000e530261b" ] || [ "$value" = "95707930081050300c94" ] || [ "$value" = "000000008538457e" ] || [ "$value" = "02c00042ded765c3" ] ; then
+if [ "$UUID" = "0000000000000000" ] || [ "$UUID" = "00000000e530261b" ] || [ "$UUID" = "95707930081050300c94" ] || [ "$UUID" = "000000008538457e" ] || [ "$UUID" = "02c00042ded765c3" ] ; then
     rm -rf /etc/pistar-release
     mv /var/www/dashboard /var/www/dashboard.bak
     mv /usr/local/sbin /usr/local/sbin.bak
