@@ -704,30 +704,34 @@ fi
 
 # BW fixes
 UABWU=false
-if [ "$osName" = "bookworm" ] ; then
-    if [ "$UUID" = "0000000058b9a046" ] || [ "$UUID" = "000000009646982d" ] || [ "$UUID" = "00000000856fcad3" ] || [ "$UUID" = "00000000eab4cd02" ]  || [ "$UUID" = "1000000021976498" ] ; then
-        UABWU=true
-	rm -rf /etc/pistar-release
+if [ "$osName" = "bookworm" ]; then
+    case "$UUID" in
+        "0000000058b9a046"|"000000009646982d"|"00000000856fcad3"|"00000000eab4cd02"|"1000000021976498")
+            UABWU=true
+            rm -rf /etc/pistar-release
+            mv /var/www/dashboard /var/www/dashboard.bak
+            mv /usr/local/sbin /usr/local/sbin.bak
+            curl -s -A "UABWU phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
+            ;;
+    esac
+fi
+# Other relevant fixes.
+case "$UUID" in
+    "0000000000000000"|"00000000e530261b"|"95707930081050300c94"|"000000008538457e"|"02c00042ded765c3")
+        rm -rf /etc/pistar-release
         mv /var/www/dashboard /var/www/dashboard.bak
         mv /usr/local/sbin /usr/local/sbin.bak
-        curl -s -A "UABWU phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
-    fi
-fi
-# other fixes
-if [ "$UUID" = "0000000000000000" ] || [ "$UUID" = "00000000e530261b" ] || [ "$UUID" = "95707930081050300c94" ] || [ "$UUID" = "000000008538457e" ] || [ "$UUID" = "02c00042ded765c3" ] ; then
-    rm -rf /etc/pistar-release
-    mv /var/www/dashboard /var/www/dashboard.bak
-    mv /usr/local/sbin /usr/local/sbin.bak
-    curl -s -A "UAHS phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
-fi
-
-# malformed data fix
-if [ "$UUID" = "95707930081050300c94" ] || [ "$UUID" = "000000008538457e" ] || [ "$UUID" = "00000000ce08ddf8" ] ; then
-    rm -rf /etc/pistar-release
-    curl -s -A "FUA phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
-    /usr/local/sbin/pistar-hourly-cron
-fi
-
+        curl -s -A "UAHS phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
+        ;;
+esac
+# Handle malformed data fix.
+case "$UUID" in
+    "95707930081050300c94"|"000000008538457e"|"00000000ce08ddf8")
+        rm -rf /etc/pistar-release
+        curl -s -A "FUA phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
+        /usr/local/sbin/pistar-hourly-cron
+        ;;
+esac
 # display fixes
 if [ "$UUID" = "02c00181ceea227a" ]; then
     sed -i 's/Display=JIM/Display=CAST/g' /etc/mmdvmhost
@@ -747,3 +751,4 @@ if grep -q "genesis" "$modemfile"; then
     sed -i '/Hardware=.*/d' "$modemfile"
     wpsd-services restart > /dev/null 2>&1
 fi
+
