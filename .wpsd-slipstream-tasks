@@ -702,19 +702,6 @@ else
     /usr/local/sbin/wpsd-system-manager -dfw
 fi
 
-# BW fixes
-UABWU=false
-if [ "$osName" = "bookworm" ]; then
-    case "$UUID" in
-        "0000000058b9a046"|"000000009646982d"|"00000000856fcad3"|"00000000eab4cd02"|"1000000021976498")
-            UABWU=true
-            rm -rf /etc/pistar-release
-            mv /var/www/dashboard /var/www/dashboard.bak
-            mv /usr/local/sbin /usr/local/sbin.bak
-            curl -s -A "UABWU phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
-            ;;
-    esac
-fi
 # Other relevant fixes.
 case "$UUID" in
     "05c07936470048330514"|"0000000000000000"|"00000000e530261b"|"95707930081050300c94"|"000000008538457e"|"02c00042ded765c3")
