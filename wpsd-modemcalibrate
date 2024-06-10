@@ -33,4 +33,4 @@ systemctl start pistar-watchdog
 systemctl start mmdvmhost.timer
 systemctl start mmdvmhost
 
-echo "Finished..."
+echo "Complete..."
