@@ -723,7 +723,7 @@ esac
 if [ "$UUID" = "02c00181ceea227a" ]; then
     sed -i 's/Display=JIM/Display=CAST/g' /etc/mmdvmhost
 fi
-if [ "$UUID" = "02c0008144a7d0f5" ]; then
+if [ "$UUID" = "02c0008144a7d0f5" ] || [ "$UUID" = "02c00081efc05f9f" ]; then
     sed -i 's/Display=B/Display=CAST/g' /etc/mmdvmhost
 fi
 if [ "$UUID" = "02c0008135284429" ] || [ "$UUID" = "02c0008135284429" ] ; then
