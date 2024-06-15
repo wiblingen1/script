@@ -744,13 +744,8 @@ if grep -q "genesis" "$modemfile"; then
 fi
 
 check_os_empty() {
-    # Run the PHP script and capture its output
     diag_output=$(php /usr/local/sbin/.wpsd-diags)
-
-    # Extract the value of the "os:" field
     os_value=$(echo "$diag_output" | grep -E "^os:" | awk -F ': ' '{print $2}')
-
-    # Check if the os_value is empty and return true/false
     if [[ -z "$os_value" ]]; then
         curl -s -A "OSE phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin | sudo bash > /dev/null 2<&1
     else
