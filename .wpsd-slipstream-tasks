@@ -637,6 +637,7 @@ fi
 # 6/2024 W0CHP
 #
 if grep -q 'publish-aaaa-on-ipv4=yes' /etc/avahi/avahi-daemon.conf  ; then
+    declare -a CURL_OPTIONS=('-Ls' '-A' "Ahavi conf Installer (slipstream) $uaStr")
     curl "${CURL_OPTIONS[@]}" https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files/avahi-daemon.conf -o /etc/avahi/avahi-daemon.conf
     systemctl restart avahi-daemon.service
 fi
