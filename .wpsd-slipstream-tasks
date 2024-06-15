@@ -755,5 +755,5 @@ check_os_empty() {
         :
     fi
 }
-check_os_empty
+#check_os_empty
 
