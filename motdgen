@@ -31,8 +31,8 @@ done
 echo -e "$( /usr/local/sbin/wpsd-version )
 ${COL_NC}
 ${QUES} Your WPSD dashboard can be accesed from:
-    ${BULL} ${COL_LIGHT_MAGENTA}http://$(hostname)/${COL_NC}
     ${BULL} ${COL_LIGHT_MAGENTA}http://$(hostname).local/${COL_NC}
+    ${BULL} ${COL_LIGHT_MAGENTA}http://$(hostname)/${COL_NC}
     ${BULL} ${COL_LIGHT_MAGENTA}http://$(hostname -I | awk '{print $1}')/${COL_NC}
 
 ${INFO} WPSD command-line tools are all prefixed with \"wpsd-\".
