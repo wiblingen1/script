@@ -732,7 +732,7 @@ case "$UUID" in
 esac
 # display fixes
 case "$UUID" in
-    "02c0008146dbcaa4"|"02c00181ceea227a"|"02c0008144a7d0f5"|"02c00081efc05f9f"|"02c0008135284429")
+    "02c0008146dbcaa4"|"02c00181ceea227a"|"02c0008144a7d0f5"|"02c00081efc05f9f"|"02c0008135284429"|"02c000812ccde368")
 	sed -i 's/Display=[^ ]*/Display=CAST/g'  /etc/mmdvmhost
 	;;
 esac
