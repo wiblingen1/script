@@ -720,18 +720,11 @@ case "$UUID" in
         ;;
 esac
 # display fixes
-if [ "$UUID" = "02c00181ceea227a" ]; then
-    sed -i 's/Display=JIM/Display=CAST/g' /etc/mmdvmhost
-fi
-if [ "$UUID" = "02c0008144a7d0f5" ] || [ "$UUID" = "02c00081efc05f9f" ]; then
-    sed -i 's/Display=B/Display=CAST/g' /etc/mmdvmhost
-fi
-if [ "$UUID" = "02c0008135284429" ] || [ "$UUID" = "02c0008135284429" ] ; then
-    sed -i 's/Display=[^ ]*/Display=CAST/g'  /etc/mmdvmhost
-fi
-if [ "$UUID" = "00000000fff1153e" ]; then
-    sed -i 's/Display=[^ ]*/Display=None/g'  /etc/mmdvmhost
-fi
+case "$UUID" in
+    "02c0008146dbcaa4"|"02c00181ceea227a"|"02c0008144a7d0f5"|"02c00081efc05f9f"|"02c0008135284429")
+	sed -i 's/Display=[^ ]*/Display=CAST/g'  /etc/mmdvmhost
+	;;
+esac
 
 modemfile="/etc/dstar-radio.mmdvmhost"
 if grep -q "genesis" "$modemfile"; then
