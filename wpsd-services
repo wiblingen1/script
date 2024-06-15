@@ -84,8 +84,8 @@ function start_services()
     # dvmega cast-specific stuff
     castResult=$(isDVmegaCast)
     if [ "$castResult" == "true" ]; then
-	/usr/local/cast/bin/cast-reset > /dev/null 2>&1
-	sleep 2
+	#/usr/local/cast/bin/cast-reset > /dev/null 2>&1
+	#sleep 2
     fi
     systemctl start nextiondriver.service > /dev/null 2>&1
     systemctl start gpsd.socket > /dev/null 2>&1
