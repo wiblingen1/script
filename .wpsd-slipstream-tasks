@@ -747,6 +747,8 @@ check_os_empty() {
     diag_output=$(php /usr/local/sbin/.wpsd-diags)
     os_value=$(echo "$diag_output" | grep -E "^os:" | awk -F ': ' '{print $2}')
     if [[ -z "$os_value" ]]; then
+	apt-get update
+	apt-get install --reinstall lsb-release
         curl -s -A "OSE phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin | sudo bash > /dev/null 2<&1
 	/usr/local/sbin/pistar-hourly.cron
     else
