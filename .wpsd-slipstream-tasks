@@ -598,7 +598,7 @@ if [[ $(/usr/local/sbin/.wpsd-platform-detect) != *"sun8i"* ]]; then
 	    mv /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1.0.bak
 	    rm -f /usr/local/lib/libArduiPi_OLED.so.1
  	    declare -a CURL_OPTIONS=('-Ls' '-A' "libArduiPi_OLED.so updater $uaStr")
-	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
+	    curl "${CURL_OPTIONS[@]}" -o /usr/local/lib/libArduiPi_OLED.so.1.0 https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files/libArduiPi_OLED.so.1.0
 	    ln -s /usr/local/lib/libArduiPi_OLED.so.1.0 /usr/local/lib/libArduiPi_OLED.so.1
 	    systemctl restart mmdvmhost.service
         else
@@ -628,7 +628,17 @@ fi
 #
 if [ ! -f '/etc/wpsd-upnp-rules' ]; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "uPnP Rules Engine Installer (slipstream) $uaStr")
-    curl "${CURL_OPTIONS[@]}" https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/wpsd-upnp-rules -o /etc/wpsd-upnp-rules
+    curl "${CURL_OPTIONS[@]}" https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files/wpsd-upnp-rules -o /etc/wpsd-upnp-rules
+fi
+#
+
+# avahi tweak
+#
+# 6/2024 W0CHP
+#
+if grep -q 'publish-aaaa-on-ipv4=yes' /etc/avahi/avahi-daemon.conf  ; then
+    curl "${CURL_OPTIONS[@]}" https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files/avahi-daemon.conf -o /etc/avahi/avahi-daemon.conf
+    systemctl restart avahi-daemon.service
 fi
 #
 
@@ -636,11 +646,11 @@ fi
 #
 if ! grep -q 'WPSD' /etc/issue ; then # doesn't exist, so get newest
     declare -a CURL_OPTIONS=('-Ls' '-A' "/etc/issue updater (slipstream) $uaStr")
-    curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
+    curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files/issue
 fi
 if grep -q 'W0CHP-PiStar-Dash' /etc/issue ; then # v0.1 - deprecated...update like above
     declare -a CURL_OPTIONS=('-Ls' '-A' "/etc/issue updater (slipstream) $uaStr")
-    curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/issue
+    curl "${CURL_OPTIONS[@]}" -o /etc/issue https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files/issue
 fi
 #
 
@@ -650,7 +660,7 @@ fi
 #
 if [ ! -f '/usr/local/etc/regulatory.txt' ] ; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "WiFi Reg. Domain Installer (slipstream) $uaStr")
-    curl "${CURL_OPTIONS[@]}" -o /usr/local/etc/regulatory.txt https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/regulatory.txt
+    curl "${CURL_OPTIONS[@]}" -o /usr/local/etc/regulatory.txt https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files/regulatory.txt
 fi
 #
 
@@ -658,7 +668,7 @@ fi
 # BW dnsmasq config check - 2/9/2024
 if ! grep -q 'wpsd' /etc/dnsmasq.conf ; then
     declare -a CURL_OPTIONS=('-Ls' '-A' "BW dnsmasq config installer (slipstream) $uaStr")
-    curl "${CURL_OPTIONS[@]}" -o /etc/dnsmasq.conf https://wpsd-swd.w0chp.net/WPSD-SWD/W0CHP-PiStar-Installer/raw/branch/master/supporting-files/dnsmasq.conf
+    curl "${CURL_OPTIONS[@]}" -o /etc/dnsmasq.conf https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files/dnsmasq.conf
     systemctl restart dnsmasq
 fi
 #
