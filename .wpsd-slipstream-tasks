@@ -501,6 +501,19 @@ fi
 # dvmega cast-specific stuff
 castResult=$(isDVmegaCast)
 if [ "$castResult" == "true" ]; then
+    # ensure avrdude conf. is installed for radio/hotspot mgmt.
+    if [ ! -f '/etc/avrdude.conf' ] ; then
+        curl -o /etc/avrdude.conf https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast/raw/branch/master/etc/avrdude.conf
+    fi
+    # remove legacy stuff
+    if [ -f '/usr/local/cast/etc/preset.txt' ] ; then
+        rm -f /usr/local/cast/etc/preset.txt
+    fi
+
+    cd /opt/cast
+    git pull origin master
+    git reset --hard origin/master
+
     # ensure configs always have proper perms
     chmod 775 /usr/local/cast/etc
     chown -R www-data:pi-star /usr/local/cast/etc
@@ -510,15 +523,6 @@ if [ "$castResult" == "true" ]; then
     chmod 775 /opt/cast/usr-local-cast-www
     chmod 775 /opt/cast/usr-local-cast-www/cast-firmware/fw
     chown -R www-data:www-data /opt/cast/usr-local-cast-www
-
-    # ensure avrdude conf. is installed for radio/hotspot mgmt.
-    if [ ! -f '/etc/avrdude.conf' ] ; then
-        curl -o /etc/avrdude.conf https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast/raw/branch/master/etc/avrdude.conf
-    fi
-    # remove legacy stuff
-    if [ -f '/usr/local/cast/etc/preset.txt' ] ; then
-        rm -f /usr/local/cast/etc/preset.txt
-    fi
 fi
 
 # 5/27/23: Bootstrapping backend scripts
