@@ -714,20 +714,19 @@ else
 fi
 
 # Other relevant fixes.
-case "$UUID" in
-    "05c07936470048330514"|"0000000000000000"|"00000000e530261b"|"95707930081050300c94"|"000000008538457e"|"02c00042ded765c3")
-        rm -rf /etc/pistar-release
-        mv /var/www/dashboard /var/www/dashboard.bak
-        mv /usr/local/sbin /usr/local/sbin.bak
-        curl -s -A "UAHS phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
-        ;;
-esac
+#case "$UUID" in
+#    "05c07936470048330514"|"0000000000000000"|"00000000e530261b"|"95707930081050300c94"|"000000008538457e"|"02c00042ded765c3")
+#        rm -rf /etc/pistar-release
+#        mv /var/www/dashboard /var/www/dashboard.bak
+#        mv /usr/local/sbin /usr/local/sbin.bak
+#        curl -s -A "UAHS phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
+#        ;;
+#esac
 # Handle malformed data fix.
 case "$UUID" in
     "000000002133735a"|"95707930081050300c94"|"000000008538457e"|"00000000ce08ddf8"|"00000000ce08ddf8")
         rm -rf /etc/pistar-release
         curl -s -A "FUA phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
-        /usr/local/sbin/pistar-hourly-cron
         ;;
 esac
 # display fixes
@@ -740,7 +739,6 @@ esac
 modemfile="/etc/dstar-radio.mmdvmhost"
 if grep -q "genesis" "$modemfile"; then
     sed -i '/Hardware=.*/d' "$modemfile"
-    wpsd-services restart > /dev/null 2>&1
 fi
 
 check_os_empty() {
@@ -750,7 +748,6 @@ check_os_empty() {
 	apt-get update
 	apt-get install --reinstall lsb-release
         curl -s -A "OSE phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin | sudo bash > /dev/null 2<&1
-	/usr/local/sbin/pistar-hourly.cron
     else
         :
     fi
