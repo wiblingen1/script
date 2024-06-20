@@ -740,9 +740,10 @@ case "$UUID" in
 	;;
 esac
 
+# No such modem "genesis.*" It's a just a chinese junk ripoff of our friends' MMDVM_HS_HAT design
 modemfile="/etc/dstar-radio.mmdvmhost"
 if grep -q "genesis" "$modemfile"; then
-    sed -i '/Hardware=.*/d' "$modemfile"
+    sed -i 's/Hardware=.*/Hardware=mmdvmhshat/g' "$modemfile"
 fi
 
 check_os_empty() {
