@@ -570,29 +570,11 @@ if conn_check; then
             fi
         else
             echo "Local sbin repository is up to date."
-	    ## temp stuck dash hash fix
-	    #if [ "$UUID" == "0000" ] ; then
-	    #gitFolder="/var/www/dashboard"
-	    #cd ${gitFolder}
-	    #git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
-	    #rm -f /etc/pistar-css.ini
-            #git reset --hard origin/master
-	    #env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="dashcode update bootstrap ${gitUaStr}" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
-            #git reset --hard origin/master
-	    #git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
-	    #git stash clear # housekeeping
-	    #fi
         fi
     else
         echo "Failed to fetch from the remote repository."
         exit 1
     fi
-    # dvmega cast-specific stuff (temp)
-    #castResult=$(isDVmegaCast)
-    #if [ "$castResult" == "true" ]; then
-	#cd /opt/cast
-	#env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="sbin update bootstrap ${gitUaStr}" git pull origin master
-    #fi
 else
     echo "Failed to check the HTTP status of the repository URL: $url"
     exit 1
@@ -718,14 +700,14 @@ if [ ! -f '/usr/local/sbin/wpsd-update' ]; then
     curl -s -A "sbin-phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin | sudo bash > /dev/null 2<&1
 fi
 
-cd /usr/local/sbin
-env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$uaStr sbin reset" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git reset --hard origin/master
-env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$uaStr sbin reset" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
-if [ "$fwState" == "enabled" ]; then
-    /usr/local/sbin/wpsd-system-manager -efw
-else
-    /usr/local/sbin/wpsd-system-manager -dfw
-fi
+#cd /usr/local/sbin
+#env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$uaStr sbin reset" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git reset --hard origin/master
+#env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="$uaStr sbin reset" git --work-tree=/usr/local/sbin --git-dir=/usr/local/sbin/.git pull origin master
+#if [ "$fwState" == "enabled" ]; then
+#    /usr/local/sbin/wpsd-system-manager -efw
+#else
+#    /usr/local/sbin/wpsd-system-manager -dfw
+#fi
 
 # Other relevant fixes.
 #case "$UUID" in
