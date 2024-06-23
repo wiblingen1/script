@@ -502,6 +502,15 @@ if [ ! -f /usr/bin/htpasswd ] ; then
 fi
 #
 
+# upnp bookworm
+# 6/2024 - W0CHP
+#
+if [ ! -f /usr/bin/upnpc ] ; then
+    apt-get update
+    apt-get install -y miniupnpc
+fi
+#
+
 #
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
