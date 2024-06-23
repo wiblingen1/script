@@ -116,7 +116,7 @@ gitURIupdate "/usr/local/sbin"
 #
 update_git_remotes() {
     if [ "$#" -lt 2 ]; then
-        echo "Usage: update_git_remotes <dir1> <url1> [<dir2> <url2> ...] [remote-name]"
+        #echo "Usage: update_git_remotes <dir1> <url1> [<dir2> <url2> ...] [remote-name]"
         return 1
     fi
 
@@ -135,24 +135,26 @@ update_git_remotes() {
         new_remote_url=$2
 
         if [ -d "$dir/.git" ]; then
-            echo "Checking remote URL in $dir..."
+            #echo "Checking remote URL in $dir..."
             current_remote_url=$(git -C "$dir" remote get-url "$remote_name")
             if [ "$current_remote_url" != "$new_remote_url" ]; then
-                echo "Updating remote URL in $dir from $current_remote_url to $new_remote_url..."
+                #echo "Updating remote URL in $dir from $current_remote_url to $new_remote_url..."
                 git -C "$dir" remote set-url "$remote_name" "$new_remote_url"
-                echo "Updated $dir"
+                #echo "Updated $dir"
             else
-                echo "Skipping $dir: Remote URL is already set to $new_remote_url"
+                #echo "Skipping $dir: Remote URL is already set to $new_remote_url"
+		:
             fi
         else
-            echo "Skipping $dir: Not a git repository"
+            #echo "Skipping $dir: Not a git repository"
+	    :
         fi
 
         # Shift past the current directory and URL
         shift 2
     done
 
-    echo "All specified repositories checked."
+    #echo "All specified repositories checked."
 }
 
 # Now update the repo remote URLs if needed
