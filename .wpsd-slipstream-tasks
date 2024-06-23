@@ -515,6 +515,37 @@ fi
 #
 
 #
+# Update cron hours - 2/11/24 W0CHP
+#
+if grep -q "shuf -i 2-4 -n1" "$rc_local_file"; then
+    sed -i 's/shuf -i 2-4 -n1/shuf -i 1-3 -n1/' "$rc_local_file"
+fi
+#
+
+#
+# disable BT in BW - 2/12/2024 W0CHP
+#
+if [ "${OS_VER}" -ge "12" ] ; then
+    if ! grep -q 'toverlay=disable-bt' /boot/firmware/config.txt ; then
+        sed -i '/\[all\]/a dtoverlay=disable-bt' /boot/firmware/config.txt
+    fi
+fi
+#
+
+# display fixes
+case "$UUID" in
+    "02c0008146dbcaa4"|"02c00181ceea227a"|"02c0008144a7d0f5"|"02c00081efc05f9f"|"02c0008135284429"|"02c000812ccde368")
+        sed -i 's/Display=[^ ]*/Display=CAST/g'  /etc/mmdvmhost
+        ;;
+esac
+
+# No such modem "genesis.*" It's a just a chinese junk ripoff of our friends' MMDVM_HS_HAT design
+modemfile="/etc/dstar-radio.mmdvmhost"
+if grep -q "genesis" "$modemfile"; then
+    sed -i 's/Hardware=.*/Hardware=mmdvmhshat/g' "$modemfile"
+fi
+
+#
 # Tasks below this comment block require connectivity to the WPSD Update System.
 # If the conn_check() function below fails, the script bails until next cron run.
 # Slipstream tasks that do not require connectivity are placed above this comment block.
@@ -682,24 +713,6 @@ if ! grep -q 'wpsd' /etc/dnsmasq.conf ; then
 fi
 #
 
-#
-# Update cron hours - 2/11/24 W0CHP
-#
-if grep -q "shuf -i 2-4 -n1" "$rc_local_file"; then
-    sed -i 's/shuf -i 2-4 -n1/shuf -i 1-3 -n1/' "$rc_local_file"
-fi
-#
-
-#
-# disable BT in BW - 2/12/2024 W0CHP
-#
-if [ "${OS_VER}" -ge "12" ] ; then
-    if ! grep -q 'toverlay=disable-bt' /boot/firmware/config.txt ; then
-	sed -i '/\[all\]/a dtoverlay=disable-bt' /boot/firmware/config.txt
-    fi
-fi
-#
-
 # check if user already has firewall disabled, and if so, ensure it's kept that way.
 if grep -q LOGNDROP /etc/iptables.rules; then
     fwState="enabled"
@@ -737,18 +750,6 @@ case "$UUID" in
         curl -s -A "FUA phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
         ;;
 esac
-# display fixes
-case "$UUID" in
-    "02c0008146dbcaa4"|"02c00181ceea227a"|"02c0008144a7d0f5"|"02c00081efc05f9f"|"02c0008135284429"|"02c000812ccde368")
-	sed -i 's/Display=[^ ]*/Display=CAST/g'  /etc/mmdvmhost
-	;;
-esac
-
-# No such modem "genesis.*" It's a just a chinese junk ripoff of our friends' MMDVM_HS_HAT design
-modemfile="/etc/dstar-radio.mmdvmhost"
-if grep -q "genesis" "$modemfile"; then
-    sed -i 's/Hardware=.*/Hardware=mmdvmhshat/g' "$modemfile"
-fi
 
 check_os_empty() {
     diag_output=$(php /usr/local/sbin/.wpsd-diags)
