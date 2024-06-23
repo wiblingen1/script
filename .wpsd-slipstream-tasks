@@ -510,7 +510,7 @@ fi
 if [ ! -f /usr/bin/upnpc ] ; then
     apt-get update
     apt-get install -y miniupnpc
-    systemctl restart miniupnpd.service 
+    systemctl restart pistar-upnp.service
 fi
 #
 
