@@ -104,6 +104,10 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
         if [ ! -z "${clone_board}" ]; then
             if [[ "${clone_board}" == "FriendlyARM NanoPi NEO" ]]; then
                 echo "NanoPi NEO, sun8i"
+	    elif [[ "${clone_board}" == "Xunlong Orange Pi Zero" ]]; then
+                echo "Orange Pi Zero, sun8i"
+	    elif [[ "${clone_board}" == "sun8iw7p1" ]]; then
+                echo "Orange Pi Zero, sun8i"
             else
                 echo "$clone_board, sun8i"
             fi
