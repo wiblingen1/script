@@ -7,20 +7,22 @@
 # 
 # Pi Rev codes available at <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes>
 
-# Pull the CPU Model from /proc/cpuinfo
-modelName=$( lscpu | grep Architecture | sed 's/.*: //' | sed -e 's/^[ \t]*//' )
+# Initialize modelName, hardwareField, and arch
+modelName=$(lscpu | grep Architecture | sed 's/.*: //' | sed -e 's/^[ \t]*//')
 hardwareField=$(grep 'Hardware' /proc/cpuinfo | sed 's/.*: //')
 arch=$(uname -m)
 
+# Read the model from /proc/device-tree/model if available
 if [ -f /proc/device-tree/model ]; then
     raspberryModel=$(tr -d '\0' </proc/device-tree/model | sed 's/Rev/Rev./')
 fi
 
+# Check if the system is arm or aarch based
 if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
     # Pull the Board revision from /proc/cpuinfo
     boardRev=$(grep 'Revision' /proc/cpuinfo | awk '{print $3}' | sed 's/^100//')
-    # Grab actual model name as well...as a fallback to $raspberryModel: /proc/device-tree/model
-    actualModel=$(grep 'Model' /proc/cpuinfo| cut -d' ' -f2- | sed 's/Rev/Rev./')
+    # Grab actual model name as well as a fallback to $raspberryModel: /proc/device-tree/model
+    actualModel=$(grep 'Model' /proc/cpuinfo | cut -d' ' -f2- | sed 's/Rev/Rev./')
 
     # Make the board revision human readable
     case $boardRev in
@@ -89,30 +91,31 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
         *) raspberryVer="ARM-based System";;
     esac
 
+    # Check for specific hardware fields
     if [[ ${hardwareField} == "ODROID"* ]]; then
         echo "Odroid XU3/XU4 System"
     elif [[ ${hardwareField} == *"sun8i"* ]]; then
-	if [ -f '/etc/armbian-release' ] ; then
-	    clone_board=$(grep -oP 'BOARD_NAME="\K[^"]+' /etc/armbian-release)
-	else
-	    clone_board=$(tr -d '\0' </proc/device-tree/model)
-	fi
-	if [ ! -z "${clone_board}" ]; then
-	    if [[ "${clone_board}" == *"FriendlyARM NanoPi NEO, sun8i"* ]]; then
-		echo "NanoPi"
-	    else
-		echo "$clone_board, sun8i"
-	    fi
-	else
-	    echo "sun8i-based Pi Clone"
-	fi
+        if [ -f '/etc/armbian-release' ] ; then
+            clone_board=$(grep -oP 'BOARD_NAME="\K[^"]+' /etc/armbian-release)
+        else
+            clone_board=$(tr -d '\0' </proc/device-tree/model)
+        fi
+        if [ ! -z "${clone_board}" ]; then
+            if [[ "${clone_board}" == *"FriendlyARM NanoPi NEO, sun8i"* ]]; then
+                echo "NanoPi"
+            else
+                echo "$clone_board, sun8i"
+            fi
+        else
+            echo "sun8i-based Pi Clone"
+        fi
     elif [[ ${hardwareField} == *"s5p4418"* ]]; then
         echo "Samsung Artik"
     elif [[ ${raspberryModel} == "Raspberry"* ]]; then
-	raspberryModel=$(echo $raspberryModel) 
-	echo "${raspberryModel} ${arch} ${raspberryVer} - Board # $boardRev"
+        raspberryModel=$(echo $raspberryModel)
+        echo "${raspberryModel} ${arch} ${raspberryVer} - Board # $boardRev"
     else
-	echo "$actualModel $arch $raspberryVer"
+        echo "$actualModel $arch $raspberryVer"
     fi
     
 elif [[ ${hardwareField} == *"sun8i"* ]]; then
