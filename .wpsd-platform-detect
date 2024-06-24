@@ -102,7 +102,7 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
         fi
         if [ ! -z "${clone_board}" ]; then
             if [[ "${clone_board}" == *"FriendlyARM NanoPi NEO, sun8i"* ]]; then
-                echo "NanoPi"
+                echo "NanoPi NEO, sun8i"
             else
                 echo "$clone_board, sun8i"
             fi
