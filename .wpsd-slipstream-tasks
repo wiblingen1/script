@@ -551,34 +551,6 @@ fi
 # Slipstream tasks that do not require connectivity are placed above this comment block.
 #
 
-# dvmega cast-specific stuff
-castResult=$(isDVmegaCast)
-if [ "$castResult" == "true" ]; then
-    # ensure avrdude conf. is installed for radio/hotspot mgmt.
-    if [ ! -f '/etc/avrdude.conf' ] ; then
-        curl -o /etc/avrdude.conf https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast/raw/branch/master/etc/avrdude.conf
-    fi
-    # remove legacy stuff
-    if [ -f '/usr/local/cast/etc/preset.txt' ] ; then
-        rm -f /usr/local/cast/etc/preset.txt
-    fi
-
-    cd /opt/cast
-    git pull origin master
-    git reset --hard origin/master
-
-    # ensure configs always have proper perms
-    chmod 775 /usr/local/cast/etc
-    chown -R www-data:pi-star /usr/local/cast/etc
-    chmod 664 /usr/local/cast/etc/*
-
-    # www is a symlink so get main perms setup
-    chmod 775 /opt/cast/usr-local-cast-www
-    chmod 775 /opt/cast/usr-local-cast-www/cast-firmware/fw
-    chown -R www-data:www-data /opt/cast/usr-local-cast-www
-fi
-
-# 5/27/23: Bootstrapping backend scripts
 gitUaStr="Slipstream Task $uaStr"
 conn_check() {
     local status=$(curl -L -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
@@ -591,6 +563,8 @@ conn_check() {
         exit 1
     fi
 }
+
+# 5/27/23: Bootstrapping backend scripts
 repo_path="/usr/local/sbin"
 cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
 if conn_check; then
@@ -621,6 +595,33 @@ if conn_check; then
 else
     echo "Failed to check the HTTP status of the repository URL: $url"
     exit 1
+fi
+
+# dvmega cast-specific stuff
+castResult=$(isDVmegaCast)
+if [ "$castResult" == "true" ]; then
+    # ensure avrdude conf. is installed for radio/hotspot mgmt.
+    if [ ! -f '/etc/avrdude.conf' ] ; then
+        curl -o /etc/avrdude.conf https://wpsd-swd.w0chp.net/WPSD-SWD/DVMega-Cast/raw/branch/master/etc/avrdude.conf
+    fi
+    # remove legacy stuff
+    if [ -f '/usr/local/cast/etc/preset.txt' ] ; then
+        rm -f /usr/local/cast/etc/preset.txt
+    fi
+
+    cd /opt/cast
+    git pull origin master
+    git reset --hard origin/master
+
+    # ensure configs always have proper perms
+    chmod 775 /usr/local/cast/etc
+    chown -R www-data:pi-star /usr/local/cast/etc
+    chmod 664 /usr/local/cast/etc/*
+
+    # www is a symlink so get main perms setup
+    chmod 775 /opt/cast/usr-local-cast-www
+    chmod 775 /opt/cast/usr-local-cast-www/cast-firmware/fw
+    chown -R www-data:www-data /opt/cast/usr-local-cast-www
 fi
 
 # Update OLED C-lib to new version that supports RPI4:
