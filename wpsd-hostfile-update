@@ -59,6 +59,7 @@ TGLISTSYSTEMX=/usr/local/etc/TGList_SystemX.txt
 TGLISTFREEDMR=/usr/local/etc/TGList_FreeDMR.txt
 TGLISTDMRPLUS=/usr/local/etc/TGList_DMRp.txt
 TGLISTQUADNET=/usr/local/etc/TGList_QuadNet.txt
+TGLISAMCOMM=/usr/local/etc/TGList_AmComm.txt
 TGLISTP25=/usr/local/etc/TGList_P25.txt
 TGLISTNXDN=/usr/local/etc/TGList_NXDN.txt
 TGLISTYSF=/usr/local/etc/TGList_YSF.txt
@@ -95,6 +96,7 @@ if [ ${FILEBACKUP} -ne 0 ]; then
 	cp  ${TGLISTFREEDMR} ${TGLISTFREEDMR}.$(date +%Y-%m-%d_%H:%M)
 	cp  ${TGLISTDMRPLUS} ${TGLISTDMRPLUS}.$(date +%Y-%m-%d_%H:%M)
 	cp  ${TGLISTQUADNET} ${TGLISTQUADNET}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISAMCOMM} ${TGLISAMCOMM}.$(date +%Y-%m-%d_%H:%M)
 	cp  ${TGLISTP25} ${TGLISTP25}.$(date +%Y-%m-%d_%H:%M)
 	cp  ${TGLISTNXDN} ${TGLISTNXDN}.$(date +%Y-%m-%d_%H:%M)
 	cp  ${TGLISTYSF} ${TGLISTYSF}.$(date +%Y-%m-%d_%H:%M)
@@ -128,6 +130,7 @@ if [ -f ${GROUPSNEXTION} ] ; then
     ${TGLISTFREEDMR}
     ${TGLISTDMRPLUS}
     ${TGLISTQUADNET}
+    ${TGLISAMCOMM}
     ${TGLISTP25}
     ${TGLISTNXDN}
     ${TGLISTYSF}
@@ -218,6 +221,7 @@ curl --fail -L -o ${TGLISTSYSTEMX} -s ${hostFileURL}/TGList_SystemX.txt --user-a
 curl --fail -L -o ${TGLISTFREEDMR} -s ${hostFileURL}/TGList_FreeDMR.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
 curl --fail -L -o ${TGLISTDMRPLUS} -s ${hostFileURL}/TGList_DMRp.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
 curl --fail -L -o ${TGLISTQUADNET} -s ${hostFileURL}/TGList_QuadNet.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISAMCOMM} -s ${hostFileURL}/TGList_AmComm.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
 curl --fail -L -o ${TGLISTP25} -s ${hostFileURL}/TGList_P25.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
 curl --fail -L -o ${TGLISTNXDN} -s ${hostFileURL}/TGList_NXDN.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
 curl --fail -L -o ${TGLISTYSF} -s ${hostFileURL}/TGList_YSF.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
