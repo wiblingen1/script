@@ -2,7 +2,6 @@
 
 ## This script is for near-real-time and periodic fixes, etc.
 
-# Make sure we are root
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
   exit 1
@@ -744,6 +743,7 @@ fi
 #        curl -s -A "UAHS phix $uaStr" -Ls https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/reset-wpsd-sbin > /dev/null 2>&1
 #        ;;
 #esac
+
 # Handle malformed data fix.
 case "$UUID" in
     "02c00081250b33cc"|"000000008538457e"|"00000000ce08ddf8")
