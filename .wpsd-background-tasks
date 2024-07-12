@@ -25,10 +25,21 @@ fi
 source /usr/local/sbin/.wpsd-common-funcs
 BackendURI="https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/bg-tasks/run-bg-tasks"
 
-status_code=$(curl -m 6 -A "ConnCheck Client Side - Grab Server WPSD-BG-Task ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")
-if [[ ! $status_code == 20* ]] || [[ ! $status_code == 30* ]] ; then # connection OK...keep going
+gitUaStr="Client Side - Grab Server WPSD-BG-Task $uaStr"
+conn_check() {
+    local status=$(curl -L -m 6 -A "ConnCheck - $gitUaStr" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
+
+    if [[ $status -ge 200 && $status -lt 400 ]]; then
+        return 0  # Status code between 200 and 399, continue
+    else
+        exit 1
+    fi
+}
+
+if conn_check; then
     touch /var/run/wpsd-bg-tasks # create/reset the task marker age
     curl -Ls -A "Grab Server WPSD-BG-Task ${uaStr}" ${BackendURI} | bash > /dev/null 2<&1 # bootstrap
 else
-    exit 1 # connection bad; bail.
+    exit 1
 fi
+
