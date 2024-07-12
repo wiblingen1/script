@@ -23,7 +23,7 @@ if [  -f '/var/run/wpsd-bg-tasks' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/v
 fi
 
 source /usr/local/sbin/.wpsd-common-funcs
-BackendURI="https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/bg-tasks/run-tasks.sh"
+BackendURI="https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/bg-tasks/run-bg-tasks"
 
 status_code=$(curl -m 6 -A "ConnCheck Client Side - Grab Server WPSD-BG-Task ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$BackendURI")
 if [[ ! $status_code == 20* ]] || [[ ! $status_code == 30* ]] ; then # connection OK...keep going
