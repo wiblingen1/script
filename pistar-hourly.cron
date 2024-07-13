@@ -9,8 +9,6 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-mount -o remount,rw / # for shits and giggles
-
 source /usr/local/sbin/.wpsd-common-funcs
 
 if [ ! -t 1 ]; then
@@ -74,17 +72,3 @@ bash /usr/local/sbin/motdgen
 # run any slipstream tasks
 bash /usr/local/sbin/.wpsd-slipstream-tasks
 
-# connectivity check
-echo -e "\nChecking connectivity to WPSD update server..."
-status_code=$(curl -L -m 6 -A "Conn-Check (Hourly-Cron [${cronMins}]) ${uaStr}" --write-out %{http_code} --silent --output /dev/null "$CONN_CHECK_URI")
-if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
-    echo -e "WPSD Update Server connection ok! Caching lastest WPSD Ver. No."
-    # grab and cache latest version
-    gitFolder="/var/www/dashboard"
-    gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
-    gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
-    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (Hourly-Cron [${cronMins}]) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
-    echo ${gitStatusRemote} > /etc/.WPSD_remote_version
-else
-    echo -e "WPSD Update Server connection failure. Will try again within an hour"
-fi
