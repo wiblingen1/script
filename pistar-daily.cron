@@ -4,7 +4,6 @@
 # WPSD Daily Cron Job Script  - W0CHP
 #
 
-# Make sure we are root
 if [ "$(id -u)" != "0" ]; then
   echo -e "You need to be root to run this command...\n"
   exit 1
@@ -13,8 +12,6 @@ fi
 if [ ! -t 1 ]; then
   exec &> /tmp/WPSD-daily-cron.log
 fi
-
-mount -o remount,rw / # for shits and giggles
 
 pkill pistar-hourly.cron > /dev/null 2>&1
 pkill .wpsd-slipstream-tasks > /dev/null 2>&1
