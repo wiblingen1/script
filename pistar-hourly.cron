@@ -15,8 +15,6 @@ if [ ! -t 1 ]; then
   exec &> /tmp/WPSD-hourly-cron.log
 fi
 
-pkill .wpsd-slipstream-tasks > /dev/null 2>&1
-
 # migrate config update notice
 if grep -q ConfUpdReqd /etc/mmdvmhost ; then
     grep ConfUpdReqd /etc/mmdvmhost | sed 's/=/ = /' >> /etc/pistar-release
@@ -70,5 +68,6 @@ sed -i "/cron.hourly/c ${cronMins}  *   * * *   root    cd / && run-parts --repo
 bash /usr/local/sbin/motdgen
 
 # run any slipstream tasks
+pkill .wpsd-slipstream-tasks > /dev/null 2>&1
 bash /usr/local/sbin/.wpsd-slipstream-tasks
 
