@@ -2,7 +2,7 @@
 
 gitFolder="/var/www/dashboard"
 gitRemoteVer=/etc/.WPSD_remote_version
-# W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, check that branch.
+# WPSD has more than one branch. So depending on what WPSD branch the user has installed, check that branch.
 gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
 gitStatusRemote=$( cat ${gitRemoteVer} )
 gitStatusLocal=$( git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git rev-parse --short=10 ${gitBranch} )
