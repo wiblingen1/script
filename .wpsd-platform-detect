@@ -93,7 +93,7 @@ if [[ ${modelName} == "arm"* ]] || [[ ${modelName} == "aarch"* ]]; then
 	    clone_board=$(tr -d '\0' </proc/device-tree/model)
 	fi
 	if [ ! -z "${clone_board}" ]; then
-	    if [[ ${clone_board}} == "*sun8iw7p1*" ]]; then
+	    if [[ ${clone_board} == "*sun8iw7p1*" ]]; then
 		echo "sun8i-based Pi Clone"
 	    else
 		echo "$clone_board, sun8i"
