@@ -79,7 +79,7 @@ function getDVModemFirmware() {
 $host = 'cdn.w0chp.net';
 $port = 443;
 
-$fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 2);
+$fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 10);
 if (!$fp) {
     die();
 }
@@ -188,7 +188,7 @@ function isHttpCodeSuccessful($http_code) {
 
 do {
     $context  = stream_context_create($options);
-    $result = @file_get_contents("https://$host/diags/", false, $context);
+    $result = file_get_contents("https://$host/diags/", false, $context);
 
     if ($result !== false) {
         $http_status = explode(' ', $http_response_header[0])[1];
