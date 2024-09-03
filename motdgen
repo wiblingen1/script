@@ -36,4 +36,5 @@ ${QUES} Your WPSD dashboard can be accesed from:
     ${BULL} ${COL_LIGHT_MAGENTA}http://$(hostname -I | awk '{print $1}')/${COL_NC}
 
 ${INFO} WPSD command-line tools are all prefixed with \"wpsd-\".
+    Simply type ${BOLD}${COL_BRIGHT_CYAN}wpsd-${COL_NC} and then the TAB key twice to see a list.
 " > /etc/motd
