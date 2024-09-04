@@ -1,0 +1,226 @@
+#!/bin/bash
+#
+##############################################################################
+#                                                                            #
+#                         WPSD BrandMeister API Tool                         #
+#                                                                            #
+##############################################################################
+#
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
+# Setup some variables
+APIKeyFile=/etc/bmapi.key
+
+# Figure out the DMR ID
+DMRNetHost=$(sed -n '/^\[DMR Network\]/,/^\[/p' /etc/mmdvmhost | grep "^Address=" | head -n 1 | awk -F "=" '{print $2}')
+if [[ "${DMRNetHost}" == "127.0.0.1" ]]; then
+        # Using DMRGateway
+        DMRID=$(sed -n '/^\[DMR Network 1\]/,/^\[/p' /etc/dmrgateway | grep "^Id" | awk -F "=" '{print $2}')
+else
+        # Using MMDVMHost
+        DMRMMDVMHostID=$(sed -n '/^\[DMR\]/,/^\[/p' /etc/mmdvmhost | grep "^Id" | awk -F "=" '{print $2}')
+        if [[ ${DMRMMDVMHostID} ]]; then
+                # ID Specified in the DMR section
+                DMRID=${DMRMMDVMHostID}
+        else
+                # No ID in the DMR Section
+                DMRID=$(grep -m 1 '^Id=' /etc/mmdvmhost | awk -F "=" '{print $2}')
+        fi
+fi
+# Fix edge case where there is some additional chars in the DMR ID Fields (DF9FZ)
+DMRID=${DMRID//$'\r'/}
+
+if [ -z "$1" ]
+then
+	echo "NOTE: In the below example commands, please replace {TG Number} with"
+	echo "the number of the Talkgroup you wish to add/remove. For example 12345."
+	echo ""
+	echo "Similarly the {TimeSlot} should be replaced with your target time"
+	echo "slot (0, 1, 2), for hotspots it is \"0\" (you can also omit the TimeSlot"
+	echo "value), for duplex repeaters it will be either \"1\" for TS1 or \"2\" for TS2."
+	echo ""
+	echo "Reflector numbers are from 4000 to 5000"
+	echo ""
+	echo "To add a static TG:            wpsd-bmapi addtg {TG Number} {TimeSlot Number}"
+	echo "To remove a static TG:         wpsd-bmapi deltg {TG Number} {TimeSlot Number}"
+	echo "To drop all Dynamic TGs:       -bmapi dropdyn {TimeSlot Number}"
+	echo "To drop the current QSO:       wpsd-bmapi dropqso {TimeSlot Number}"
+	echo "To set the current position:   wpsd-bmapi setpos {Lattitude} {Longitude} {Altitude}"
+	echo ""
+	exit 0
+fi
+
+# Get the stored BM API Key
+if [ -f ${APIKeyFile} ]; then
+	if [[ $(wc -c ${APIKeyFile} | awk '{print $1}') -gt 200 ]]; then
+		echo -e "Using BM API v2"
+		APIURL="https://api.brandmeister.network/v2/device/"
+		APIKey=$(grep -m 1 'apikey=' ${APIKeyFile} | awk -F "=" '/apikey/ {print $2}')
+		APIVer="2"
+	else
+		echo -e "Using BM API v1.0"
+		APIURL="https://api.brandmeister.network/v1.0/repeater/"
+		APIKey=$(grep -m 1 'apikey=' ${APIKeyFile} | awk -F "=" '/apikey/ {print $2}')
+		APIKeyB64=$(echo -n "${APIKey}:" | base64 | sed 's/=$*//g' | sed ':a;N;$!ba;s/\n/ /g' | sed 's/ //g')
+		APIVer="1"
+	fi
+else
+	echo "Unable to find your BrandMesiter API Key, no API commands available."
+	exit 0
+fi
+
+case ${1} in
+apikey)
+	echo "Your BrandMeister API Key is: ${APIKey}"
+	exit 0
+;;
+dmrid)
+	echo "Your DMR ID is: ${DMRID}"
+	exit 0
+;;
+addtg)
+	# Check that the variable for TalkGroup has been passed
+	if [ -z "$2" ]
+	then
+		echo "No TG Specfified"
+		exit 0
+	else
+		targetTG=$2
+	fi
+	# Check that the variable to TimeSlot has been passed
+	if [ -z "$3" ]
+	then
+		TS="0"
+	else
+		TS=$3
+	fi
+
+	# BM APIv2
+	if [[ ${APIVer} -ge 2 ]]; then
+		APIURL="${APIURL}${DMRID}/talkgroup"
+		APIDATA="{ \"slot\": ${TS}, \"group\": ${targetTG} }"
+		TYPE="POST"
+	else
+		APIURL="${APIURL}talkgroup/?action=ADD&id=${DMRID}"
+		APIDATA="talkgroup=${targetTG}&timeslot=${TS}"
+	fi
+	REQUEST="Add TG ${targetTG} to TimeSlot ${TS} for DMR ID ${DMRID}"
+;;
+deltg)
+	# Check that the variable for TalkGroup has been passed
+	if [ -z "$2" ]
+	then
+		echo "No TG Specfified"
+		exit 0
+	else
+		targetTG=$2
+	fi
+	# Check that the variable to TimeSlot has been passed
+	if [ -z "$3" ]
+	then
+		TS="0"
+	else
+		TS=$3
+	fi
+
+	# BM APIv2
+	if [[ ${APIVer} -ge 2 ]]; then
+		APIURL="${APIURL}${DMRID}/talkgroup/${TS}/${targetTG}"
+		TYPE="DELETE"
+	else
+		APIURL="${APIURL}talkgroup/?action=DEL&id=${DMRID}"
+		APIDATA="talkgroup=${targetTG}&timeslot=${TS}"
+	fi
+	REQUEST="Delete TG ${targetTG} from TimeSlot ${TS} for DMR ID ${DMRID}"
+;;
+dropdyn)
+	# Check that the variable to TimeSlot has been passed
+	if [ -z "$2" ]
+	then
+		TS="0"
+	else
+		TS=$2
+	fi
+
+	# BM APIv2
+	if [[ ${APIVer} -ge 2 ]]; then
+		APIURL="${APIURL}${DMRID}/action/dropDynamicGroups/${TS}"
+		TYPE="GET"
+	else
+		APIURL="${APIURL}setRepeaterTarantool.php?action=dropDynamicGroups&slot=${TS}&q=${DMRID}"
+	fi
+	REQUEST="Drop all Dynamic TG on TimeSlot ${TS} for DMR ID ${DMRID}"
+;;
+dropqso)
+	# Check that the variable to TimeSlot has been passed
+	if [ -z "$2" ]
+	then
+		TS="0"
+	else
+		TS=$2
+	fi
+
+	# BM APIv2
+	if [[ ${APIVer} -ge 2 ]]; then
+		APIURL="${APIURL}${DMRID}/action/dropCallRoute/${TS}"
+		TYPE="GET"
+	else
+		APIURL="${APIURL}setRepeaterDbus.php?action=dropCallRoute&slot=${TS}&q=${DMRID}"
+	fi
+	REQUEST="Drop Active QSO on TimeSlot ${TS} for DMR ID ${DMRID}"
+;;
+setpos)
+	if [ -z "$2" ]
+	then
+		echo "ERROR: Latitude not specified"
+		exit 0
+	else
+		LAT=$2
+	fi
+
+	if [ -z "$3" ]
+	then
+		echo "ERROR: Longitude not specified"
+		exit 0
+	else
+		LON=$3
+	fi
+
+	if [ -z "$4" ]
+	then
+		AGL="0"
+	else
+		AGL=$4
+	fi
+
+	# BM APIv2
+	if [[ ${APIVer} -ge 2 ]]; then
+		echo "ERROR: Set Position not supported in API v2"
+		exit 0
+	else
+		APIURL="${APIURL}?action=EDIT&id=${DMRID}"
+		APIDATA="lat=${LAT}&lng=${LON}&agl=${AGL}"
+	fi
+	REQUEST="Set the repeater location to Lattitude: ${LAT} Longitude: ${LON} and Altitude: ${AGL}"
+;;
+*)
+	echo "ERROR: Unknown Command Specified"
+	exit 0
+;;
+esac
+
+
+# Do the magic
+echo " Request to BrandMesiter API: ${REQUEST}"
+if [[ ${APIVer} -ge 2 ]]; then
+	RESULT=$(curl -s -X "${TYPE}" "${APIURL}" -A "WPSD cli tool for: ${DMRID}" -H "accept: application/json" -H "Authorization: Bearer ${APIKey}" -H "Content-Type: application/json" -d "${APIDATA}" > /dev/null 2>&1 && echo OK || echo ERROR)
+else
+	RESULT=$(wget -q -O - --user-agent="WPSD cli tool for: ${DMRID}" --header="Content-Type: application/x-www-form-urlencoded" --header="Authorization: Basic ${APIKeyB64}:"  --post-data="${APIDATA}" "${APIURL}" | \
+		python3 -c "import sys, json; print(json.load(sys.stdin)['message'])")
+fi
+echo "Answer from BrandMesiter API: ${RESULT}"
+echo ""
+exit 0

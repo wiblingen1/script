@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+##############################################################################
+#                                                                            #
+#                        WPSD ircDDBGateway link Tool                        #
+#                                                                            #
+##############################################################################
+#
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
+# Setup some variables
+cmd=/usr/local/bin/remotecontrold
+#module=$(grep -m 1 'callsign=' /etc/dstarrepeater | awk -F "=" '/callsign/ {print $2}')
+callsign=$(grep -oP 'gatewayCallsign=\K[^ ]+' /etc/ircddbgateway)
+module="$callsign  B"
+
+if [ -z "$1" ]
+then
+      echo "To unlink from any connected reflector, use: wpsd-dstar-link unlink"
+      echo "To link to REF000 A for example, use: wpsd-dstar-link ref000_a"
+      echo ""
+      echo "If you need to make a reflector FIXED so that users cannot unlink,"
+      echo "for schedulling connections via CRON for example you can use the"
+      echo "the following: wpsd-dstar-link ref000_a fixed"
+      echo "Should you wish to Un-Fix a reflector, relink to the same reflector"
+      echo "without the fixed flag, such as: wpsd-dstar-link ref000_a"
+      echo ""
+      exit 0
+fi
+
+if [ -z "$2" ]
+then
+      relink=never
+else
+      relink=${2}
+fi
+
+case ${1} in
+*unlink)
+  ${cmd} "${module}" unlink
+  exit 0
+;;
+*)
+  ${cmd} "${module}" link ${relink} $1
+  exit 0
+;;
+esac
+
+exit 0
