@@ -108,7 +108,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     # screens, and it all collides with WPSD and our native Nextion driver
     # support.  So lets ignore TGIFspots altogether.
     # [1] <https://github.com/EA7KDO/Scripts>
-    if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] || grep -q 'SendUserDataMask=0b00011110' /etc/mmdvmhost ; then # these are hacks that seem to exist on TGIFspots.
+    if [ -f '/etc/cron.daily/getstripped' ] || [ -d '/usr/local/etc/Nextion_Support/' ] || [ -d '/Nextion' ] ; then # these are hacks that seem to exist on TGIFspots.
         :
     else # yay no tgifspot hacks!
     	if [ ! -f '/lib/systemd/system/nextiondriver.service' ] ; then # lets get a native service placeholder installed at the very least
