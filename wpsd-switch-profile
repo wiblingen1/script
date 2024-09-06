@@ -1,0 +1,123 @@
+#!/bin/bash
+
+##############################
+#                            #
+#   WPSD Switch Profile      #
+#                            #
+##############################
+
+
+source /usr/local/sbin/.wpsd-common-funcs
+
+# Display services active status
+function list_profiles() {
+    ls -1 /etc/WPSD_config_mgr
+}
+
+function current_profile() {
+    cat /etc/.WPSD_config
+}
+
+function switch_profile()
+{
+    if [ "$(id -u)" != "0" ]; then
+        echo -e "You need to be root to run this command...\n"
+        exit 1
+    fi
+
+    currentProfile=`cat /etc/.WPSD_config`
+    if [ $currentProfile == $1 ]; then
+        echo "Current profile is already $1.  Not switching."
+        exit 1
+    fi
+
+    profileDir="/etc/WPSD_config_mgr/$1"
+    if [ -d "$profileDir" ]; then
+        echo "Switching to profile $1"
+    else
+        echo "Profile $1 not found!"
+        exit 1
+    fi
+
+    mount -o remount,rw /
+    mv $profileDir/*.php /var/www/dashboard/config/ > /dev/null
+    cp -a $profileDir/*Hosts.txt /root/ > /dev/null
+
+# Begin DV-Mega Cast logic to restore user cast settings
+    castResult=$(isDVmegaCast)
+    if [ "$castResult" == "true" ]; then
+	    mkdir -p /usr/local/cast/etc  > /dev/null
+	    cp -a $profileDir/cast-settings/* /usr/local/cast/etc/ > /dev/null
+	    chmod 775 /usr/local/cast/etc
+        chown -R www-data:pi-star /usr/local/cast/etc
+        chmod 664 /usr/local/cast/etc/*
+	    /usr/local/cast/sbin/RSET.sh  > /dev/null 2>&1 &
+	    /usr/local/cast/bin/cast-reset ; sleep 2 > /dev/null 2>/dev/null
+    fi
+
+    rm -rf $profileDir/*Hosts.txt > /dev/null
+    cp -a $profileDir/* /etc/ > /dev/null 2>&1
+    cp -a $profileDir/.CALLERDETAILS /etc/ > /dev/null 2>&1
+    cp -a $profileDir/.TGNAMES /etc/ > /dev/null 2>&1
+    cp /var/www/dashboard/config/ircddblocal.php $profileDir > /dev/null
+    cp /var/www/dashboard/config/config.php $profileDir > /dev/null
+    cp /var/www/dashboard/config/language.php $profileDir > /dev/null
+    chown www-data:www-data /var/www/dashboard/ > /dev/null
+    cp -a /root/*Hosts.txt $profileDir > /dev/null
+    echo "$1" > /etc/.WPSD_config
+
+    echo "Restarting WPSD Services.  This could take a little while."
+    wpsd-services restart > /dev/null
+    echo "$1 profile activated.  You may need to refresh the web interface to see the change."
+}
+
+function DisplayHelp() {
+    echo "`basename $0` usage:"
+    echo ""
+    echo "  -h,   --help                       Display this help text."
+    echo "  -l    --list                       List Profiles"
+    echo "  -c    --current                    Current Profile"
+    echo "  -p    --profile <profile>          Switch to <profile>"
+    echo ""
+}
+
+
+if [ $# -eq 0 ]; then
+    DisplayHelp
+    exit 1
+fi
+
+
+## Parse command line
+while [[ $# -gt 0 ]]; do
+    key="$1"
+
+    case $key in
+    "-l" | "--list")
+        list_profiles
+        exit 0
+        ;;
+
+    "-p" | "--profile")
+        switch_profile $2
+        exit 0
+        ;;
+
+    "-c" | "--current")
+        current_profile
+        exit 0
+        ;;
+
+    "-h" | "--help")
+        DisplayHelp
+        exit 0
+        ;;
+
+    *)
+        DisplayHelp;
+        exit 1
+        ;;
+    esac
+done
+
+exit 0
