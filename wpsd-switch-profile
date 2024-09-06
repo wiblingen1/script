@@ -1,21 +1,28 @@
 #!/bin/bash
 
-##############################
-#                            #
-#   WPSD Switch Profile      #
-#                            #
-##############################
+############################
+#                          #
+#   WPSD Switch Profile    #
+#     By Carl, VK1KCM      #
+#                          #
+############################
 
 
 source /usr/local/sbin/.wpsd-common-funcs
 
 # Display services active status
 function list_profiles() {
-    ls -1 /etc/WPSD_config_mgr
+    echo ""
+    for file in /etc/WPSD_config_mgr/*; do
+        printf "  •  %s\n" "$(basename "$file")"
+    done
+    echo ""
 }
 
 function current_profile() {
-    cat /etc/.WPSD_config
+    echo ""
+    printf "  •  %s\n" "$(cat /etc/.WPSD_config)"
+    echo ""
 }
 
 function switch_profile()
@@ -43,14 +50,14 @@ function switch_profile()
     mv $profileDir/*.php /var/www/dashboard/config/ > /dev/null
     cp -a $profileDir/*Hosts.txt /root/ > /dev/null
 
-# Begin DV-Mega Cast logic to restore user cast settings
+    # Begin DV-Mega Cast logic to restore user cast settings
     castResult=$(isDVmegaCast)
     if [ "$castResult" == "true" ]; then
 	    mkdir -p /usr/local/cast/etc  > /dev/null
 	    cp -a $profileDir/cast-settings/* /usr/local/cast/etc/ > /dev/null
 	    chmod 775 /usr/local/cast/etc
-        chown -R www-data:pi-star /usr/local/cast/etc
-        chmod 664 /usr/local/cast/etc/*
+	    chown -R www-data:pi-star /usr/local/cast/etc
+ 	    chmod 664 /usr/local/cast/etc/*
 	    /usr/local/cast/sbin/RSET.sh  > /dev/null 2>&1 &
 	    /usr/local/cast/bin/cast-reset ; sleep 2 > /dev/null 2>/dev/null
     fi
