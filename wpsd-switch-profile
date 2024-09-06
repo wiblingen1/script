@@ -94,7 +94,6 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-
 ## Parse command line
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -106,6 +105,10 @@ while [[ $# -gt 0 ]]; do
         ;;
 
     "-p" | "--profile")
+        if [[ -z $2 || $2 == -* ]]; then
+            echo "Error: No profile specified for the -p option."
+            exit 1
+        fi
         switch_profile $2
         exit 0
         ;;
