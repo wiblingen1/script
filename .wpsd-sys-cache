@@ -192,6 +192,9 @@ if [ -n "$LOG_LINE" ]; then
     # Handle DVMEGA format
     elif [[ "$LOG_LINE" =~ description:\ (DVMEGA\ ([^ ]+)) ]]; then
         MODEM_FIRMWARE="DVMEGA-v${BASH_REMATCH[2]}"
+    # Handle MMDVM with version in parentheses
+    elif [[ "$LOG_LINE" =~ description:\ (MMDVM\ ([0-9]+)) ]]; then
+        MODEM_FIRMWARE="MMDVM-v${BASH_REMATCH[2]}"
     fi
 fi
 MODEM_TCXO_FREQ=""
