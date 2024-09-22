@@ -188,24 +188,40 @@ fi
 if [ -n "$LOG_LINE" ]; then
     if [[ "$LOG_LINE" == *"DVMEGA"* ]]; then
         MODEM_FIRMWARE=$(echo "$LOG_LINE" | cut -c 67-81)
-    elif [[ "$LOG_LINE" == *"description: MMDVM_HS_Dual_Hat-"* ]]; then
-        MODEM_FIRMWARE="MMDVM_HS-Dual_Hat:$(echo "$LOG_LINE" | awk -F 'description: MMDVM_HS_Dual_Hat-' '{print $2}' | awk '{print $1}')"
     elif [[ "$LOG_LINE" == *"description: MMDVM_HS"* ]]; then
-        MODEM_FIRMWARE="MMDVM_HS:$(echo "$LOG_LINE" | awk -F 'description: MMDVM_HS' '{print $2}' | awk '{print $1}' | sed 's/^v//')"
+        MODEM_FIRMWARE="MMDVM_HS:$(echo "$LOG_LINE" | cut -c 84-91 | sed 's/^v//')"
     elif [[ "$LOG_LINE" == *"description: MMDVM "* ]]; then
-        MODEM_FIRMWARE="MMDVM:$(echo "$LOG_LINE" | cut -c 74-81)"
+        MODEM_FIRMWARE="MMDVM:$(echo "$LOG_LINE" | cut -c 73-80)"
     elif [[ "$LOG_LINE" == *"description: ZUMspot "* ]]; then
-        MODEM_FIRMWARE="ZUMspot:$(echo "$LOG_LINE" | cut -c 84-95 | awk '{print $1}')"
+        MODEM_FIRMWARE="ZUMspot:$(echo "$LOG_LINE" | cut -c 83-94 | awk '{print $1}')"
     elif [[ "$LOG_LINE" == *"description: MMDVM_MDO "* ]]; then
-        MODEM_FIRMWARE="MMDVM_MDO:$(echo "$LOG_LINE" | cut -c 86-97 | awk '{print $1}' | sed 's/^v//')"
+        MODEM_FIRMWARE="MMDVM_MDO:$(echo "$LOG_LINE" | cut -c 85-97 | awk '{print $1}' | sed 's/^v//')"
     elif [[ "$LOG_LINE" == *"description: ZUMspot-"* ]]; then
-        MODEM_FIRMWARE="ZUMspot:$(echo "$LOG_LINE" | cut -c 76-87 | awk '{print $1}')"
+        MODEM_FIRMWARE="ZUMspot:$(echo "$LOG_LINE" | cut -c 75-87 | awk '{print $1}')"
     elif [[ "$LOG_LINE" == *"description: MMDVM_HS_Hat-"* ]]; then
-        MODEM_FIRMWARE="MMDVM_HS-Hat:$(echo "$LOG_LINE" | cut -c 81-92 | awk '{print $1}')"
+        MODEM_FIRMWARE="MMDVM_HS-Hat:$(echo "$LOG_LINE" | cut -c 80-92 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: MMDVM_HS_Dual_Hat-"* ]]; then
+        MODEM_FIRMWARE="MMDVM_HS-Dual_Hat:$(echo "$LOG_LINE" | cut -c 85-97 | awk '{print $1}')"
     elif [[ "$LOG_LINE" == *"description: D2RG_MMDVM_HS-"* ]]; then
-        MODEM_FIRMWARE="HS_Hat:$(echo "$LOG_LINE" | cut -c 82-93 | awk '{print $1}')"
+        MODEM_FIRMWARE="HS_Hat:$(echo "$LOG_LINE" | cut -c 81-93 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: MMDVM_HS-"* ]]; then
+        MODEM_FIRMWARE="MMDVM_HS:$(echo "$LOG_LINE" | cut -c 76-88 | awk '{print $1}' | sed 's/^v//')"
+    elif [[ "$LOG_LINE" == *"description: Nano_hotSPOT-"* ]]; then
+        MODEM_FIRMWARE="Nano_hotSPOT:$(echo "$LOG_LINE" | cut -c 80-92 | awk '{print $1}' | sed 's/^v//')"
+    elif [[ "$LOG_LINE" == *"description: Nano-Spot-"* ]]; then
+        MODEM_FIRMWARE="NanoSpot:$(echo "$LOG_LINE" | cut -c 77-89 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: Nano_DV-"* ]]; then
+        MODEM_FIRMWARE="NanoDV:$(echo "$LOG_LINE" | cut -c 75-87 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: OpenGD77 Hotspot"* ]]; then
+        MODEM_FIRMWARE="OpenGD77_HS:$(echo "$LOG_LINE" | cut -c 83-95 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: OpenGD77_HS "* ]]; then
+        MODEM_FIRMWARE="OpenGD77_HS:$(echo "$LOG_LINE" | cut -c 79-91 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: SkyBridge-"* ]]; then
+        MODEM_FIRMWARE="SkyBridge:$(echo "$LOG_LINE" | cut -c 77-89 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: EuroNode-"* ]]; then
+        MODEM_FIRMWARE="EuroNode:$(echo "$LOG_LINE" | cut -c 77-89 | awk '{print $1}')"
     elif [[ "$LOG_LINE" == *"description: RRU-rf-board-"* ]]; then
-        MODEM_FIRMWARE="RRU-RF-Board:$(echo "$LOG_LINE" | cut -c 81-100 | awk '{print $1}')"
+        MODEM_FIRMWARE="RRU-RF-Board:$(echo "$LOG_LINE" | cut -c 80-99 | awk '{print $1}')"
     fi
 fi
 MODEM_TCXO_FREQ=""
