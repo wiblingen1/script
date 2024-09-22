@@ -46,7 +46,7 @@ check_key_existence() {
     local missing_keys=0
 
     if [ -f "$INI_FILE" ]; then
-        for key in ircddbgateway MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
+        for key in ircddbgateway MMDVMHost kernel Hardware Platform iface ModemMode ModemType ModemFW ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
             if ! grep -qE "^${key} =" "$INI_FILE"; then
                 missing_keys=1
                 break
@@ -70,6 +70,7 @@ Platform =
 iface = 
 ModemMode = 
 ModemType = 
+ModemFW =
 ControllerType = 
 ProcNum = 
 UUID = 
@@ -89,6 +90,7 @@ getVer=$( MMDVMHost -v | cut -d' ' -f 3- )
 sed -i "/^ircddbgateway.*/c ircddbgateway = ${getVer}" /etc/pistar-release
 sed -i "/MMDVMHost/c MMDVMHost = ${getVer}" /etc/pistar-release
 
+# proc count
 countProcs=$(grep -c ^processor /proc/cpuinfo)
 if ! grep -w 'ProcNum' /etc/pistar-release > /dev/null; then
     sed -i "/Hardware = /a ProcNum = ${countProcs}" /etc/pistar-release
@@ -96,6 +98,7 @@ else
     sed -i "/ProcNum/c ProcNum = ${countProcs}" /etc/pistar-release
 fi
 
+# active net iface
 activeIface=$(route | head -3 | tail -1 | awk '{print $8}')
 if ! grep -w 'iface' /etc/pistar-release > /dev/null; then
     sed -i "/Hardware = /a iface = ${activeIface}" /etc/pistar-release
@@ -103,6 +106,7 @@ else
     sed -i "/iface/c iface = ${activeIface}" /etc/pistar-release
 fi
 
+# kernel ver.
 KernelVer=`uname -r`
 sed -i "/kernel/c kernel = ${KernelVer}" /etc/pistar-release
 
@@ -112,6 +116,7 @@ else
     sed -i "/Platform/c Platform = $(eval "$PlatDet")" /etc/pistar-release
 fi
 
+# uuid
 GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
 sed -i "/UUID =/c\\UUID = ${GU}" /etc/pistar-release
 
@@ -168,6 +173,60 @@ if [ -f '/etc/dstar-radio.dstarrepeater' ]; then
     else
         sed -i "/ControllerType =/c ControllerType = ${ControllerType}" /etc/pistar-release
     fi
+fi
+
+# modem fw
+LOG_MMDVM_NOW="/var/log/pi-star/MMDVM-$(date -u +'%Y-%m-%d').log"
+LOG_MMDVM_PREVIOUS="/var/log/pi-star/MMDVM-$(date -u --date="yesterday" +'%Y-%m-%d').log"
+LOG_SEARCH_STRING="MMDVM protocol version"
+MODEM_FIRMWARE=""
+LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_NOW" | tail -1)
+if [ -z "$LOG_LINE" ]; then
+    LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_PREVIOUS" | tail -1)
+fi
+if [ -n "$LOG_LINE" ]; then
+    if [[ "$LOG_LINE" == *"DVMEGA"* ]]; then
+        MODEM_FIRMWARE=$(echo "$LOG_LINE" | cut -c 67-81)
+    elif [[ "$LOG_LINE" == *"description: MMDVM_HS"* ]]; then
+        MODEM_FIRMWARE="MMDVM_HS:$(echo "$LOG_LINE" | cut -c 85-92 | sed 's/^v//')"
+    elif [[ "$LOG_LINE" == *"description: MMDVM "* ]]; then
+        MODEM_FIRMWARE="MMDVM:$(echo "$LOG_LINE" | cut -c 74-81)"
+    elif [[ "$LOG_LINE" == *"description: ZUMspot "* ]]; then
+        MODEM_FIRMWARE="ZUMspot:$(echo "$LOG_LINE" | cut -c 84-95 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: MMDVM_MDO "* ]]; then
+        MODEM_FIRMWARE="MMDVM_MDO:$(echo "$LOG_LINE" | cut -c 86-97 | awk '{print $1}' | sed 's/^v//')"
+    elif [[ "$LOG_LINE" == *"description: ZUMspot-"* ]]; then
+        MODEM_FIRMWARE="ZUMspot:$(echo "$LOG_LINE" | cut -c 76-87 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: MMDVM_HS_Hat-"* ]]; then
+        MODEM_FIRMWARE="MMDVM_HS-Hat:$(echo "$LOG_LINE" | cut -c 81-92 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: MMDVM_HS_Dual_Hat-"* ]]; then
+        MODEM_FIRMWARE="MMDVM_HS-Dual_Hat:$(echo "$LOG_LINE" | cut -c 86-97 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: D2RG_MMDVM_HS-"* ]]; then
+        MODEM_FIRMWARE="HS_Hat:$(echo "$LOG_LINE" | cut -c 82-93 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: MMDVM_HS-"* ]]; then
+        MODEM_FIRMWARE="MMDVM_HS:$(echo "$LOG_LINE" | cut -c 77-88 | awk '{print $1}' | sed 's/^v//')"
+    elif [[ "$LOG_LINE" == *"description: Nano_hotSPOT-"* ]]; then
+        MODEM_FIRMWARE="Nano_hotSPOT:$(echo "$LOG_LINE" | cut -c 81-92 | awk '{print $1}' | sed 's/^v//')"
+    elif [[ "$LOG_LINE" == *"description: Nano-Spot-"* ]]; then
+        MODEM_FIRMWARE="NanoSpot:$(echo "$LOG_LINE" | cut -c 78-89 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: Nano_DV-"* ]]; then
+        MODEM_FIRMWARE="NanoDV:$(echo "$LOG_LINE" | cut -c 76-87 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: OpenGD77 Hotspot"* ]]; then
+        MODEM_FIRMWARE="OpenGD77_HS:$(echo "$LOG_LINE" | cut -c 84-95 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: OpenGD77_HS "* ]]; then
+        MODEM_FIRMWARE="OpenGD77_HS:$(echo "$LOG_LINE" | cut -c 80-91 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: SkyBridge-"* ]]; then
+        MODEM_FIRMWARE="SkyBridge:$(echo "$LOG_LINE" | cut -c 78-89 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: EuroNode-"* ]]; then
+        MODEM_FIRMWARE="EuroNode:$(echo "$LOG_LINE" | cut -c 78-89 | awk '{print $1}')"
+    elif [[ "$LOG_LINE" == *"description: RRU-rf-board-"* ]]; then
+        MODEM_FIRMWARE="RRU-RF-Board:$(echo "$LOG_LINE" | cut -c 81-100 | awk '{print $1}')"
+    fi
+fi
+if ! grep -w 'ModemFW' /etc/pistar-release > /dev/null; then
+    sed -i "/ModemType = /a ModemFW = ${MODEM_FIRMWARE}" /etc/pistar-release
+else
+    sed -i "/ModemFW =/c ModemFW = ${MODEM_FIRMWARE}" /etc/pistar-release
 fi
 
 # add / update WPSD version hash to /etc/pistar-release
