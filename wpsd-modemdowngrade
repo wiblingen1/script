@@ -440,6 +440,7 @@ else
 	if $flash_successful; then
   	    # reset the fw version # in the mmdvmhost logs
   	    sed -i '/MMDVM protocol version: 1, description:/d; /MMDVM protocol version: 2, description:/d' /var/log/pi-star/MMDVM-*.log  >/dev/null 2>&1
+	    /usr/local/sbin/.wpsd-sys-cache >/dev/null 2>&1
   	    # re-nit!
   	    systemctl start mmdvmhost.service >/dev/null 2>&1
   	    systemctl start mmdvmhost.timer >/dev/null 2>&1
