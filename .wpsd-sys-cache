@@ -186,8 +186,12 @@ if [ -z "$LOG_LINE" ]; then
     LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_PREVIOUS" | tail -1)
 fi
 if [ -n "$LOG_LINE" ]; then
+    # Extract the modem name and version directly from the description
     if [[ "$LOG_LINE" =~ description:\ ([^ ]+)-([^\ ]+) ]]; then
         MODEM_FIRMWARE="${BASH_REMATCH[1]}-${BASH_REMATCH[2]}"
+    # Handle DVMEGA format
+    elif [[ "$LOG_LINE" =~ description:\ (DVMEGA\ ([^ ]+)) ]]; then
+        MODEM_FIRMWARE="DVMEGA-v${BASH_REMATCH[2]}"
     fi
 fi
 MODEM_TCXO_FREQ=""
