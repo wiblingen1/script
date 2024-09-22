@@ -46,7 +46,7 @@ check_key_existence() {
     local missing_keys=0
 
     if [ -f "$INI_FILE" ]; then
-        for key in ircddbgateway MMDVMHost kernel Hardware Platform iface ModemMode ModemType ModemFW ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
+        for key in ircddbgateway MMDVMHost kernel Hardware Platform iface ModemMode ModemType ModemFW TCXO ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
             if ! grep -qE "^${key} =" "$INI_FILE"; then
                 missing_keys=1
                 break
@@ -71,6 +71,7 @@ iface =
 ModemMode = 
 ModemType = 
 ModemFW =
+TCXO =
 ControllerType = 
 ProcNum = 
 UUID = 
@@ -175,7 +176,7 @@ if [ -f '/etc/dstar-radio.dstarrepeater' ]; then
     fi
 fi
 
-# modem fw
+# modem fw & tcxo
 LOG_MMDVM_NOW="/var/log/pi-star/MMDVM-$(date -u +'%Y-%m-%d').log"
 LOG_MMDVM_PREVIOUS="/var/log/pi-star/MMDVM-$(date -u --date="yesterday" +'%Y-%m-%d').log"
 LOG_SEARCH_STRING="MMDVM protocol version"
@@ -207,10 +208,24 @@ if [ -n "$LOG_LINE" ]; then
         MODEM_FIRMWARE="RRU-RF-Board:$(echo "$LOG_LINE" | cut -c 81-100 | awk '{print $1}')"
     fi
 fi
+MODEM_TCXO_FREQ=""
+LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_NOW" | tail -1)
+if [ -z "$LOG_LINE" ]; then
+    LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_PREVIOUS" | tail -1)
+fi
+if [[ "$LOG_LINE" == *"MHz"* ]]; then
+    MODEM_TCXO_FREQ=$(echo "$LOG_LINE" | grep -oP '\d{2}\.\d{3,4}\s?MHz')
+    MODEM_TCXO_FREQ=$(echo "$MODEM_TCXO_FREQ" | sed 's/MHz/ MHz/')
+fi
 if ! grep -w 'ModemFW' /etc/pistar-release > /dev/null; then
     sed -i "/ModemType = /a ModemFW = ${MODEM_FIRMWARE}" /etc/pistar-release
 else
     sed -i "/ModemFW =/c ModemFW = ${MODEM_FIRMWARE}" /etc/pistar-release
+fi
+if ! grep -w 'TCXO' /etc/pistar-release > /dev/null; then
+    sed -i "/ModemFW = /a TCXO = ${MODEM_TCXO_FREQ}" /etc/pistar-release
+else
+    sed -i "/TCXO =/c TCXO = ${MODEM_TCXO_FREQ}" /etc/pistar-release
 fi
 
 # add / update WPSD version hash to /etc/pistar-release
