@@ -181,15 +181,13 @@ LOG_MMDVM_NOW="/var/log/pi-star/MMDVM-$(date -u +'%Y-%m-%d').log"
 LOG_MMDVM_PREVIOUS="/var/log/pi-star/MMDVM-$(date -u --date="yesterday" +'%Y-%m-%d').log"
 LOG_SEARCH_STRING="MMDVM protocol version"
 MODEM_FIRMWARE=""
-# Search for the log line in today's log, if not found search in yesterday's log
 LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_NOW" | tail -1)
 if [ -z "$LOG_LINE" ]; then
     LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_PREVIOUS" | tail -1)
 fi
-# Check if the log line is found
 if [ -n "$LOG_LINE" ]; then
     # Extract the modem name and version directly from the description
-    if [[ "$LOG_LINE" =~ description:\ ([^ ]+)-([^\ ]+) ]]; then
+    if [[ "$LOG_LINE" =~ description:\ ([^ ]+)-v?([0-9.]+) ]]; then
         MODEM_FIRMWARE="${BASH_REMATCH[1]}-v.${BASH_REMATCH[2]}"
     # Handle DVMEGA format
     elif [[ "$LOG_LINE" =~ description:\ (DVMEGA\ ([^ ]+)) ]]; then
