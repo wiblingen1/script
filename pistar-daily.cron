@@ -337,6 +337,8 @@ chmod 775 /var/log/pi-star > /dev/null 2>&1
 # run any slipstream tasks
 bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
 
+/usr/local/sbin/.wpsd-sys-cache >/dev/null 2>&1
+
 process_log_file > /dev/null 2>&1
 
 # Start all the services...

@@ -412,6 +412,8 @@ perform_update() {
     # run any slipstream tasks
     bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
 
+    bash /usr/local/sbin/.wpsd-sys-cache >/dev/null 2>&1
+
     echo -e "  ${TICK} Done!" # maint. complete
 
     echo -e "\n${BULL} Starting WPSD Services. Please wait..."
