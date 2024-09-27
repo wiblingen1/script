@@ -64,7 +64,7 @@ $pocsagEnable = $mmdvmhost_data['POCSAG']['Enable'];
 $m17Enable = $mmdvmhost_data['M17']['Enable'];
 $fmEnable = $mmdvmhost_data['FM']['Enable'];
 $ax25Enable = $mmdvmhost_data['AX.25']['Enable'];
-if (file_exists('/etc/cron.daily/getstripped') || is_dir('/usr/local/etc/Nextion_Support/') || is_dir('/Nextion') || strpos(file_get_contents('/etc/mmdvmhost'), 'SendUserDataMask=0b00011110') !== false) {
+if (file_exists('/etc/cron.daily/getstripped') || is_dir('/usr/local/etc/Nextion_Support/') || is_dir('/Nextion') !== false) {
     $TGIFspot = "1";
 } else {
     $TGIFspot = "0";
