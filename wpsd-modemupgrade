@@ -20,9 +20,9 @@ source /usr/local/sbin/.wpsd-common-funcs
 OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
 hardware=$(grep -i hardware /etc/pistar-release | awk -F "= " '{print $2}')
 
-MMDVM_HS_VERSION=$(awk -F "=" '/mmdvm_hs_version/ {print $2}' /usr/local/bin/firmware/versions.txt)
-RPT_VERSION=$(awk -F "=" '/rpt_version/ {print $2}' /usr/local/bin/firmware/versions.txt)
-DVMEGA_VERSION=$(awk -F "=" '/dvmega_version/ {print $2}' /usr/local/bin/firmware/versions.txt)
+MMDVM_HS_VERSION=$(awk -F "=" '/mmdvm_hs/ {print $2}' /usr/local/bin/firmware/versions.txt)
+RPT_VERSION=$(awk -F "=" '/rpt/ {print $2}' /usr/local/bin/firmware/versions.txt)
+DVMEGA_VERSION=$(awk -F "=" '/dvmega/ {print $2}' /usr/local/bin/firmware/versions.txt)
 
 # Check CLI arguments and determine the modem type and its respective FW file...
 if [ "$1" ]; then
@@ -203,6 +203,12 @@ if [ "$1" ]; then
       stmVer="0.7"
       VERSION=${RPT_VERSION}
       ;;
+    rpt_builder_mtr2k_v3)
+      firmware_file="Repeater-Builder_MTR2K_v3.bin"
+      MMDVM_PI=true
+      stmVer="0.5"
+      VERSION=${RPT_VERSION}
+      ;;
     list|-l|--list)
       echo "hs_hat"
       echo "hs_hat-12mhz"
@@ -234,6 +240,7 @@ if [ "$1" ]; then
       echo "rpt_builder_v3"
       echo "rpt_builder_v4"
       echo "rpt_builder_v5"
+      echo "rpt_builder_mtr2k_v3"
       exit 0
       ;;
     *)
@@ -254,11 +261,10 @@ pin21=$((getGPIOpinMaps + 21))
 if [ -z "$1" ]
 then
   clear
+  echo "This utility is used to flash/upgrade your hotspot/repeater modem."
   if [[ "${EXT_CALL}" != "1" ]]; then
       echo -e "${NOTE} ${COL_LIGHT_YELLOW}Note:${COL_NC} No modem specified!"
   fi
-  echo ""
-  echo "This utility is used to flash/upgrade your hotspot modem/radio."
   echo "To use the command, you need to specify your modem type..."
   echo "Please choose from the list below, and run this command again:"
   echo "--------------------------------------------------------------------------------------------------"
@@ -279,7 +285,7 @@ then
   echo "  DVMega - Shield for Arduino Mega USB (ttyUSB0):	wpsd-modemupgrade dvmega_usb_mega"
   echo "  DVMega - EuroNode hotspots (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade euronode"
   echo ""
-  echo "  SkyBridge board/hotspots (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade skybridge"
+  echo "  SkyBridge hotspots (14.7456MHz TCXO) GPIO:		wpsd-modemupgrade skybridge"
   echo "  NANO_DV NPi GPIO by BG4TGO:                           wpsd-modemupgrade nanodv_npi"
   echo "  NANO_DV USB by BG4TG:                                 wpsd-modemupgrade nanodb_usb"
   echo "  Nano_hotSPOT by BI7JTA (14.7456MHz TCXO) GPIO:	wpsd-modemupgrade hs_hat_nano_hotspot"
@@ -297,9 +303,10 @@ then
   echo "  Repeater - MMDVM_RPT_Hat 0.3 GPIO:			wpsd-modemupgrade rpt_mmdvm_hat-0.3"
   echo "  Repeater - ZUM Radio MMDVM for Pi v0.9 GPIO:		wpsd-modemupgrade rpt_zum-0.9"
   echo "  Repeater - ZUM Radio MMDVM for Pi v1.0 GPIO:		wpsd-modemupgrade rpt_zum-1.0"
-  echo "  Repeater - Repeater Builder STM32_DVM_PiHat V3 GPIO:	wpsd-modemupgrade rpt_builder_v3"
-  echo "  Repeater - Repeater Builder STM32_DVM_PiHat V4 GPIO:	wpsd-modemupgrade rpt_builder_v4"
-  echo "  Repeater - Repeater Builder STM32_DVM_PiHat V5 GPIO:	wpsd-modemupgrade rpt_builder_v5"
+  echo "  Repeater - Repeater Builder STM32_DVM v3 GPIO:	wpsd-modemupgrade rpt_builder_v3"
+  echo "  Repeater - Repeater Builder STM32_DVM v4 GPIO:	wpsd-modemupgrade rpt_builder_v4"
+  echo "  Repeater - Repeater Builder STM32_DVM v5 GPIO:	wpsd-modemupgrade rpt_builder_v5"
+  echo "  Repeater - Repeater Builder STM32_DVM_MTR2K v3 GPIO:	wpsd-modemupgrade rpt_builder_mtr2k_v3"
   echo "--------------------------------------------------------------------------------------------------"
   echo "IMPORTANT: Please note, that we are not firmware developers, and we offer no support for firmware."
   echo "--------------------------------------------------------------------------------------------------"
@@ -329,10 +336,10 @@ fi
 #
 if [ "$1" ] ; then
   # Get the latest FW version
-  echo -e "    ${INFO} Found version: ${COL_LIGHT_BLUE}${BOLD}${VERSION}${COL_NC}"
+  echo -e "    ${INFO} Latest firmware version: ${COL_LIGHT_BLUE}${BOLD}${VERSION}${COL_NC}"
 
   if [[ "$NP" != "1" ]]; then
-    read -n 1 -s -r -p "Press any key to flash '${1}' firmware version (${VERSION}) to this modem, or 'q' to abort... "
+    read -n 1 -s -r -p "Press any key to flash '${1}' firmware version ${VERSION} to this modem, or 'q' to abort... "
     echo ""
     echo ""
 
@@ -348,7 +355,7 @@ if [ "$1" ] ; then
     local firmware_file="$2"  # Pass the firmware_file as an argument
 
     # Verify that the file exists
-    echo -e "${BULL} Checking '$1' firmware version ($VERSION)..."
+    echo -e "${BULL} Checking '$1' firmware version $VERSION..."
     if [[ -f "/usr/local/bin/firmware/${firmware_file}" ]]; then
       echo -e "    ${COL_BRIGHT_GREEN}${TICK} Complete."
     else
@@ -359,7 +366,7 @@ if [ "$1" ] ; then
 
     # MD5 checksum validation setup
     calculated_md5=$(md5sum "/usr/local/bin/firmware/${firmware_file}" | awk '{print $1}')
-    expected_md5=$(grep "${firmware_file}" "/usr/local/bin/firmware/md5sum.txt" | awk '{print $4}')
+    expected_md5=$(grep "${firmware_file}" "/usr/local/bin/firmware/MD5SUMS.txt" | awk '{print $1}')
     echo -e "\n${BULL} Validating firmware file integrity..."
     sleep 1
     if [ -z "$expected_md5" ]; then # not in file!
