@@ -29,22 +29,22 @@ if [ "$1" ]; then
   case $1 in
     # Common HS_HATs
     hs_hat)
-      firmware_file="hs_hat.bin"
+      firmware_file="hs_hat_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_hat-12mhz)
-      firmware_file="hs_hat-12mhz.bin"
+      firmware_file="hs_hat-12mhz_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_dual_hat)
-      firmware_file="hs_dual_hat.bin"
+      firmware_file="hs_dual_hat_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_dual_hat-12mhz)
-      firmware_file="hs_dual_hat-12mhz.bin"
+      firmware_file="hs_dual_hat-12mhz_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
@@ -55,24 +55,24 @@ if [ "$1" ]; then
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_hat_generic)
-      firmware_file="hs_hat_generic.bin"
+      firmware_file="generic_gpio_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_hat_generic_duplex)
-      firmware_file="hs_hat_generic_duplex.bin"
+      firmware_file="generic_duplex_gpio_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_hat_generic_duplex-usb)
-      firmware_file="hs_hat_generic_duplex-usb.bin"
+      firmware_file="generic_duplex_usb_fw.bin"
       USB_MODEM=true
       DEV_USB_SER="/dev/ttyACM0"
       VERSION=${MMDVM_HS_VERSION}
       ;;
     # more obscure stuff - not as common anymore
     hs_hat_nano_hotspot)
-      firmware_file="hs_hat_nano_hotspot.bin"
+      firmware_file="nano_hotspot_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
@@ -82,50 +82,50 @@ if [ "$1" ]; then
       VERSION=${MMDVM_HS_VERSION}
       ;;
     nanodv_npi)
-      firmware_file="nanodv_npi.bin"
+      firmware_file="nanodv_npi_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     nanodv_usb)
-      firmware_file="nanodv_usb.bin"
+      firmware_file="nanodv_usb_fw.bin"
       USB_MODEM=true
       DEV_USB_SER="/dev/ttyACM0"
       VERSION=${MMDVM_HS_VERSION}
       ;;
     # Vendor MMDVM_HS / ZUMSpot
     euronode)
-      firmware_file="euronode.bin"
+      firmware_file="euronode_pi_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_hat_lonestar-usb)
-      firmware_file="hs_hat_lonestar-usb.bin"
+      firmware_file="lonestar_usb_fw.bin"
       USB_MODEM=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     skybridge)
-      firmware_file="skybridge.bin"
+      firmware_file="skybridge_rpi_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     zum_rpi)
-      firmware_file="zum_rpi.bin"
+      firmware_file="zumspot_rpi_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     zum_rpi-duplex)
-      firmware_file="zum_rpi-duplex.bin"
+      firmware_file="zumspot_duplex_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     zum_usb)
-      firmware_file="zum_usb.bin"
+      firmware_file="zumspot_usb_fw.bin"
       USB_MODEM=true
       DEV_USB_SER="/dev/ttyACM0"
       VERSION=${MMDVM_HS_VERSION}
       ;;
     zum_libre)
-      firmware_file="zum_libre.bin"
+      firmware_file="zumspot_libre_fw.bin"
       MMDVM_HS_GPIO=true
       DEV_USB_SER="/dev/ttyACM0"
       VERSION=${MMDVM_HS_VERSION}
