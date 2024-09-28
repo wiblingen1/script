@@ -186,19 +186,19 @@ if [ "$1" ]; then
       VERSION=${RPT_VERSION}
       ;;
     rpt_builder_v3)
-      firmware_file="Repeater-Builder_V3.bin"
+      firmware_file="Repeater-Builder_v3.bin"
       MMDVM_PI=true
       stmVer="0.5"
       VERSION=${RPT_VERSION}
       ;;
     rpt_builder_v4)
-      firmware_file="Repeater-Builder_V4.bin"
+      firmware_file="Repeater-Builder_v4.bin"
       MMDVM_PI=true
       stmVer="0.5"
       VERSION=${RPT_VERSION}
       ;;
     rpt_builder_v5)
-      firmware_file="Repeater-Builder_V5.bin"
+      firmware_file="Repeater-Builder_v5.bin"
       MMDVM_PI=true
       stmVer="0.7"
       VERSION=${RPT_VERSION}
