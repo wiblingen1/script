@@ -18,13 +18,9 @@ if [ -z "$1" ]
 then
   clear
   echo ""
-  echo "This utility is used to flash custom firmware to your Radio/Modem."
+  echo "This utility is used to flash custom firmware to your MMDVM_HS Pi Hat-style Radio/Modem."
   echo ""
-  echo "Pre-built and always up-to-date firmware binaries can be downloaded from:"
-  echo ""
-  echo "   <https://wpsd-swd.w0chp.net/WPSD-SWD/MMDVM_HS-Firmware_Latest-Compiled>"
-  echo ""
-  echo "Use this script and the custom firmware at your own risk!"
+  echo "Use this script and your custom firmware at your own risk!"
   echo ""
   echo "Usage: $(basename ${0}) <firmware.bin>"
   echo ""
@@ -39,6 +35,11 @@ fi
 
 script_name=$(basename "$0")
 UAstr="WPSD Modem FW Update Invocation (client side: $script_name)"
+
+# gpio front/back compat. for pi5 and older Pi SBCs; since Pi5 has its own GPIO chip (gpiochip4 [pinctrl-rp1])
+getGPIOpinMaps=$(ls -al /sys/class/gpio/gpiochip* | sed -n "s/.*gpiochip\([0-9]*\).*/\1/p" | head -n 1)
+pin20=$((getGPIOpinMaps + 20))
+pin21=$((getGPIOpinMaps + 21))
 
 #
 # OK we know what the modem is, let get the firmware string from the log...
@@ -95,6 +96,9 @@ then
 	STM32FLASH="./STM32F10X_Lib/utils/macosx/stm32flash"
     fi
 
+    # Stop MMDVMHost process to free serial port
+    wpsd-services fullstop
+
     # Arch GPIO handling
     if [[ ${hardware} == "NanoPi" ]]; then
       echo 3 > /sys/class/gpio/export
@@ -102,9 +106,6 @@ then
       echo 1 > /sys/class/gpio/gpio3/value
       echo 3 > /sys/class/gpio/unexport
     fi
-
-    # Stop MMDVMHost process to free serial port
-    wpsd-services fullstop
 
     # NanoPI GPIO handling
     if [[ ${hardware} == "NanoPi" ]]; then
@@ -117,7 +118,8 @@ then
     fi
 
     # Upload the firmware
-    eval sudo $STM32FLASH -v -w "$1" -g 0x0 -R -i 20,-21,21:-20,21 /dev/ttyAMA0
+    $STM32FLASH -k /dev/ttyAMA0 >/dev/null 2>&1 # try to disable write protection (doesn't always work on some annoying Chinesium locked modems)
+    eval sudo $STM32FLASH -v -w "$1" -g 0x0 -R -i ${pin20},-${pin21},${pin21}:-${pin20},${pin21} /dev/ttyAMA0
     echo ""
 
     rm -rf STM32F10X_Lib
