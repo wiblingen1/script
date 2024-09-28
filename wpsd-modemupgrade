@@ -336,7 +336,7 @@ fi
 #
 if [ "$1" ] ; then
   # Get the latest FW version
-  echo -e "    ${INFO} Latest firmware version: ${COL_LIGHT_BLUE}${BOLD}${VERSION}${COL_NC}"
+  echo -e "    ${INFO} Latest firmware version: ${COL_LIGHT_BLUE}${BOLD}${VERSION}${COL_NC}\n"
 
   if [[ "$NP" != "1" ]]; then
     read -n 1 -s -r -p "Press any key to flash '${1}' firmware version ${VERSION} to this modem, or 'q' to abort... "
