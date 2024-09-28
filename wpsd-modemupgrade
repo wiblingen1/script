@@ -29,22 +29,22 @@ if [ "$1" ]; then
   case $1 in
     # Common HS_HATs
     hs_hat)
-      firmware_file="hs_hat_fw.bin"
+      firmware_file="mmdvm_hs_hat_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_hat-12mhz)
-      firmware_file="hs_hat-12mhz_fw.bin"
+      firmware_file="mmdvm_hs_hat-12mhz_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_dual_hat)
-      firmware_file="hs_dual_hat_fw.bin"
+      firmware_file="mmdvm_hs_dual_hat_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
     hs_dual_hat-12mhz)
-      firmware_file="hs_dual_hat-12mhz_fw.bin"
+      firmware_file="mmdvm_hs_dual_hat-12mhz_fw.bin"
       MMDVM_HS_GPIO=true
       VERSION=${MMDVM_HS_VERSION}
       ;;
