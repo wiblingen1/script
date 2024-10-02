@@ -177,22 +177,23 @@ if [ -f '/etc/dstar-radio.dstarrepeater' ]; then
 fi
 
 # modem fw & tcxo
-# modem fw & tcxo
 LOG_MMDVM_NOW="/var/log/pi-star/MMDVM-$(date -u +'%Y-%m-%d').log"
 LOG_MMDVM_PREVIOUS="/var/log/pi-star/MMDVM-$(date -u --date="yesterday" +'%Y-%m-%d').log"
 LOG_SEARCH_STRING="MMDVM protocol version"
 MODEM_FIRMWARE=""
-
 # Loop until the search string is found in either today's or yesterday's log
 LOG_LINE=""
-while [ -z "$LOG_LINE" ]; do
+attempts=0
+max_attempts=10
+while [ -z "$LOG_LINE" ] && [ $attempts -lt $max_attempts ]; do
     LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_NOW" | tail -1)
     if [ -z "$LOG_LINE" ]; then
         LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_PREVIOUS" | tail -1)
     fi
     if [ -z "$LOG_LINE" ]; then
-        sleep 0.5
+        sleep 1
     fi
+    attempts=$((attempts + 1))
 done
 # Extract the modem name and version directly from the description
 if [[ "$LOG_LINE" =~ description:\ ([^ ]+)-v?([0-9.]+) ]]; then
@@ -205,17 +206,7 @@ elif [[ "$LOG_LINE" =~ description:\ (MMDVM\ ([0-9]+)) ]]; then
     MODEM_FIRMWARE="MMDVM-v.${BASH_REMATCH[2]}"
 fi
 MODEM_TCXO_FREQ=""
-# Loop again for TCXO frequency until found
-LOG_LINE=""
-while [ -z "$LOG_LINE" ]; do
-    LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_NOW" | tail -1)
-    if [ -z "$LOG_LINE" ]; then
-        LOG_LINE=$(grep "$LOG_SEARCH_STRING" "$LOG_MMDVM_PREVIOUS" | tail -1)
-    fi
-    if [ -z "$LOG_LINE" ]; then
-        sleep 0.5
-    fi
-done
+# TCXO frequency
 if [[ "$LOG_LINE" == *"MHz"* ]]; then
     MODEM_TCXO_FREQ=$(echo "$LOG_LINE" | grep -oP '\d{2}\.\d{3,4}\s?MHz')
     MODEM_TCXO_FREQ=$(echo "$MODEM_TCXO_FREQ" | sed 's/MHz/ MHz/')
