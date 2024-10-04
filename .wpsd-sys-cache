@@ -30,7 +30,7 @@ check_empty_keys() {
     local empty_keys=0
 
     if [ -f "$INI_FILE" ]; then
-        for key in ircddbgateway MMDVMHost kernel Hardware Platform iface ModemMode ModemType ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
+        for key in ircddbgateway MMDVMHost kernel Hardware Platform iface ModemMode ModemType ModemFW TXCO ControllerType ProcNum UUID ConfUpdReqd CallLookupProvider Callsign WPSD_Ver; do
             if ! grep -qE "^${key} = .+" "$INI_FILE"; then
                 empty_keys=1
                 break
@@ -246,5 +246,5 @@ fi
 
 # cleanup last line..
 #sed -i '${/^$/d}' /etc/pistar-release
-/usr/local/bin/.wpsd-diags  > /dev/null 2>&1
+/usr/local/sbin/.wpsd-diags  > /dev/null 2>&1
 
