@@ -53,7 +53,6 @@ spinner() {
 # common vars
 osName=$( /usr/bin/lsb_release -cs )
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
-UUID=$( grep "UUID" /etc/pistar-release | awk '{print $3}' )
 OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
 SUPPORTING_FILES_REPO="https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Helpers/raw/branch/master/supporting-files"
 CONN_CHECK_URI="https://wpsd-swd.w0chp.net/api/v1/repos/WPSD-SWD/WPSD-Scripts/branches"
