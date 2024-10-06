@@ -63,7 +63,7 @@ dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git 
 uuidStr=$(egrep 'UUID' /etc/pistar-release | awk {'print $3'})
 hwDeetz="$(/usr/local/sbin/.wpsd-platform-detect) ( $(uname -r) )"
 uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
-uaStrSF="WPSD-SuppFiles Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]"
+uaStrSF="WPSD-SuppFiles Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]"
 armbian_env_file="/boot/armbianEnv.txt"
 rc_local_file="/etc/rc.local"
 cronMins=$(shuf -i 0-59 -n 1)
