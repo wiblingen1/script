@@ -46,7 +46,7 @@ git_checkUpdateRequired() {
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
 
     # Git check / update function
-    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'})
+    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git ls-remote --heads ${gitRemoteURL} | grep ${gitBranch} | awk {'print $1'})
     gitStatusLocal=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git log ${gitBranch} --pretty=tformat:"%H" -1)
 
     # Return the output
@@ -74,26 +74,26 @@ git_update() {
         if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
 	    cd ${gitFolder}
 	    git stash > /dev/null 2>&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
-	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} > /dev/null 2>&1
+	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} > /dev/null 2>&1
 	    git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2>&1 # restore user config files from stash
 	    git stash clear > /dev/null 2>&1 # housekeeping
 	    echo -e "  ${TICK} Updates installed!"
 	else
 	    if [[ ${gitFolder} == "/usr/local/sbin" ]]; then
 		cd ${gitFolder}
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch > /dev/null 2>&1
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git fetch > /dev/null 2>&1
 		if [ "$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git diff --name-only origin/master 2>/dev/null | grep wpsd-update 2>/dev/null)" = "wpsd-update" ]; then
 		    # New updater version - Self-update and re-exec:
 		    echo -e "\n  ${COL_LIGHT_BLUE}${INFO} New version of the Updater available. Performing self-update..."
-		    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
+		    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
 		    echo -e "  ${TICK} Updates installed!"
 		    if [[ $(git_checkUpdateRequired ${gitFolder}) -gt 0 ]]; then
 			echo -e "  ${NOTE} Forcing update..."
 			if [ -f ${gitFolder}/pistar-upnp.service ]; then
 			    rm -f ${gitFolder}/pistar-upnp.service
 			fi
-			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
-			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
+			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
+			env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
 		    fi
 		    echo -e "\n  ${COL_LIGHT_BLUE}${INFO} Relaunching Updater with the new version in 3 seconds..."
 		    sleep 4
@@ -102,14 +102,14 @@ git_update() {
 		fi
 	    fi
             if [[ ${gitFolder} == "/opt/cast" ]]; then # dvmega cast logic
-                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master > /dev/null 2>&1
-                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
-                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master > /dev/null 2>&1
+                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master > /dev/null 2>&1
+                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
+                env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master > /dev/null 2>&1
 	    fi
 	    if [[ ${gitFolder} == "/usr/local/bin" ]]; then
 		# Update the Binaries
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master > /dev/null 2>&1
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin master > /dev/null 2>&1
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master > /dev/null 2>&1
 	    fi
 	    echo -e "  ${TICK} Updates installed!"
         fi
@@ -121,9 +121,9 @@ git_update() {
 	    # Updates were not successful, reverting to original files...
 	    # WPSD has more than one branch. So depending on what W0CHP branch the user has installed, pull that branch.
 	    if [[ ${gitFolder} == "/var/www/dashboard" ]]; then
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/${dash_branch}
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/${dash_branch}
 	    else
-		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
+		env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git reset --hard origin/master
 	    fi
 	fi
     else
@@ -402,7 +402,7 @@ perform_update() {
     gitFolder="/var/www/dashboard"
     gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
-    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update Version Cacher (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${hwDeetz}] [${osName}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
+    gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update Version Cacher (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
     echo ${gitStatusRemote} > /etc/.WPSD_remote_version
 
     # log file perms
