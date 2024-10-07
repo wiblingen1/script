@@ -196,6 +196,7 @@ while [ -z "$LOG_LINE" ] && [ $attempts -lt $max_attempts ]; do
     attempts=$((attempts + 1))
 done
 # Extract the modem name and version directly from the description
+MODEM_FIRMWARE=""
 if [[ "$LOG_LINE" =~ description:\ ([^ ]+)-v?([0-9.]+) ]]; then
     MODEM_FIRMWARE="${BASH_REMATCH[1]}-v.${BASH_REMATCH[2]}"
 # Handle DVMEGA format
