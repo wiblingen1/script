@@ -23,8 +23,6 @@ script_name=$(basename "$0")
 
 source /usr/local/sbin/.wpsd-common-funcs
 
-mount -o remount,rw / # for shits and giggles
-
 # connectivity check
 conn_check() {
     echo -e "\n${BULL} Checking connectivity to the WPSD Update System..."
