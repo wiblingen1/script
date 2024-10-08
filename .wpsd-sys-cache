@@ -197,10 +197,8 @@ while [ -z "$LOG_LINE" ] && [ $attempts -lt $max_attempts ]; do
 done
 # Extract the modem name and version directly from the description
 MODEM_FIRMWARE=""
-if [[ "$LOG_LINE" =~ description:\ ([^ ]+)-v?([0-9.]+) ]]; then
-    MODEM_FIRMWARE="${BASH_REMATCH[1]}-v.${BASH_REMATCH[2]}"
 # Handle DVMEGA format
-elif [[ "$LOG_LINE" =~ description:\ (DVMEGA\ ([^ ]+)) ]]; then
+if [[ "$LOG_LINE" =~ description:\ (DVMEGA\ ([^ ]+)) ]]; then
     MODEM_FIRMWARE="DVMEGA-v.${BASH_REMATCH[2]}"
 # Handle MMDVM with version in parentheses
 elif [[ "$LOG_LINE" =~ description:\ (MMDVM\ ([0-9]+)) ]]; then
@@ -211,6 +209,9 @@ elif [[ "$LOG_LINE" =~ description:\ MMDVM\ ([^ ]+)\([0-9]+\)\ ([0-9]{8}) ]]; th
 # Handle OpenGD77 Hotspot format
 elif [[ "$LOG_LINE" =~ description:\ OpenGD77\ Hotspot\ v?([0-9.]+) ]]; then
     MODEM_FIRMWARE="OpenGD77_HS-v.${BASH_REMATCH[1]}"
+# all others (HATs, HS', etc)
+elif [[ "$LOG_LINE" =~ description:\ ([^ ]+)-v?([0-9.]+) ]]; then
+    MODEM_FIRMWARE="${BASH_REMATCH[1]}-v.${BASH_REMATCH[2]}"
 fi
 MODEM_TCXO_FREQ=""
 # TCXO frequency
