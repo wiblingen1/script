@@ -351,3 +351,4 @@ sed -i "/cron.daily/c ${cronMins} ${cronHours}  * * *   root    mount -o remount
 echo -e "\nDaily Cron job done!\n"
 
 exit 0
+
