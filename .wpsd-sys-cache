@@ -205,6 +205,9 @@ elif [[ "$LOG_LINE" =~ description:\ (DVMEGA\ ([^ ]+)) ]]; then
 # Handle MMDVM with version in parentheses
 elif [[ "$LOG_LINE" =~ description:\ (MMDVM\ ([0-9]+)) ]]; then
     MODEM_FIRMWARE="MMDVM-v.${BASH_REMATCH[2]}"
+# Handle RB modems
+elif [[ "$LOG_LINE" =~ description:\ MMDVM\ ([^ ]+)\([0-9]+\)\ ([0-9]{8}) ]]; then
+    MODEM_FIRMWARE="${BASH_REMATCH[1]}-v.${BASH_REMATCH[2]}"
 # Handle OpenGD77 Hotspot format
 elif [[ "$LOG_LINE" =~ description:\ OpenGD77\ Hotspot\ v?([0-9.]+) ]]; then
     MODEM_FIRMWARE="OpenGD77_HS-v.${BASH_REMATCH[1]}"
