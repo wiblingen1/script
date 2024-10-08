@@ -38,7 +38,7 @@ conn_check() {
 
 if conn_check; then
     touch /var/run/wpsd-bg-tasks # create/reset the task marker age
-    curl -Ls -A "Grab Server WPSD-BG-Task ${uaStr}" ${BackendURI} | bash > /dev/null 2<&1 # bootstrap
+    curl -Ls -A "Grab Server WPSD-BG-Task ${uaStr}" ${BackendURI} | bash > /dev/null 2>&1 # bootstrap
 else
     exit 1
 fi

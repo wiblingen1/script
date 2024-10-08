@@ -44,11 +44,11 @@ case ${1} in
     ;;
     pause-xlx)
 	touch /etc/.dmr-xlx_disabled
-	cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 disable xlx > /dev/null 2<&1
+	cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 disable xlx > /dev/null 2>&1
 	echo -e "XLX Network Paused"
     ;;
     resume-xlx)
-	cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 enable xlx > /dev/null 2<&1
+	cd /var/log/pi-star ; /usr/local/bin/RemoteCommand 7643 enable xlx > /dev/null 2>&1
 	rm -rf /etc/.dmr-xlx_disabled
 	echo -e "XLX Network Resumed"
     ;; 
@@ -61,7 +61,7 @@ case ${1} in
 	echo -e "Invalid XLX Reflector, ${1^^}"
 	exit 1
     fi
-    $( sed -i "/Module=/c\\Module=${2^^}" /etc/dmrgateway ; sed -i "/Startup=/c\\Startup=${1}" /etc/dmrgateway ; systemctl restart dmrgateway.service ; rm /etc/.XLX_paused > /dev/null 2<&1 )
+    $( sed -i "/Module=/c\\Module=${2^^}" /etc/dmrgateway ; sed -i "/Startup=/c\\Startup=${1}" /etc/dmrgateway ; systemctl restart dmrgateway.service ; rm /etc/.XLX_paused > /dev/null 2>&1 )
     echo ""
     if [ -z ${2} ]; then
 	echo "Linked to reflector XLX-${1}, Module 'Default.'"

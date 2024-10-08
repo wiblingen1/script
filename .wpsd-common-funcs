@@ -121,9 +121,9 @@ function process_log_file() {
 }
 
 function purge_log_files() { #obvs
-    wpsd-services fullstop > /dev/null 2<&1
-    rm -rf /var/log/pi-star/* > /dev/null 2<&1
-    wpsd-services start > /dev/null 2<&1
+    wpsd-services fullstop > /dev/null 2>&1
+    rm -rf /var/log/pi-star/* > /dev/null 2>&1
+    wpsd-services start > /dev/null 2>&1
 }
 
 isDVmegaCast() { #obvs

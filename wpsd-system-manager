@@ -13,7 +13,7 @@ CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 function DisableFirewall() {
     rm /usr/local/sbin/pistar-firewall
     ln -s /usr/local/sbin/pistar-firewall.disabled /usr/local/sbin/pistar-firewall
-    bash /usr/local/sbin/pistar-firewall > /dev/null 2<&1
+    bash /usr/local/sbin/pistar-firewall > /dev/null 2>&1
     if [ -t 1 ]; then
         echo "Firewall Disabled"
     fi
@@ -22,25 +22,25 @@ function DisableFirewall() {
 function EnableFirewall() {
     rm /usr/local/sbin/pistar-firewall
     ln -s /usr/local/sbin/pistar-firewall.enabled /usr/local/sbin/pistar-firewall
-    bash /usr/local/sbin/pistar-firewall > /dev/null 2<&1
+    bash /usr/local/sbin/pistar-firewall > /dev/null 2>&1
     if [ -t 1 ]; then
         echo "Firewall Enabled"
     fi
 }
 
 function DisableCron() {
-    systemctl stop cron.service > /dev/null 2<&1
-    systemctl disable cron.service > /dev/null 2<&1
-    systemctl mask cron.service > /dev/null 2<&1
+    systemctl stop cron.service > /dev/null 2>&1
+    systemctl disable cron.service > /dev/null 2>&1
+    systemctl mask cron.service > /dev/null 2>&1
     if [ -t 1 ]; then
         echo "Cron Disabled"
     fi
 }
 
 function EnableCron() {
-    systemctl unmask cron.service > /dev/null 2<&1
-    systemctl enable cron.service > /dev/null 2<&1
-    systemctl start cron.service > /dev/null 2<&1
+    systemctl unmask cron.service > /dev/null 2>&1
+    systemctl enable cron.service > /dev/null 2>&1
+    systemctl start cron.service > /dev/null 2>&1
     if [ -t 1 ]; then
         echo "Cron Enabled"
     fi
@@ -48,12 +48,12 @@ function EnableCron() {
 
 function DisableRemoteRF() {
     sed -i '/enabled=/c enabled=false' /etc/pistar-remote
-    systemctl stop pistar-remote.timer > /dev/null 2<&1
-    systemctl stop pistar-remote.service > /dev/null 2<&1
-    systemctl disable pistar-remote.service > /dev/null 2<&1
-    systemctl disable pistar-remote.timer > /dev/null 2<&1
-    systemctl mask pistar-remote.service > /dev/null 2<&1
-    systemctl mask pistar-remote.timer > /dev/null 2<&1
+    systemctl stop pistar-remote.timer > /dev/null 2>&1
+    systemctl stop pistar-remote.service > /dev/null 2>&1
+    systemctl disable pistar-remote.service > /dev/null 2>&1
+    systemctl disable pistar-remote.timer > /dev/null 2>&1
+    systemctl mask pistar-remote.service > /dev/null 2>&1
+    systemctl mask pistar-remote.timer > /dev/null 2>&1
     if [ -t 1 ]; then
         echo "RF Remote Commands Disabled"
     fi
@@ -62,35 +62,35 @@ function DisableRemoteRF() {
 function EnableRemoteRF() {
     sed -i "/callsign=/c callsign=${CALL}" /etc/pistar-remote
     sed -i '/enabled=/c enabled=true' /etc/pistar-remote
-    systemctl unmask pistar-remote.service > /dev/null 2<&1
-    systemctl unmask pistar-remote.timer > /dev/null 2<&1
-    systemctl enable pistar-remote.service > /dev/null 2<&1
-    systemctl start pistar-remote.service > /dev/null 2<&1
-    systemctl start pistar-remote.timer > /dev/null 2<&1
+    systemctl unmask pistar-remote.service > /dev/null 2>&1
+    systemctl unmask pistar-remote.timer > /dev/null 2>&1
+    systemctl enable pistar-remote.service > /dev/null 2>&1
+    systemctl start pistar-remote.service > /dev/null 2>&1
+    systemctl start pistar-remote.timer > /dev/null 2>&1
     if [ -t 1 ]; then
         echo "RF Remote Commands Enabled"
     fi
 }
 
 function DisableServiceWatchdog() {
-    systemctl disable pistar-watchdog.timer > /dev/null 2<&1
-    systemctl mask pistar-watchdog.timer > /dev/null 2<&1
-    systemctl disable pistar-watchdog.service > /dev/null 2<&1
-    systemctl mask pistar-watchdog.service > /dev/null 2<&1
-    systemctl stop pistar-watchdog.timer > /dev/null 2<&1
-    systemctl stop pistar-watchdog.service > /dev/null 2<&1
+    systemctl disable pistar-watchdog.timer > /dev/null 2>&1
+    systemctl mask pistar-watchdog.timer > /dev/null 2>&1
+    systemctl disable pistar-watchdog.service > /dev/null 2>&1
+    systemctl mask pistar-watchdog.service > /dev/null 2>&1
+    systemctl stop pistar-watchdog.timer > /dev/null 2>&1
+    systemctl stop pistar-watchdog.service > /dev/null 2>&1
     if [ -t 1 ]; then
         echo "WPSD Services Watchdog Disabled"
     fi
 }
 
 function EnableServiceWatchdog() {
-    systemctl unmask pistar-watchdog.service > /dev/null 2<&1
-    systemctl enable pistar-watchdog.service > /dev/null 2<&1
-    systemctl unmask pistar-watchdog.timer > /dev/null 2<&1
-    systemctl enable pistar-watchdog.timer > /dev/null 2<&1
-    systemctl start pistar-watchdog.service > /dev/null 2<&1
-    systemctl start pistar-watchdog.timer > /dev/null 2<&1
+    systemctl unmask pistar-watchdog.service > /dev/null 2>&1
+    systemctl enable pistar-watchdog.service > /dev/null 2>&1
+    systemctl unmask pistar-watchdog.timer > /dev/null 2>&1
+    systemctl enable pistar-watchdog.timer > /dev/null 2>&1
+    systemctl start pistar-watchdog.service > /dev/null 2>&1
+    systemctl start pistar-watchdog.timer > /dev/null 2>&1
     if [ -t 1 ]; then
         echo "WPSD Services Watchdog Enabled"
     fi
