@@ -215,7 +215,7 @@ fi
 MODEM_TCXO_FREQ=""
 # TCXO frequency
 if [[ "$LOG_LINE" == *"MHz"* ]]; then
-    MODEM_TCXO_FREQ=$(echo "$LOG_LINE" | grep -oP '\d{2}\.\d{3,4}\s?MHz')
+    MODEM_TCXO_FREQ=$(echo "$LOG_LINE" | grep -oP '\d{2,3}\.\d{3,4}\s?MHz')
     MODEM_TCXO_FREQ=$(echo "$MODEM_TCXO_FREQ" | sed 's/MHz/ MHz/')
 fi
 # Update the release file
