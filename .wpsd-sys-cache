@@ -200,6 +200,9 @@ MODEM_FIRMWARE=""
 # Handle DVMEGA format
 if [[ "$LOG_LINE" =~ description:\ (DVMEGA\ ([^ ]+)) ]]; then
     MODEM_FIRMWARE="DVMEGA-v.${BASH_REMATCH[2]}"
+# Handle MMDVM_MDO ADF7021 with version and date
+elif [[ "$LOG_LINE" =~ description:\ (MMDVM_MDO)\ ADF7021\ v([0-9.]+)\ ([0-9]{8}) ]]; then
+    MODEM_FIRMWARE="${BASH_REMATCH[1]}-v.${BASH_REMATCH[2]}_${BASH_REMATCH[3]}"
 # Handle MMDVM with version in parentheses
 elif [[ "$LOG_LINE" =~ description:\ (MMDVM\ ([0-9]+)) ]]; then
     MODEM_FIRMWARE="MMDVM-v.${BASH_REMATCH[2]}"
