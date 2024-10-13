@@ -60,7 +60,6 @@ hostFileURL="https://hostfiles.w0chp.net"
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
 uuidStr=$(egrep 'UUID' /etc/pistar-release | awk {'print $3'})
-hwDeetz="$(/usr/local/sbin/.wpsd-platform-detect) ( $(uname -r) )"
 uaStr="Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]"
 uaStrSF="WPSD-SuppFiles Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]"
 armbian_env_file="/boot/armbianEnv.txt"
