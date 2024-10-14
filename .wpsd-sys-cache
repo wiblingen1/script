@@ -4,6 +4,10 @@
 
 # release/config init:
 INI_FILE="/etc/pistar-release"
+if [ ! -f "$INI_FILE" ] ; then
+    touch "INI_FILE"
+fi
+
 PlatDet="/usr/local/sbin/.wpsd-platform-detect"
 # Function to perform the mappings
 map_hardware() {
