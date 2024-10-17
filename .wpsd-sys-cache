@@ -137,10 +137,10 @@ if [ "$callsign_count" -gt 1 ]; then
   sed -i '/^Callsign =/d' /etc/pistar-release
   echo "Callsign = ${CALL}" >> /etc/pistar-release
 fi
-if ! grep -q "$CALL" '/var/www/dashboard/config/ircddblocal.php' ; then
+CURRENT_CALLSIGN=$(grep -oP "\$callsign=\s*'\K[^']+" /var/www/dashboard/config/ircddblocal.php)
+if [ "$CALL" != "$CURRENT_CALLSIGN" ]; then
     sed -i "s/\(\$callsign=\).*/\1'$CALL';/" /var/www/dashboard/config/ircddblocal.php
 fi
-
 # Cache Modem Mode
 if grep -q 'Duplex=1' /etc/mmdvmhost ; then
     ModemMode="Duplex"
