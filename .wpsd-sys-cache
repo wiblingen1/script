@@ -125,25 +125,40 @@ fi
 GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
 sed -i "/UUID =/c\\UUID = ${GU}" /etc/pistar-release
 
-# migrate callsign info to last line of /etc/pistar-release
+# Migrate callsign info to the last line of /etc/pistar-release
 CALL=$( grep -E '^\s*Callsign=' /etc/mmdvmhost | head -1 | awk -F '=' '{print $2}' | xargs )
+
+# Check if the Callsign line exists in /etc/pistar-release
 if ! grep -w 'Callsign' /etc/pistar-release > /dev/null; then
     echo "Callsign = ${CALL}" >> /etc/pistar-release
 else
+    # Update the Callsign line if it's already present
     sed -i "/Callsign =/c Callsign = ${CALL}" /etc/pistar-release
 fi
+
+# Check for a specific callsign "M1ABC" and update if necessary
 if grep -q 'M1ABC' /etc/pistar-release ; then
     sed -i "/Callsign =/c Callsign = ${CALL}" /etc/pistar-release
 fi
+
+# Ensure only one "Callsign =" line exists
 callsign_count=$(grep -c "Callsign =" /etc/pistar-release)
 if [ "$callsign_count" -gt 1 ]; then
   sed -i '/^Callsign =/d' /etc/pistar-release
   echo "Callsign = ${CALL}" >> /etc/pistar-release
 fi
+
+# Check if Callsign = is empty and update it if so
+if grep -q "^Callsign = *$" /etc/pistar-release ; then
+    sed -i "/^Callsign = *$/c Callsign = ${CALL}" /etc/pistar-release
+fi
+
+# Update the callsign in the PHP config if it has changed
 CURRENT_CALLSIGN=$(grep -oP "\$callsign=\s*'\K[^']+" /var/www/dashboard/config/ircddblocal.php)
 if [ "$CALL" != "$CURRENT_CALLSIGN" ]; then
     sed -i "s/\(\$callsign=\).*/\1'$CALL';/" /var/www/dashboard/config/ircddblocal.php
 fi
+
 # Cache Modem Mode
 if grep -q 'Duplex=1' /etc/mmdvmhost ; then
     ModemMode="Duplex"
