@@ -15,7 +15,14 @@ source /usr/local/sbin/.wpsd-common-funcs
 
 # Display services active status
 function status_services() {
-    services=("pistar-watchdog.service" "pistar-upnp.service" "nextiondriver.service" "mmdvmhost.service" "ircddbgateway.service" "dapnetgateway.service" "dmrgateway.service"  "p25gateway.service" "p25parrot.service" "nxdngateway.service" "m17gateway.service" "nxdnparrot.service" "dgidgateway.service" "ysfgateway.service" "ysfparrot.service" "ysf2dmr.service" "ysf2p25.service" "ysf2nxdn.service" "dmr2ysf.service" "dmr2m17.service" "dmr2nxdn.service" "nxdn2dmr.service" "aprsgateway.service" "gpsd.service" "gpsd.socket" "timeserver.service" "cron.service" "pistar-remote.timer" "pistar-remote.service")
+    services=("pistar-watchdog.service" "pistar-upnp.service" "nextiondriver.service"
+	"mmdvmhost.service" "ircddbgateway.service" "dapnetgateway.service"
+	"dmrgateway.service"  "p25gateway.service" "p25parrot.service" "nxdngateway.service"
+	"m17gateway.service" "nxdnparrot.service" "dgidgateway.service" "ysfgateway.service"
+	"ysfparrot.service" "ysf2dmr.service" "ysf2p25.service" "ysf2nxdn.service"
+	"dmr2ysf.service" "dmr2m17.service" "dmr2nxdn.service" "nxdn2dmr.service" "aprsgateway.service"
+	"gpsd.service" "gpsd.socket" "timeserver.service" "cron.service" "pistar-remote.timer"
+	"pistar-remote.service" "wpsd-running-tasks.service" "wpsd-running-tasks.timer" "wpsd-nightly-tasks.service" "wpsd-nightly-tasks.timer")
     
     for s in "${services[@]}"; do
 	status=$(systemctl is-active "$s" | tr [a-z] [A-Z])
@@ -32,6 +39,10 @@ function stop_services()
     if [ "$1" == "FULLSTOP" ]; then
 	    # Prevent cron from restarting services
 	    systemctl is-active --quiet cron.service && systemctl stop cron.service
+	    systemctl is-active --quiet wpsd-running-tasks.timer && systemctl stop wpsd-running-tasks.timer
+	    systemctl is-active --quiet wpsd-running-tasks.service && systemctl stop wpsd-running-tasks.service
+	    systemctl is-active --quiet wpsd-nightly-tasks.timer && systemctl stop wpsd-nightly-tasks.timer
+	    systemctl is-active --quiet wpsd-nightly-tasks.service && systemctl stop wpsd-nightly-tasks.service
     fi
    
     if [ "$(grep "pistar-upnp.service" /etc/crontab | cut -c 1)" != '#' ]; then
@@ -124,6 +135,8 @@ function start_services()
     
     # Restart cron service if fullstop was passed
     systemctl is-active --quiet cron.service || systemctl start cron.service
+    systemctl is-active --quiet wpsd-running-tasks.timer || systemctl start wpsd-running-tasks.timer
+    systemctl is-active --quiet wpsd-nightly-tasks.timer || systemctl start wpsd-nightly-tasks.timer
 
     if [ -t 1 ] ; then
 	echo -e "\b\b\b: DONE.\b"
