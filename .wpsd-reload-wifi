@@ -1,0 +1,15 @@
+#!/bin/bash
+
+get_wireless_interface() {
+    local interface
+    interface=$(iwconfig 2>/dev/null | grep -o '^[a-zA-Z0-9]\+')
+    echo "$interface"
+}
+
+reconnect_wifi() {
+    local interface
+    interface=$(get_wireless_interface)
+    wpa_cli -i"$interface" reconfigure
+}
+
+reconnect_wifi

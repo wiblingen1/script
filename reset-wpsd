@@ -1,0 +1,32 @@
+#!/bin/bash
+
+source /usr/local/sbin/.wpsd-common-funcs
+
+sudo wpsd-services fullstop
+sudo rm -rf /usr/local/sbin
+sudo env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD sbin reset (client-side) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr}" git clone --depth 1 https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Scripts.git /usr/local/sbin
+sudo rm -rf /usr/local/bin
+sudo env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD binary reset (client-side) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr}" git clone --depth 1 https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Binaries.git /usr/local/bin
+
+if [ "$fwState" == "enabled" ]; then
+    sudo /usr/local/sbin/wpsd-system-manager -efw
+else
+    sudo /usr/local/sbin/wpsd-system-manager -dfw
+fi
+
+sudo cp -av /var/www/dashboard/config /tmp
+sudo rm -rf /var/www/dashboard
+sudo env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD webcode reset (client-side) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr}" git clone --depth 1 https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-WebCode.git /var/www/dashboard
+sudo rm -rfv /var/www/dashboard/config/*
+sudo cp -av /tmp/config/* /var/www/dashboard/config
+
+sudo systemctl unmask cron
+sudo systemctl enable cron
+sudo systemctl start cron
+
+sudo wpsd-services start
+
+sudo .wpsd-sys-cache
+
+echo "WPSD has been reset."
+
