@@ -1,10 +1,20 @@
 #!/bin/bash
 
+# WPSD Installation Resetter - 2024 W0CHP
+
+# Make sure we are root
+if [ "$(id -u)" != "0" ]; then
+  echo -e "You need to be root to run this command...\n"
+  exit 1
+fi
+
 source /usr/local/sbin/.wpsd-common-funcs
 
 sudo wpsd-services fullstop
+
 sudo rm -rf /usr/local/sbin
 sudo env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD sbin reset (client-side) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr}" git clone --depth 1 https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Scripts.git /usr/local/sbin
+
 sudo rm -rf /usr/local/bin
 sudo env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD binary reset (client-side) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr}" git clone --depth 1 https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-Binaries.git /usr/local/bin
 

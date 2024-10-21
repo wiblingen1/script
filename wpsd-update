@@ -228,9 +228,6 @@ perform_update() {
 	echo ""
     fi
 
-    if ! [ -f /root/M17Hosts.txt ]; then
-	echo -e "# Format: Reflector Name IP Port\n# Example:\n# M17-000    81.231.241.25    17000\n\n" > /root/M17Hosts.txt
-    fi
     echo -e "${BULL} Updating Hostfiles, User ID DB's & Talkgroup Lists..."
     /usr/local/sbin/wpsd-hostfile-update > /dev/null 2>&1
     echo -e "  ${TICK} Done!\n"
@@ -313,87 +310,9 @@ perform_update() {
 	fi
     fi
 
-    # m17 service installer bugfix:
-    if [ ! -f "/etc/systemd/system/m17gateway.service" ] ; then
-	/usr/local/sbin/m17gateway.service install > /dev/null 2>&1
-	systemctl daemon-reload > /dev/null 2>&1
-    fi
-
-    # add CallLookupProvider to /etc/pistar-release if not there...
-    if ! grep -q 'CallLookupProvider =' /etc/pistar-release ; then
-	sed -i '/ConfUpdReqd/a CallLookupProvider = QRZ' /etc/pistar-release
-    fi
-
     # if css does not exist, install default one
     if [ ! -f "/etc/pistar-css.ini" ] ; then
 	curl -Ls -A "${uaStrSF}" $SUPPORTING_FILES_REPO/pistar-css-W0CHP.ini -o /etc/pistar-css.ini
-    fi
-
-    # Fix up new P25Gateway Config Hostfile setup
-    if [ ! -f /root/P25Hosts.txt ]; then
-	touch /root/P25Hosts.txt
-    fi
-
-    # Fix up new NXDNGateway Config Hostfile setup
-    if [ ! -f /root/NXDNHosts.txt ]; then
-	touch /root/NXDNHosts.txt
-    fi
-    if [ ! -f /usr/local/etc/NXDNHostsLocal.txt ]; then
-	touch /usr/local/etc/NXDNHostsLocal.txt
-    fi
-
-    # Download M17 Audio files if missing
-    if [[ ! -d /usr/local/etc/M17_Audio ]]; then
-	mkdir -p /usr/local/etc/M17_Audio/
-	curl --fail -o /usr/local/etc/M17_Audio/de_DE.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/de_DE.m17
-	curl --fail -o /usr/local/etc/M17_Audio/de_DE.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/de_DE.indx
-	curl --fail -o /usr/local/etc/M17_Audio/dk_DK.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/dk_DK.m17
-	curl --fail -o /usr/local/etc/M17_Audio/dk_DK.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/dk_DK.indx
-	curl --fail -o /usr/local/etc/M17_Audio/en_GB.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/en_GB.m17
-	curl --fail -o /usr/local/etc/M17_Audio/en_GB.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/en_GB.indx
-	curl --fail -o /usr/local/etc/M17_Audio/en_US.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/en_US.m17
-	curl --fail -o /usr/local/etc/M17_Audio/en_US.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/en_US.indx
-	curl --fail -o /usr/local/etc/M17_Audio/es_ES.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/es_ES.m17
-	curl --fail -o /usr/local/etc/M17_Audio/es_ES.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/es_ES.indx
-	curl --fail -o /usr/local/etc/M17_Audio/fr_FR.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/fr_FR.m17
-	curl --fail -o /usr/local/etc/M17_Audio/fr_FR.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/fr_FR.indx
-	curl --fail -o /usr/local/etc/M17_Audio/it_IT.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/it_IT.m17
-	curl --fail -o /usr/local/etc/M17_Audio/it_IT.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/it_IT.indx
-	curl --fail -o /usr/local/etc/M17_Audio/pl_PL.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/pl_PL.m17
-	curl --fail -o /usr/local/etc/M17_Audio/pl_PL.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/pl_PL.indx
-	curl --fail -o /usr/local/etc/M17_Audio/se_SE.m17 -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/se_SE.m17
-	curl --fail -o /usr/local/etc/M17_Audio/se_SE.indx -s https://raw.githubusercontent.com/g4klx/M17Gateway/master/Audio/se_SE.indx    
-    fi
-
-    # Add Portuguese voice files for DMRGateway and ircDDBGw if missing
-    if [[ ! -f /usr/local/etc/DMR_Audio/pt_PT.ambe ]]; then
-	curl --fail -o /usr/local/etc/DMR_Audio/pt_PT.ambe -s https://raw.githubusercontent.com/g4klx/DMRGateway/master/Audio/pt_PT.ambe
-	curl --fail -o /usr/local/etc/DMR_Audio/pt_PT.indx -s https://raw.githubusercontent.com/g4klx/DMRGateway/master/Audio/pt_PT.indx
-	chmod 664 /usr/local/etc/DMR_Audio/*.ambe
-	chmod 664 /usr/local/etc/DMR_Audio/*.indx
-    fi
-    if [[ ! -f /usr/local/etc/ircddbgateway/pt_PT.ambe ]]; then
-	curl --fail -o /usr/local/etc/ircddbgateway/pt_PT.ambe -s https://raw.githubusercontent.com/g4klx/ircDDBGateway/master/Data/pt_PT.ambe
-	curl --fail -o /usr/local/etc/ircddbgateway/pt_PT.indx -s https://raw.githubusercontent.com/g4klx/ircDDBGateway/master/Data/pt_PT.indx
-	curl --fail -o /usr/local/etc/ircddbgateway/TIME_pt_PT.ambe -s https://raw.githubusercontent.com/g4klx/ircDDBGateway/master/Data/TIME_pt_PT.ambe
-	curl --fail -o /usr/local/etc/ircddbgateway/TIME_pt_PT.indx -s https://raw.githubusercontent.com/g4klx/ircDDBGateway/master/Data/TIME_pt_PT.indx
-	chmod 664 /usr/local/etc/ircddbgateway/*.ambe
-	chmod 664 /usr/local/etc/ircddbgateway/*.indx
-    fi
-
-    # should likely do more AMBE voice file existence checks here at some point.
-
-    if [[ $(grep "\[Voice\]" /etc/p25gateway | wc -l) -eq 0 ]]; then # ensure p25gw is setup for voice supp.
-	echo "" >> /etc/p25gateway
-	sed -i '$a[Voice]\nEnabled=1\nLanguage=en_GB\nDirectory=/usr/local/etc/P25_Audio\n' /etc/p25gateway
-    fi
-
-    if ! grep -q TIME_FORMAT /var/www/dashboard/config/config.php ; then # insert req'd constant if not found. WIll be stashed on next update :-)
-	sed -i "/^date_default_timezone_set.*/i define('TIME_FORMAT', '24');" /var/www/dashboard/config/config.php
-    fi
-
-    if ! grep -q AUTO_UPDATE_CHECK /var/www/dashboard/config/config.php ; then # insert req'd constant if not found. WIll be stashed on next update :-)
-	sed -i "/^date_default_timezone_set.*/i define('AUTO_UPDATE_CHECK', 'true');" /var/www/dashboard/config/config.php
     fi
 
     # Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
