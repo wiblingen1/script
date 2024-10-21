@@ -18,9 +18,6 @@ fi
 pkill .wpsd-running-tasks > /dev/null 2>&1
 pkill .wpsd-slipstream-tasks > /dev/null 2>&1
 
-# run any slipstream tasks
-bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
-
 # migrate config update notice
 if grep -q ConfUpdReqd /etc/mmdvmhost ; then
     grep ConfUpdReqd /etc/mmdvmhost | sed 's/=/ = /' >> /etc/pistar-release
@@ -341,6 +338,9 @@ process_log_file > /dev/null 2>&1
 # Start all the services...
 echo -e "\nStarting services..."
 wpsd-services start > /dev/null 2>&1
+
+# run any slipstream tasks
+bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
 
 echo -e "\nNightly tasks done!\n"
 
