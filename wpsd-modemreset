@@ -11,8 +11,9 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+source /usr/local/sbin/.wpsd-common-funcs
+
 # Special Pi4/5 handling...
-# Detect Pi4/5 Hardware
 if [ "$(/usr/local/sbin/.wpsd-platform-detect | grep "Pi 4 Model" | wc -l)" -ge 1 ]; then
   model="Pi4"
 elif [ "$(/usr/local/sbin/.wpsd-platform-detect | grep "Pi 5 Model" | wc -l)" -ge 1 ]; then
@@ -61,27 +62,36 @@ if [ -z "${1}" ]; then
   systemctl stop mmdvmhost.service
 fi
 
-# gpio front/back compat. for pi5 and older Pi SBCs; since Pi5 has its own GPIO chip (gpiochip4 [pinctrl-rp1])
-getGPIOpinMaps=$(ls -al /sys/class/gpio/gpiochip* | sed -n "s/.*gpiochip\([0-9]*\).*/\1/p" | head -n 1)
-pin20=$((getGPIOpinMaps + 20))
-pin21=$((getGPIOpinMaps + 21))
-# Perform modem reset...
-echo ${pin20} > /sys/class/gpio/export
-echo ${pin21} > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio${pin20}/direction
-echo out > /sys/class/gpio/gpio${pin21}/direction
-sleep 0.5
-echo 0 > /sys/class/gpio/gpio${pin20}/value
-echo 0 > /sys/class/gpio/gpio${pin21}/value
-echo 1 > /sys/class/gpio/gpio${pin21}/value
-sleep 1
-echo 0 > /sys/class/gpio/gpio${pin20}/value
-echo 1 > /sys/class/gpio/gpio${pin20}/value
-echo 0 > /sys/class/gpio/gpio${pin20}/value
-sleep 0.5
-echo ${pin20} > /sys/class/gpio/unexport
-echo ${pin21} > /sys/class/gpio/unexport
-sleep 2
+if [[ -f "$armbian_env_file" ]] && grep -q "dvmpi" /etc/dstar-radio.mmdvmhost; then
+    sudo gpio mode 3 out
+    sudo gpio mode 4 out
+    sudo gpio write 4 0
+    sudo gpio write 3 0
+    sleep 1
+    sudo gpio write 3 1
+else
+    # gpio front/back compat. for pi5 and older Pi SBCs; since Pi5 has its own GPIO chip (gpiochip4 [pinctrl-rp1])
+    getGPIOpinMaps=$(ls -al /sys/class/gpio/gpiochip* | sed -n "s/.*gpiochip\([0-9]*\).*/\1/p" | head -n 1)
+    pin20=$((getGPIOpinMaps + 20))
+    pin21=$((getGPIOpinMaps + 21))
+    # Perform modem reset...
+    echo ${pin20} > /sys/class/gpio/export
+    echo ${pin21} > /sys/class/gpio/export
+    echo out > /sys/class/gpio/gpio${pin20}/direction
+    echo out > /sys/class/gpio/gpio${pin21}/direction
+    sleep 0.5
+    echo 0 > /sys/class/gpio/gpio${pin20}/value
+    echo 0 > /sys/class/gpio/gpio${pin21}/value
+    echo 1 > /sys/class/gpio/gpio${pin21}/value
+    sleep 1
+    echo 0 > /sys/class/gpio/gpio${pin20}/value
+    echo 1 > /sys/class/gpio/gpio${pin20}/value
+    echo 0 > /sys/class/gpio/gpio${pin20}/value
+    sleep 0.5
+    echo ${pin20} > /sys/class/gpio/unexport
+    echo ${pin21} > /sys/class/gpio/unexport
+    sleep 2
+fi
 
 # If there are no arguments (like "boot") then start the service...
 if [ -z "${1}" ]; then
