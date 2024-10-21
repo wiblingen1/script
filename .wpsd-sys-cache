@@ -137,9 +137,9 @@ else
 fi
 
 # Check for a specific callsign "M1ABC" and update if necessary
-if grep -q 'M1ABC' /etc/pistar-release ; then
-    sed -i "/Callsign =/c Callsign = ${CALL}" /etc/pistar-release
-fi
+#if grep -q 'M1ABC' /etc/pistar-release ; then
+#    sed -i "/Callsign =/c Callsign = ${CALL}" /etc/pistar-release
+#fi
 
 # Ensure only one "Callsign =" line exists
 callsign_count=$(grep -c "Callsign =" /etc/pistar-release)
