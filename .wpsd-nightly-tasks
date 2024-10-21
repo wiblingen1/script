@@ -9,14 +9,14 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+source /usr/local/sbin/.wpsd-common-funcs
+
 if [ ! -t 1 ]; then
   exec &> /tmp/WPSD-nightly-tasks.log
 fi
 
 pkill .wpsd-running-tasks > /dev/null 2>&1
 pkill .wpsd-slipstream-tasks > /dev/null 2>&1
-
-source /usr/local/sbin/.wpsd-common-funcs
 
 # run any slipstream tasks
 bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
@@ -342,10 +342,7 @@ process_log_file > /dev/null 2>&1
 echo -e "\nStarting services..."
 wpsd-services start > /dev/null 2>&1
 
-# Shuffle the time for the next daily crontab jobs
-sed -i "/cron.daily/c ${cronMins} ${cronHours}  * * *   root    mount -o remount,rw / && cd / && run-parts --report /etc/cron.daily" /etc/crontab
-
-echo -e "\nDaily Cron job done!\n"
+echo -e "\nNightly tasks done!\n"
 
 exit 0
 
