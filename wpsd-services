@@ -42,7 +42,6 @@ function stop_services()
 	    systemctl is-active --quiet wpsd-running-tasks.timer && systemctl stop wpsd-running-tasks.timer
 	    systemctl is-active --quiet wpsd-running-tasks.service && systemctl stop wpsd-running-tasks.service
 	    systemctl is-active --quiet wpsd-nightly-tasks.timer && systemctl stop wpsd-nightly-tasks.timer
-	    systemctl is-active --quiet wpsd-nightly-tasks.service && systemctl stop wpsd-nightly-tasks.service
     fi
    
     if [ "$(grep "pistar-upnp.service" /etc/crontab | cut -c 1)" != '#' ]; then
