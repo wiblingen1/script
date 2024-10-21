@@ -36,6 +36,7 @@ sudo systemctl start cron
 
 sudo wpsd-services start
 
+sudo .wpsd-slipstream-tasks
 sudo .wpsd-sys-cache
 
 echo "WPSD has been reset."
