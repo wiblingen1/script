@@ -140,10 +140,8 @@ term_banner() {
 }
 
 perform_update() {
-    systemctl stop cron.service > /dev/null 2>&1
-    pkill pistar-hourly.cron > /dev/null 2>&1
-    pkill pistar-daily.cron > /dev/null 2>&1
     pkill .wpsd-slipstream-tasks > /dev/null 2>&1
+    pkill .wpsd-running-tasks > /dev/null 2>&1
 
     if [ -t 1 ] ; then
 	if ! [ $(cat /lib/systemd/system/nginx.service | grep -o "mkdir") ]; then
@@ -164,7 +162,6 @@ perform_update() {
 
     echo -e "${BULL} Updating WPSD Utilities and Support Programs..."
     git_update /usr/local/sbin
-    #systemctl daemon-reload > /dev/null 2>&1
     echo ""
 
     echo -e "${BULL} Updating WPSD Web Dashboard Software..."
@@ -326,10 +323,10 @@ perform_update() {
     chown -R mmdvm:mmdvm /var/log/pi-star > /dev/null 2>&1
     chmod 775 /var/log/pi-star > /dev/null 2>&1
 
+    bash /usr/local/sbin/.wpsd-sys-cache >/dev/null 2>&1
+
     # run any slipstream tasks
     bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
-
-    bash /usr/local/sbin/.wpsd-sys-cache >/dev/null 2>&1
 
     echo -e "  ${TICK} Done!" # maint. complete
 
