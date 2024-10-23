@@ -17,9 +17,9 @@ if ! flock -n 200 ; then
   exit 1
 fi
 
-# check age of task marker file if it exists, and if it's < 1 hour young, bail.
-if [  -f '/var/run/wpsd-bg-tasks' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/wpsd-bg-tasks") ))" -lt "3600" ]; then
-    exit 0 # marker either does not exist or it's 1+ hour - so we continue running this script...
+# check age of task marker file if it exists, and if it's < 4 hours young, bail.
+if [  -f '/var/run/wpsd-bg-tasks' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/wpsd-bg-tasks") ))" -lt "14400" ]; then
+    exit 0 # marker either does not exist or it's 4+ hours - so we continue running this script...
 fi
 
 source /usr/local/sbin/.wpsd-common-funcs
