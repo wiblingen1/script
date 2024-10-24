@@ -15,14 +15,13 @@ fi
 source /usr/local/sbin/.wpsd-common-funcs
 
 # check age of task marker file if it exists, and if it's < 8 hours young, bail.
-if [[ ${FORCE} -ne 1 ]] ; then # please be thoughtful here. This env. var. is called by a few places in the admin pages.
-    if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "28880" ]; then
-	echo "Hostfles are less than 8 hours old. Not updating."
-	echo "To force an update, run 'sudo env FORCE=1 $(basename "$0")'"
-	exit 1
-    fi
-fi
-
+#if [[ ${FORCE} -ne 1 ]] ; then # please be thougghtful here. This env. var. is called by a few places in the admin pages.
+#    if [  -f '/var/run/hostfiles-up' ] && [ "$(( $(date +"%s") - $(stat -c "%Y" "/var/run/hostfiles-up") ))" -lt "28880" ]; then
+#	echo "Hostfles are less than 8 hours old. Not updating."
+#	echo "To force an update, run 'sudo env FORCE=1 $(basename "$0")'"
+#	exit 0
+#    fi
+#fi
 
 exec 200>/var/lock/wpsd-hostfiles.lock || exit 1 # only one exec per time
 if ! flock -n 200 ; then
@@ -39,63 +38,199 @@ else
     exit 1
 fi
 
-if [ ! -d /usr/local/etc/tmp ]; then
-    mkdir -p /usr/local/etc/tmp
-fi
-rm -rfv /usr/local/etc/*.2024*
-
 # Files and locations
-APRSHOSTS=/usr/local/etc/tmp/APRSHosts.txt
-APRSSERVERS=/usr/local/etc/tmp/aprs_servers.json
-DCSHOSTS=/usr/local/etc/tmp/DCS_Hosts.txt
-DExtraHOSTS=/usr/local/etc/tmp/DExtra_Hosts.txt
-DMRIDFILE=/usr/local/etc/tmp/DMRIds.dat
-DMRHOSTS=/usr/local/etc/tmp/DMR_Hosts.txt
-DPlusHOSTS=/usr/local/etc/tmp/DPlus_Hosts.txt
-P25HOSTS=/usr/local/etc/tmp/P25Hosts.txt
-M17HOSTS=/usr/local/etc/tmp/M17Hosts.txt
-YSFHOSTS=/usr/local/etc/tmp/YSFHosts.txt
-FCSHOSTS=/usr/local/etc/tmp/FCSHosts.txt
-XLXHOSTS=/usr/local/etc/tmp/XLXHosts.txt
-NXDNIDFILE=/usr/local/etc/tmp/NXDN.csv
-NXDNHOSTS=/usr/local/etc/tmp/NXDNHosts.txt
-TGLISTBM=/usr/local/etc/tmp/TGList_BM.txt
-TGLISTTGIF=/usr/local/etc/tmp/TGList_TGIF.txt
-TGLISTFREESTARIPSC2=/usr/local/etc/tmp/TGList_FreeStarIPSC.txt
-TGLISTSYSTEMX=/usr/local/etc/tmp/TGList_SystemX.txt
-TGLISTFREEDMR=/usr/local/etc/tmp/TGList_FreeDMR.txt
-TGLISTDMRPLUS=/usr/local/etc/tmp/TGList_DMRp.txt
-TGLISTQUADNET=/usr/local/etc/tmp/TGList_QuadNet.txt
-TGLISAMCOMM=/usr/local/etc/tmp/TGList_AmComm.txt
-TGLISTP25=/usr/local/etc/tmp/TGList_P25.txt
-TGLISTNXDN=/usr/local/etc/tmp/TGList_NXDN.txt
-TGLISTYSF=/usr/local/etc/tmp/TGList_YSF.txt
-BMTGNAMES=/usr/local/etc/tmp/BM_TGs.json
-RADIOIDDB_TMP=/usr/local/etc/tmp/user.csv.tmp
-RADIOIDDB=/usr/local/etc/tmp/user.csv
-GROUPSTXT=/usr/local/etc/tmp/groups.txt
-GROUPSNEXTION=/usr/local/etc/tmp/groupsNextion.txt
-STRIPPED=/usr/local/etc/tmp/stripped.csv
-COUNTRIES=/usr/local/etc/tmp/country.csv
+APRSHOSTS=/usr/local/etc/APRSHosts.txt
+APRSSERVERS=/usr/local/etc/aprs_servers.json
+DCSHOSTS=/usr/local/etc/DCS_Hosts.txt
+DExtraHOSTS=/usr/local/etc/DExtra_Hosts.txt
+DMRIDFILE=/usr/local/etc/DMRIds.dat
+DMRHOSTS=/usr/local/etc/DMR_Hosts.txt
+DPlusHOSTS=/usr/local/etc/DPlus_Hosts.txt
+P25HOSTS=/usr/local/etc/P25Hosts.txt
+M17HOSTS=/usr/local/etc/M17Hosts.txt
+YSFHOSTS=/usr/local/etc/YSFHosts.txt
+FCSHOSTS=/usr/local/etc/FCSHosts.txt
+XLXHOSTS=/usr/local/etc/XLXHosts.txt
+NXDNIDFILE=/usr/local/etc/NXDN.csv
+NXDNHOSTS=/usr/local/etc/NXDNHosts.txt
+TGLISTBM=/usr/local/etc/TGList_BM.txt
+TGLISTTGIF=/usr/local/etc/TGList_TGIF.txt
+TGLISTFREESTARIPSC2=/usr/local/etc/TGList_FreeStarIPSC.txt
+TGLISTSYSTEMX=/usr/local/etc/TGList_SystemX.txt
+TGLISTFREEDMR=/usr/local/etc/TGList_FreeDMR.txt
+TGLISTDMRPLUS=/usr/local/etc/TGList_DMRp.txt
+TGLISTQUADNET=/usr/local/etc/TGList_QuadNet.txt
+TGLISAMCOMM=/usr/local/etc/TGList_AmComm.txt
+TGLISTP25=/usr/local/etc/TGList_P25.txt
+TGLISTNXDN=/usr/local/etc/TGList_NXDN.txt
+TGLISTYSF=/usr/local/etc/TGList_YSF.txt
+BMTGNAMES=/usr/local/etc/BM_TGs.json
+RADIOIDDB_TMP=/tmp/user.csv
+RADIOIDDB=/usr/local/etc/user.csv
+GROUPSTXT=/usr/local/etc/groups.txt
+GROUPSNEXTION=/usr/local/etc/groupsNextion.txt
+STRIPPED=/usr/local/etc/stripped.csv
+COUNTRIES=/usr/local/etc/country.csv
+
+# How many backups?
+FILEBACKUP=3 # max 3 per day since we check for updates every 8 hrs.
+
+# Create backup of old files
+if [ ${FILEBACKUP} -ne 0 ]; then
+	cp ${APRSHOSTS} ${APRSHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DCSHOSTS} ${DCSHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DExtraHOSTS} ${DExtraHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DMRIDFILE} ${DMRIDFILE}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DMRHOSTS} ${DMRHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${DPlusHOSTS} ${DPlusHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${P25HOSTS} ${P25HOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${M17HOSTS} ${M17HOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${YSFHOSTS} ${YSFHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${FCSHOSTS} ${FCSHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${XLXHOSTS} ${XLXHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${NXDNIDFILE} ${NXDNIDFILE}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${NXDNHOSTS} ${NXDNHOSTS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTBM} ${TGLISTBM}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTTGIF} ${TGLISTTGIF}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTFREESTARIPSC2} ${TGLISTFREESTARIPSC2}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTSYSTEMX} ${TGLISTSYSTEMX}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTFREEDMR} ${TGLISTFREEDMR}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTDMRPLUS} ${TGLISTDMRPLUS}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTQUADNET} ${TGLISTQUADNET}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISAMCOMM} ${TGLISAMCOMM}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTP25} ${TGLISTP25}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTNXDN} ${TGLISTNXDN}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${TGLISTYSF} ${TGLISTYSF}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${BMTGNAMES} ${BMTGNAMES}.$(date +%Y-%m-%d_%H:%M)
+	if [ -f ${GROUPSNEXTION} ] ; then
+	    cp  ${GROUPSNEXTION} ${GROUPSNEXTION}.$(date +%Y-%m-%d_%H:%M)
+	fi
+	cp  ${GROUPSTXT} ${GROUPSTXT}.$(date +%Y-%m-%d_%H:%M)
+	cp  ${RADIOIDDB} ${RADIOIDDB}.$(date +%Y-%m-%d_%H:%M)
+fi
+
+# Prune backups
+if [ -f ${GROUPSNEXTION} ] ; then
+    FILES="${APRSHOSTS}
+    ${DCSHOSTS}
+    ${DExtraHOSTS}
+    ${DMRIDFILE}
+    ${DMRHOSTS}
+    ${DPlusHOSTS}
+    ${P25HOSTS}
+    ${M17HOSTS}
+    ${YSFHOSTS}
+    ${FCSHOSTS}
+    ${XLXHOSTS}
+    ${NXDNIDFILE}
+    ${NXDNHOSTS}
+    ${TGLISTBM}
+    ${TGLISTTGIF}
+    ${TGLISTFREESTARIPSC2}
+    ${TGLISTSYSTEMX}
+    ${TGLISTFREEDMR}
+    ${TGLISTDMRPLUS}
+    ${TGLISTQUADNET}
+    ${TGLISAMCOMM}
+    ${TGLISTP25}
+    ${TGLISTNXDN}
+    ${TGLISTYSF}
+    ${BMTGNAMES}
+    ${GROUPSTXT}
+    ${GROUPSNEXTION}
+    ${RADIOIDDB}"
+else
+    FILES="${APRSHOSTS}
+    ${DCSHOSTS}
+    ${DExtraHOSTS}
+    ${DMRIDFILE}
+    ${DMRHOSTS}
+    ${DPlusHOSTS}
+    ${P25HOSTS}
+    ${M17HOSTS}
+    ${YSFHOSTS}
+    ${FCSHOSTS}
+    ${XLXHOSTS}
+    ${NXDNIDFILE}
+    ${NXDNHOSTS}
+    ${TGLISTBM}
+    ${TGLISTTGIF}
+    ${TGLISTFREESTARIPSC2}
+    ${TGLISTSYSTEMX}
+    ${TGLISTFREEDMR}
+    ${TGLISTDMRPLUS}
+    ${TGLISTQUADNET}
+    ${TGLISAMCOMM}
+    ${TGLISTP25}
+    ${TGLISTNXDN}
+    ${TGLISTYSF}
+    ${BMTGNAMES}
+    ${GROUPSTXT}
+    ${RADIOIDDB}"
+fi
+
+for file in ${FILES}
+do
+  BACKUPS=(${file}.*)
+  BACKUPCOUNT=${#BACKUPS[@]}
+  
+  if [ ${BACKUPCOUNT} -gt ${FILEBACKUP} ]; then
+        BACKUPSTODELETE=$((BACKUPCOUNT - FILEBACKUP))
+        for f in $(ls -tr ${file}.* | head -n ${BACKUPSTODELETE}); do
+            rm "$f"
+        done
+  fi
+done
 
 # Generate Host Files
-curl --fail -L -o /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2 -s ${hostFileURL}/wpsd-hostfiles.tar.bz2 --user-agent "WPSD-HostFileUpdater ${uaStr}"
-
-cd /usr/local/etc/tmp/
-tar jxvf /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2
-
+curl --fail -L -o ${APRSHOSTS} -s ${hostFileURL}/APRS_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${APRSSERVERS} -s ${hostFileURL}/aprs_servers.json --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${DCSHOSTS} -s ${hostFileURL}/DCS_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${DMRHOSTS} -s ${hostFileURL}/DMR_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
 if [ -f /etc/hostfiles.nodextra ]; then
   # Move XRFs to DPlus Protocol
-  mv /usr/local/etc/tmp/DPlus_WithXRF_Hosts.txt ${DPlusHOSTS}
-  mv /usr/local/etc/tmp/DExtra_NoXRF_Hosts.txt ${DExtraHOSTS}
+  curl --fail -L -o ${DPlusHOSTS} -s ${hostFileURL}/DPlus_WithXRF_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+  curl --fail -L -o ${DExtraHOSTS} -s ${hostFileURL}/DExtra_NoXRF_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+else
+  # Normal Operation
+  curl --fail -L -o ${DPlusHOSTS} -s ${hostFileURL}/DPlus_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+  curl --fail -L -o ${DExtraHOSTS} -s ${hostFileURL}/DExtra_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
 fi
 
 # Grab DMR IDs
-mv ${DMRIDFILE}.bz2 /tmp/
-bunzip2 -f /tmp/DMRIds.dat.bz2
+curl --fail -L -o /tmp/DMRIds.tmp.bz2 -s ${hostFileURL}/DMRIds.dat.bz2 --user-agent "WPSD-HostFileUpdater ${uaStr}"
+bunzip2 -f /tmp/DMRIds.tmp.bz2
 # filter out IDs less than 7 digits (causing collisions with TGs of < 7 digits in "Target" column"
-cat /tmp/DMRIds.dat  2>/dev/null | grep -v '^#' | awk '($1 > 999999) && ($1 < 10000000) { print $0 }' | sort -un -k1n -o ${DMRIDFILE}
-rm -f /tmp/DMRIds.dat
+cat /tmp/DMRIds.tmp  2>/dev/null | grep -v '^#' | awk '($1 > 999999) && ($1 < 10000000) { print $0 }' | sort -un -k1n -o ${DMRIDFILE}
+rm -f /tmp/DMRIds.tmp
+# radio ID DMR DB sanity checks
+NUMOFLINES=$(wc -l ${DMRIDFILE} | awk '{print $1}')
+if (( $NUMOFLINES < 230000 )) # revert to lastest backup file
+then
+    cp $(ls -tr /usr/local/etc/DMRIds.dat* | tail -2 | head -1) ${DMRIDFILE}
+fi
+
+curl --fail -L -o ${P25HOSTS} -s ${hostFileURL}/P25_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${M17HOSTS} -s ${hostFileURL}/M17_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${YSFHOSTS} -s ${hostFileURL}/YSF_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${FCSHOSTS} -s ${hostFileURL}/FCS_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${XLXHOSTS} -s ${hostFileURL}/XLXHosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${NXDNIDFILE} -s ${hostFileURL}/NXDN.csv --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${NXDNHOSTS} -s ${hostFileURL}/NXDN_Hosts.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTBM} -s ${hostFileURL}/TGList_BM.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTTGIF} -s ${hostFileURL}/TGList_TGIF.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTFREESTARIPSC2} -s ${hostFileURL}/TGList_FreeStarIPSC.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTSYSTEMX} -s ${hostFileURL}/TGList_SystemX.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTFREEDMR} -s ${hostFileURL}/TGList_FreeDMR.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTDMRPLUS} -s ${hostFileURL}/TGList_DMRp.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTQUADNET} -s ${hostFileURL}/TGList_QuadNet.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISAMCOMM} -s ${hostFileURL}/TGList_AmComm.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTP25} -s ${hostFileURL}/TGList_P25.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTNXDN} -s ${hostFileURL}/TGList_NXDN.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${TGLISTYSF} -s ${hostFileURL}/TGList_YSF.txt --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${COUNTRIES} -s ${hostFileURL}/country.csv --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${BMTGNAMES} -s ${hostFileURL}/BM_TGs.json --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o ${RADIOIDDB_TMP}.bz2 -s ${hostFileURL}/user.csv.bz2 --user-agent "WPSD-HostFileUpdater ${uaStr}"
 
 # BM TG List for live caller and (legacy) nextion screens:
 cp ${BMTGNAMES} ${GROUPSTXT}
@@ -159,21 +294,15 @@ if [ -f "/root/XLXHosts.txt" ]; then
 fi
 
 # Nextion and LiveCaller DMR ID DB's
-bunzip2 -f ${RADIOIDDB}.bz2
-mv $RADIOIDDB $RADIOIDDB_TMP
+bunzip2 -f ${RADIOIDDB_TMP}.bz2
 # sort
-cat ${RADIOIDDB_TMP} | sort -un -k1n -o ${RADIOIDDB}
+cat /tmp/user.csv | sort -un -k1n -o ${RADIOIDDB}
 rm -f $RADIOIDDB_TMP
 # remove header
 sed -i '1d' ${RADIOIDDB}
-
-# commit!
-rm -rfv /usr/local/etc/tmp/*bz2
-mv -v /usr/local/etc/tmp/* /usr/local/etc/
 # make link for legacy nextion configs
 rm -rf ${STRIPPED}
-rm -rfv /usr/local/etc/stripped.csv
-ln -s /usr/local/etc/user.csv /usr/local/etc/stripped.csv
+ln -s ${RADIOIDDB} ${STRIPPED}
 
 touch /var/run/hostfiles-up # create/reset marker
 
