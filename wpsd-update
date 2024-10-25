@@ -73,6 +73,7 @@ git_update() {
 	    cd ${gitFolder}
 	    git stash > /dev/null 2>&1 # save user config files: config/config.php config/ircddblocal.php config/language.php
 	    env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-Update (Manual-Update) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git pull -q origin ${dash_branch} > /dev/null 2>&1
+	    git reset --hard > /dev/null 2>&1
 	    git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php > /dev/null 2>&1 # restore user config files from stash
 	    git stash clear > /dev/null 2>&1 # housekeeping
 	    echo -e "  ${TICK} Updates installed!"
