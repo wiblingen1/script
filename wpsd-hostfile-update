@@ -41,10 +41,10 @@ fi
 if [ ! -d /usr/local/etc/tmp ]; then
     mkdir -p /usr/local/etc/tmp
 fi
-rm -rfv /usr/local/etc/*.2024*
-rm -rfv /usr/local/etc/*csv*
-rm -rfv /usr/local/etc/*reg*
-rm -rfv /usr/local/etc/index.*
+rm -rf /usr/local/etc/*.2024*
+rm -rf /usr/local/etc/*csv*
+rm -rf /usr/local/etc/*reg*
+rm -rf /usr/local/etc/index.*
 
 # Files and locations
 APRSHOSTS=/usr/local/etc/tmp/APRSHosts.txt
@@ -83,7 +83,7 @@ COUNTRIES=/usr/local/etc/tmp/country.csv
 # Generate Host Files
 curl --fail -L -o /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2 -s ${hostFileURL}/wpsd-hostfiles.tar.bz2 --user-agent "WPSD-HostFileUpdater ${uaStr}"
 
-tar jxvf /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2 -C /usr/local/etc/tmp/
+tar jxf /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2 -C /usr/local/etc/tmp/
 
 if [ -f /etc/hostfiles.nodextra ]; then
   # Move XRFs to DPlus Protocol
@@ -169,11 +169,11 @@ rm -f $RADIOIDDB_TMP
 sed -i '1d' ${RADIOIDDB}
 
 # commit!
-rm -rfv /usr/local/etc/tmp/*bz2
-mv -v /usr/local/etc/tmp/* /usr/local/etc/
+rm -rf /usr/local/etc/tmp/*bz2
+mv /usr/local/etc/tmp/* /usr/local/etc/
 # make link for legacy nextion configs
 rm -rf ${STRIPPED}
-rm -rfv /usr/local/etc/stripped.csv
+rm -rf /usr/local/etc/stripped.csv
 ln -s /usr/local/etc/user.csv /usr/local/etc/stripped.csv
 
 touch /var/run/hostfiles-up # create/reset marker
