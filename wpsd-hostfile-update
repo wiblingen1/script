@@ -29,8 +29,10 @@ if ! flock -n 200 ; then
   exit 1
 fi
 
+ProgVer="WPSD-HostFileUpdater v.3.0"
+
 # connectivity check
-status_code=$(curl -m 6 -A " WPSD-HostFileUpdater ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null ${hostFileURL})
+status_code=$(curl -m 6 -A "${ProgVer}  ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null ${hostFileURL})
 if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     echo "WPSD Hostfile Update Server connection OK...updating hostfiles."
 else
@@ -81,7 +83,7 @@ STRIPPED=/usr/local/etc/tmp/stripped.csv
 COUNTRIES=/usr/local/etc/tmp/country.csv
 
 # Generate Host Files
-curl --fail -L -o /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2 -s ${hostFileURL}/wpsd-hostfiles.tar.bz2 --user-agent "WPSD-HostFileUpdater ${uaStr}"
+curl --fail -L -o /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2 -s ${hostFileURL}/wpsd-hostfiles.tar.bz2 --user-agent "${ProgVer} ${uaStr}"
 
 tar jxf /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2 -C /usr/local/etc/tmp/
 
