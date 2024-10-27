@@ -53,10 +53,10 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     gitFolder="/var/www/dashboard"
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
     cd ${gitFolder}
-    git stash # save user config files: config/config.php config/ircddblocal.php config/language.php
+    git stash clear # housekeeping
+    git reset --hard
     env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck (WPSD-Nightly-Tasks) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git pull origin ${gitBranch}
     git reset --hard
-    git checkout stash@{0} -- config/config.php config/ircddblocal.php config/language.php # restore user config files from stash
     git stash clear # housekeeping
 
     echo -e "\nUpdating binaries..."
