@@ -34,6 +34,8 @@ sudo systemctl unmask cron
 sudo systemctl enable cron
 sudo systemctl start cron
 
+sudo rm -rf /etc/pistar-release ; sudo touch /etc/pistar-release
+
 sudo wpsd-services start
 
 sudo .wpsd-slipstream-tasks
