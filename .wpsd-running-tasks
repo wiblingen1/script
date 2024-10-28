@@ -17,7 +17,9 @@ fi
 
 # run any slipstream tasks
 pkill .wpsd-slipstream-tasks > /dev/null 2>&1
-bash /usr/local/sbin/.wpsd-slipstream-tasks
+
+# update local sys cache
+/usr/local/sbin/.wpsd-sys-cache
 
 # migrate config update notice
 if grep -q ConfUpdReqd /etc/mmdvmhost ; then
@@ -58,6 +60,8 @@ if compgen -G "/tmp/Callsign_Name.txt*" > /dev/null; then
         rm -f  /tmp/Callsign_Name.txt
     fi
 fi
+
+/usr/local/sbin/.wpsd-slipstream-tasks
 
 # update local sys cache
 /usr/local/sbin/.wpsd-sys-cache
