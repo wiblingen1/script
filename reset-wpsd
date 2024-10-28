@@ -24,11 +24,8 @@ else
     sudo /usr/local/sbin/wpsd-system-manager -dfw
 fi
 
-sudo cp -av /var/www/dashboard/config /tmp
 sudo rm -rf /var/www/dashboard
 sudo env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD webcode reset (client-side) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr}" git clone --depth 1 https://wpsd-swd.w0chp.net/WPSD-SWD/WPSD-WebCode.git /var/www/dashboard
-sudo rm -rfv /var/www/dashboard/config/*
-sudo cp -av /tmp/config/* /var/www/dashboard/config
 
 sudo systemctl unmask cron
 sudo systemctl enable cron
@@ -40,6 +37,9 @@ sudo wpsd-services start
 
 sudo .wpsd-slipstream-tasks
 sudo .wpsd-sys-cache
+
+sudo systemctl restart wpsd-nightly-tasks.timer
+sudo systemctl restart wpsd-running-tasks.timer
 
 echo "WPSD has been reset."
 
