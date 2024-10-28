@@ -29,6 +29,7 @@ source /usr/local/sbin/.wpsd-common-funcs
 wpsd-services fullstop
 
 rm -rf /etc/dstar-radio.* /etc/mmdvmhost /etc/bmapi.key /etc/dapnetapi.key /etc/timeserver.disable /etc/WPSD_config_mgr
+rm -rf /tmp/config_restore/*.php
 cp -a /tmp/config_restore/WPSD_config_mgr /etc/
 castResult=$(isDVmegaCast)
 if [ "$castResult" == "true" ]; then
@@ -41,9 +42,6 @@ fi
 mv -f /tmp/config_restore/mmvvmhost /etc/
 mv -f /tmp/config_restore/gpsd /etc/default/
 mv -f /tmp/config_restore/RSSI.dat /usr/local/etc/
-mv -f /tmp/config_restore/ircddblocal.php /var/www/dashboard/config/
-mv -f /tmp/config_restore/config.php /var/www/dashboard/config/
-mv -f /tmp/config_restore/language.php /var/www/dashboard/config/
 find /tmp/config_restore/ -maxdepth 1 -name "*Hosts.txt" -exec mv -fv {} /root \;
 mv -f /tmp/config_restore/wpa_supplicant.conf /etc/wpa_supplicant/
 mv -f /tmp/config_restore/*.nmconnection /etc/NetworkManager/system.connections/
@@ -53,10 +51,11 @@ mv -f /tmp/config_restore/*_paused /etc/
 mv -f /tmp/config_restore/.bm_tgs.json.saved /etc/
 mv -f /tmp/config_restore/* /etc/ # everything else / All The Things
 
-TIMEZONE=$(grep -o -P "date_default_timezone_set\\('\\K[^']+" /var/www/dashboard/config/config.php | sed 's/^[ \t]*//;s/[ \t]*$//')
-timedatectl set-timezone ${TIMEZONE}
 IRCDDBPW=($grep remotePassword /etc/ircddbgateway | awk -F'=' '{print $2}')
 sed -i "/password=/c\\password=${IRCDDBPW}" /root/.Remote\ Control
+
+TIMEZONE=$(grep -oP '^Timezone = \K.*' /etc/WPSD-Dashboard-Config.ini)
+timedatectl set-timezone ${TIMEZONE}
 
 /usr/local/sbin/nextion-driver-helper
 
