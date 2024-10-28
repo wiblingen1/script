@@ -126,7 +126,7 @@ GU=$( cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 )
 sed -i "/UUID =/c\\UUID = ${GU}" /etc/pistar-release
 
 # migrate callsign info to last line of /etc/pistar-release
-CALL=$( awk -F"'" '/\$callsign=/ {print $2}' /var/www/dashboard/config/ircddblocal.php )
+CALL=$( grep -oP '^Callsign=\K.*' /etc/mmdvmhost | head -n 1 )
 if ! grep -w 'Callsign' /etc/pistar-release > /dev/null; then
     echo "Callsign = ${CALL}" >> /etc/pistar-release
 else
