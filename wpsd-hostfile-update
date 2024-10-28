@@ -151,14 +151,14 @@ if [ -f "/root/XLXHosts.txt" ]; then
             xlxroom=$(echo "$line" | awk -F ';' '{print $3}')
             xlxNewLine="${xlxid};${xlxip};${xlxroom}"
             
-            if grep -q "^${xlxid};" /usr/local/etc/XLXHosts.txt; then
-                sed -i "s/^${xlxid};.*/${xlxNewLine}/" /usr/local/etc/XLXHosts.txt
+            if grep -q "^${xlxid};" ${XLXHOSTS}; then
+                sed -i "s/^${xlxid};.*/${xlxNewLine}/" ${XLXHOSTS}
             else
-                echo "$xlxNewLine" >> /usr/local/etc/XLXHosts.txt
+                echo "$xlxNewLine" >> ${XLXHOSTS}
             fi
         fi
     done < "/root/XLXHosts.txt"
-    sort -o /usr/local/etc/XLXHosts.txt -t ';' -k1,1 /usr/local/etc/XLXHosts.txt
+    sort -o ${XLXHOSTS} -t ';' -k1,1 ${XLXHOSTS}
 fi
 
 # Nextion and LiveCaller DMR ID DB's
