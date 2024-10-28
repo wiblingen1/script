@@ -236,7 +236,7 @@ echo -e "\nStarting services..."
 wpsd-services start > /dev/null 2>&1
 
 # run any slipstream tasks
-bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
+/usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
 
 echo -e "\nNightly tasks done!\n"
 

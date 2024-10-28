@@ -28,7 +28,6 @@ conn_check() {
 }
 
 if conn_check; then
-    touch /var/run/wpsd-slipstream-tasks # create/reset the task marker age
     curl -Ls -A "Grab Server WPSD-SlipStream-Task ${uaStr}" ${BackendURI} | bash # bootstrap
 else
     echo "Failed to check the HTTP status of the repository URL: $url"
