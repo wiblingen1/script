@@ -365,8 +365,7 @@ perform_update() {
 
     bash /usr/local/sbin/.wpsd-sys-cache >/dev/null 2>&1
 
-    # run any slipstream tasks
-    bash /usr/local/sbin/.wpsd-slipstream-tasks > /dev/null 2>&1
+    systemctl restart wpsd-running-tasks.service >/dev/null 2>&1
 
     echo -e "  ${TICK} Done!" # maint. complete
 

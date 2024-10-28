@@ -40,6 +40,7 @@ sudo .wpsd-sys-cache
 
 sudo systemctl restart wpsd-nightly-tasks.timer
 sudo systemctl restart wpsd-running-tasks.timer
+sudo systemctl restart wpsd-running-tasks.service
 
 echo "WPSD has been reset."
 
