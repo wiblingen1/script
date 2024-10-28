@@ -63,6 +63,7 @@ function switch_profile()
     cp -a "$profileDir"/* /etc/ > /dev/null 2>&1
     cp -a "$profileDir"/.CALLERDETAILS /etc/ > /dev/null 2>&1
     cp -a "$profileDir"/.TGNAMES /etc/ > /dev/null 2>&1
+    cp -a "$profileDir"/WPSD-Dashboard-Config.ini /etc/ > /dev/null 2>&1
     chown www-data:www-data /var/www/dashboard/ > /dev/null
     cp -a /root/*Hosts.txt "$profileDir" > /dev/null
     echo "$1" > /etc/.WPSD_config

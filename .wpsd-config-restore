@@ -39,6 +39,7 @@ if [ "$castResult" == "true" ]; then
     rm -rf /tmp/config_restore/cast-settings
     /usr/local/cast/sbin/RSET.sh  &
 fi
+mv -f /tmp/config_restore/WPSD-Dashboard-Config.ini /etc/
 mv -f /tmp/config_restore/mmvvmhost /etc/
 mv -f /tmp/config_restore/gpsd /etc/default/
 mv -f /tmp/config_restore/RSSI.dat /usr/local/etc/
