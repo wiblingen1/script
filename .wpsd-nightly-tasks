@@ -88,7 +88,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
 
     echo -e "\nUpdating dash code..."
     # Update the Dashboard
-    # W0CHP has more than one branch. So depending on what W0CHP branch the user has installed, check that branch.
+    # WPSD has more than one branch. So depending on what WPSD Web Code branch the user has installed, check that branch.
     gitFolder="/var/www/dashboard"
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
     cd ${gitFolder}
@@ -194,7 +194,7 @@ if [[ $status_code == 20* ]] || [[ $status_code == 30* ]] ; then
     	fi
     fi
 
-    # Get and cache latest W0CHP-PiStar-Dash version from remote Git repo:
+    # Get and cache latest WPSD Web Code version from remote Git repo:
     gitRemoteURL=$(git --work-tree=${gitFolder} --git-dir=${gitFolder}/.git config --get remote.origin.url)
     gitBranch="$( git --git-dir=${gitFolder}/.git symbolic-ref --short HEAD )"
     gitStatusRemote=$(env GIT_HTTP_CONNECT_TIMEOUT="10" env GIT_HTTP_USER_AGENT="WPSD-UpdateCheck Version Cacher (WPSD-Nightly-Tasks) Ver.# ${dashVer} (${gitBranch}) Call:${CALL} UUID:${uuidStr} [${osName}]" git ls-remote --heads ${gitRemoteURL} ${gitBranch} | grep ${gitBranch} | awk {'print $1'} | awk '{ print substr($1,1,10) }') # last pipe to awk: converts long hash to 10 chars.
