@@ -45,7 +45,6 @@ if [ ! -d /usr/local/etc/tmp ]; then
 fi
 rm -rf /usr/local/etc/*.2024*
 rm -rf /usr/local/etc/*csv*
-rm -rf /usr/local/etc/*reg*
 rm -rf /usr/local/etc/index.*
 
 # Files and locations
