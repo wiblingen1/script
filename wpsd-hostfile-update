@@ -29,7 +29,7 @@ if ! flock -n 200 ; then
   exit 1
 fi
 
-ProgVer="WPSD-HostFileUpdater v.3.0"
+ProgVer="WPSD-HostFileUpdater v.3.2"
 
 # connectivity check
 status_code=$(curl -m 6 -A "${ProgVer}  ConnCheck ${uaStr}" --write-out %{http_code} --silent --output /dev/null ${hostFileURL})
@@ -47,39 +47,18 @@ rm -rf /usr/local/etc/*.2024*
 rm -rf /usr/local/etc/*csv*
 rm -rf /usr/local/etc/index.*
 
-# Files and locations
-APRSHOSTS=/usr/local/etc/tmp/APRSHosts.txt
-APRSSERVERS=/usr/local/etc/tmp/aprs_servers.json
-DCSHOSTS=/usr/local/etc/tmp/DCS_Hosts.txt
 DExtraHOSTS=/usr/local/etc/tmp/DExtra_Hosts.txt
 DMRIDFILE=/usr/local/etc/tmp/DMRIds.dat
 DMRHOSTS=/usr/local/etc/tmp/DMR_Hosts.txt
 DPlusHOSTS=/usr/local/etc/tmp/DPlus_Hosts.txt
-P25HOSTS=/usr/local/etc/tmp/P25Hosts.txt
 M17HOSTS=/usr/local/etc/tmp/M17Hosts.txt
 YSFHOSTS=/usr/local/etc/tmp/YSFHosts.txt
-FCSHOSTS=/usr/local/etc/tmp/FCSHosts.txt
 XLXHOSTS=/usr/local/etc/tmp/XLXHosts.txt
-NXDNIDFILE=/usr/local/etc/tmp/NXDN.csv
-NXDNHOSTS=/usr/local/etc/tmp/NXDNHosts.txt
-TGLISTBM=/usr/local/etc/tmp/TGList_BM.txt
-TGLISTTGIF=/usr/local/etc/tmp/TGList_TGIF.txt
-TGLISTFREESTARIPSC2=/usr/local/etc/tmp/TGList_FreeStarIPSC.txt
-TGLISTSYSTEMX=/usr/local/etc/tmp/TGList_SystemX.txt
-TGLISTFREEDMR=/usr/local/etc/tmp/TGList_FreeDMR.txt
-TGLISTDMRPLUS=/usr/local/etc/tmp/TGList_DMRp.txt
-TGLISTQUADNET=/usr/local/etc/tmp/TGList_QuadNet.txt
-TGLISAMCOMM=/usr/local/etc/tmp/TGList_AmComm.txt
-TGLISTP25=/usr/local/etc/tmp/TGList_P25.txt
-TGLISTNXDN=/usr/local/etc/tmp/TGList_NXDN.txt
-TGLISTYSF=/usr/local/etc/tmp/TGList_YSF.txt
 BMTGNAMES=/usr/local/etc/tmp/BM_TGs.json
 RADIOIDDB_TMP=/usr/local/etc/tmp/user.csv.tmp
 RADIOIDDB=/usr/local/etc/tmp/user.csv
 GROUPSTXT=/usr/local/etc/tmp/groups.txt
-GROUPSNEXTION=/usr/local/etc/tmp/groupsNextion.txt
 STRIPPED=/usr/local/etc/tmp/stripped.csv
-COUNTRIES=/usr/local/etc/tmp/country.csv
 
 # Generate Host Files
 curl --fail -L -o /usr/local/etc/tmp/wpsd-hostfiles.tar.bz2 -s ${hostFileURL}/wpsd-hostfiles.tar.bz2 --user-agent "${ProgVer} ${uaStr}"
