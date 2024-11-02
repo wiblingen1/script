@@ -55,7 +55,7 @@ osName=$( /usr/bin/lsb_release -cs )
 CALL=$( grep "Callsign" /etc/pistar-release | awk '{print $3}' )
 OS_VER=$( cat /etc/debian_version | sed 's/\..*//')
 SUPPORTING_FILES_REPO="https://github.com/wiblingen1/helpers/tree/master/supporting-files"
-#CONN_CHECK_URI="https://github.com/wiblingen1/repo-script/blob/main/branches"
+CONN_CHECK_URI="https://github.com/wiblingen1/repo-script/blob/main/branches"
 hostFileURL="https://barrandovhblink.jednoduse.cz/db/"
 gitBranch=$(git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git symbolic-ref --short HEAD)
 dashVer=$( git --work-tree=/var/www/dashboard --git-dir=/var/www/dashboard/.git rev-parse --short=10 ${gitBranch} )
